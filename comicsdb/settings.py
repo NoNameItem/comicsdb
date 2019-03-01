@@ -33,12 +33,12 @@ ALLOWED_HOSTS = custom_settings.ALLOWED_HOSTS
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'comics_db',
 ]
 
 MIDDLEWARE = [
@@ -76,12 +76,7 @@ WSGI_APPLICATION = 'comicsdb.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+DATABASES = custom_settings.DATABASES
 
 
 # Password validation
@@ -106,9 +101,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = custom_settings.LANGUAGE_CODE
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = custom_settings.TIME_ZONE
 
 USE_I18N = True
 
@@ -121,3 +116,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+AWS_ACCESS_KEY_ID = custom_settings.AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY = custom_settings.AWS_SECRET_ACCESS_KEY
+AWS_STORAGE_BUCKET_NAME = custom_settings.AWS_STORAGE_BUCKET_NAME
+AWS_S3_REGION_NAME = custom_settings.AWS_S3_REGION_NAME
+AWS_S3_ENDPOINT_URL = custom_settings.AWS_S3_ENDPOINT_URL
+AWS_S3_OBJECT_PARAMETERS = custom_settings.AWS_S3_OBJECT_PARAMETERS
+
+# Email
+# https://docs.djangoproject.com/en/2.1/topics/email/
+EMAIL_BACKEND = custom_settings.EMAIL_BACKEND
+EMAIL_FILE_PATH = custom_settings.EMAIL_FILE_PATH
