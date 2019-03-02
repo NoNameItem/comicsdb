@@ -169,11 +169,11 @@ class CloudFilesParser(BaseParser):
     def _prepare(self):
         try:
             session = boto3.session.Session()
-            s3 = session.resource('s3', region_name=settings.AWS_S3_REGION_NAME,
-                                  endpoint_url=settings.AWS_S3_ENDPOINT_URL,
-                                  aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                                  aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
-            bucket = s3.Bucket('comicsdb')
+            s3 = session.resource('s3', region_name=settings.DO_REGION_NAME,
+                                  endpoint_url=settings.DO_ENDPOINT_URL,
+                                  aws_access_key_id=settings.DO_KEY_ID,
+                                  aws_secret_access_key=settings.DO_SECRET_ACCESS_KEY)
+            bucket = s3.Bucket(settings.DO_STORAGE_BUCKET_NAME)
             bucket_comics = bucket.objects.filter(Prefix="content/Marvel/Earth-616/2004")
             self._data = [x.key for x in bucket_comics if self._FILE_REGEX.search(x.key)]
             self._parser_run.processed = 0

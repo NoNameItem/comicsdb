@@ -25,7 +25,7 @@ BASE_DIR = custom_settings.BASE_DIR
 SECRET_KEY = custom_settings.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = custom_settings.DEBUG
 
 ALLOWED_HOSTS = custom_settings.ALLOWED_HOSTS
 
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_s3_storage',
     'comics_db',
 ]
 
@@ -112,17 +113,55 @@ USE_L10N = True
 USE_TZ = True
 
 
+# Common DO settings
+
+DO_KEY_ID = custom_settings.DO_KEY_ID
+DO_SECRET_ACCESS_KEY = custom_settings.DO_SECRET_ACCESS_KEY
+DO_STORAGE_BUCKET_NAME = custom_settings.DO_STORAGE_BUCKET_NAME
+DO_REGION_NAME = custom_settings.DO_REGION_NAME
+DO_ENDPOINT_URL = custom_settings.DO_ENDPOINT_URL
+DO_OBJECT_PARAMETERS = custom_settings.DO_OBJECT_PARAMETERS
+DO_PUBLIC_URL = custom_settings.DO_PUBLIC_URL
+
+# django-s3-storage common settings
+
+AWS_REGION = custom_settings.DO_REGION_NAME
+AWS_ACCESS_KEY_ID = custom_settings.DO_KEY_ID
+AWS_SECRET_ACCESS_KEY = custom_settings.DO_SECRET_ACCESS_KEY
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
 
-AWS_ACCESS_KEY_ID = custom_settings.AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY = custom_settings.AWS_SECRET_ACCESS_KEY
-AWS_STORAGE_BUCKET_NAME = custom_settings.AWS_STORAGE_BUCKET_NAME
-AWS_S3_REGION_NAME = custom_settings.AWS_S3_REGION_NAME
-AWS_S3_ENDPOINT_URL = custom_settings.AWS_S3_ENDPOINT_URL
-AWS_S3_OBJECT_PARAMETERS = custom_settings.AWS_S3_OBJECT_PARAMETERS
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+STATICFILES_STORAGE = custom_settings.STATICFILES_STORAGE
+
+# django-s3-storage static settings
+
+AWS_S3_ENDPOINT_URL_STATIC = custom_settings.DO_ENDPOINT_URL
+AWS_S3_BUCKET_NAME_STATIC = custom_settings.DO_STORAGE_BUCKET_NAME
+AWS_S3_KEY_PREFIX_STATIC = "static"
+AWS_S3_PUBLIC_URL_STATIC = custom_settings.DO_PUBLIC_URL
+AWS_S3_FILE_OVERWRITE_STATIC = True
+
+# Media settings
+# https://docs.djangoproject.com/en/2.1/topics/files/
+
+DEFAULT_FILE_STORAGE = custom_settings.DEFAULT_FILE_STORAGE
+MEDIA_ROOT = custom_settings.MEDIA_ROOT
+MEDIA_URL = custom_settings.MEDIA_URL
+
+# django-s3-storage file storage settings
+
+AWS_S3_ENDPOINT_URL = custom_settings.DO_ENDPOINT_URL
+AWS_S3_BUCKET_NAME = custom_settings.DO_STORAGE_BUCKET_NAME
+AWS_S3_KEY_PREFIX = "media"
+AWS_S3_PUBLIC_URL = custom_settings.DO_PUBLIC_URL
+AWS_S3_FILE_OVERWRITE = False
 
 # Email
 # https://docs.djangoproject.com/en/2.1/topics/email/
