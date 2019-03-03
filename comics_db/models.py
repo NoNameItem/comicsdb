@@ -84,6 +84,9 @@ class Publisher(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ["name"]
+
 
 class Creator(models.Model):
     name = models.CharField(max_length=100)
@@ -102,10 +105,11 @@ class Universe(models.Model):
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="universes")
 
     def __str__(self):
-        return "{0.name} ({0.publisher.name})".format(self)
+        return "[{0.publisher.name}] {0.name}".format(self)
 
     class Meta:
         unique_together = (("name", "publisher"),)
+        ordering = ["publisher", "name"]
 
 
 class Tag(models.Model):
@@ -129,10 +133,11 @@ class Title(models.Model):
     title_type = models.ForeignKey(TitleType, on_delete=models.PROTECT, related_name="titles")
 
     def __str__(self):
-        return "[{0.publisher.name}, {0.universe.name}] {0.name}".format(self)
+        return "[{0.publisher.name}, {0.universe.name}, {0.title_type.name}] {0.name}".format(self)
 
     class Meta:
         unique_together = (("name", "publisher", "universe", "title_type"),)
+        ordering = ["publisher", "universe", "name"]
 
 
 class Issue(models.Model):
@@ -154,7 +159,8 @@ class Issue(models.Model):
     modified_dt = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "[{0.publisher.name}, {0.universe.name}, {0.publish_date.year}] {0.name}".format(self)
+        return "[{0.title.publisher.name}, {0.title.universe.name}, {0.publish_date.year}] {0.name}".format(self)
 
     class Meta:
         unique_together = (("name", "title", "publish_date"),)
+        ordering = ["title", "number"]
