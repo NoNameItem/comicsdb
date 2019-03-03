@@ -170,4 +170,4 @@ class Issue(models.Model):
 
     class Meta:
         unique_together = (("name", "title", "publish_date"),)
-        ordering = ["title", "number"]
+        ordering = ["title", "publish_date", "number"]
