@@ -5,6 +5,9 @@ from django.db import models
 
 # Parser logs
 from django.utils import timezone
+from django.utils.encoding import escape_uri_path
+
+from comicsdb import settings
 
 
 class ParserRun(models.Model):
@@ -128,7 +131,7 @@ class TitleType(models.Model):
 
 class Title(models.Model):
     name = models.CharField(max_length=500)
-    publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, null=True, related_name="titles")
+    publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="titles")
     universe = models.ForeignKey(Universe, on_delete=models.PROTECT, null=True, related_name="titles")
     title_type = models.ForeignKey(TitleType, on_delete=models.PROTECT, related_name="titles")
 
@@ -160,6 +163,10 @@ class Issue(models.Model):
 
     def __str__(self):
         return "[{0.title.publisher.name}, {0.title.universe.name}, {0.publish_date.year}] {0.name}".format(self)
+
+    @property
+    def download_link(self):
+        return escape_uri_path("{0}/{1.link}".format(settings.DO_PUBLIC_URL, self))
 
     class Meta:
         unique_together = (("name", "title", "publish_date"),)
