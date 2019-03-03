@@ -15,8 +15,7 @@ import os
 from comicsdb import custom_settings
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = custom_settings.BASE_DIR
-
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -28,7 +27,6 @@ SECRET_KEY = custom_settings.SECRET_KEY
 DEBUG = custom_settings.DEBUG
 
 ALLOWED_HOSTS = custom_settings.ALLOWED_HOSTS
-
 
 # Application definition
 
@@ -73,12 +71,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'comicsdb.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 DATABASES = custom_settings.DATABASES
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -98,7 +94,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
@@ -111,7 +106,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Common DO settings
 
@@ -167,3 +161,8 @@ AWS_S3_FILE_OVERWRITE = False
 # https://docs.djangoproject.com/en/2.1/topics/email/
 EMAIL_BACKEND = custom_settings.EMAIL_BACKEND
 EMAIL_FILE_PATH = custom_settings.EMAIL_FILE_PATH
+
+# DRF Global Settings
+REST_FRAMEWORK = {
+    'URL_FIELD_NAME': "detail_url"
+}
