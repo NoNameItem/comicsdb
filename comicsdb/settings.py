@@ -37,6 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_s3_storage',
+    'rest_framework',
+    'django_filters',
+    'crispy_forms',
+    'drf_yasg',
+    'registration',
+    'knox',
     'comics_db',
 ]
 
@@ -164,5 +170,32 @@ EMAIL_FILE_PATH = custom_settings.EMAIL_FILE_PATH
 
 # DRF Global Settings
 REST_FRAMEWORK = {
-    'URL_FIELD_NAME': "detail_url"
+    'URL_FIELD_NAME': "detail_url",
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'knox.auth.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+            'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'comics_db.throttling.AllowAdminThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '3000/day'
+    }
 }
+REST_KNOX = {
+    'TOKEN_TTL': None
+}
+
+# Django Registration Redux Settins
+# https://django-registration-redux.readthedocs.io
+
+REGISTRATION_DEFAULT_FROM_EMAIL = "register@comicsdb.nonameitem.com"
+REGISTRATION_AUTO_LOGIN = True
+LOGIN_REDIRECT_URL = "main"
+ACCOUNT_ACTIVATION_DAYS = 30
+LOGIN_URL = "/accounts/login"
+LOGOUT_REDIRECT_URL = "main"

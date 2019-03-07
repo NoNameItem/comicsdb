@@ -183,7 +183,7 @@ class CloudFilesParser(BaseParser):
         except botocore.exception.ClientError as err:
             raise RuntimeParserError("boto3 client error while preparing data", err.msg)
         except Exception as err:
-            raise RuntimeParserError("Error while preparing data", err)
+            raise RuntimeParserError("Error while preparing data", err.args[0])
 
     @property
     def _items_count(self):
@@ -276,4 +276,4 @@ class CloudFilesParser(BaseParser):
         except Exception as err:
             if run_detail:
                 run_detail.end_with_error('Critical Error', err)
-            raise RuntimeParserError("Error while processing data", err)
+            raise RuntimeParserError("Error while processing data", err.args[0])

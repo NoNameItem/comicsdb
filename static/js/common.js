@@ -28,7 +28,7 @@ function myNotify(options, settings) {
     '</div>' +
     '</div>' +
     '<div class="progress" data-notify="progressbar">' +
-    '<div class="progress-bar progress-bar-{0}" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>' +
+    '<div class="progress-bar progress-bar-{0}" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0;"></div>' +
     '</div>' +
     '<a href="{3}" target="{4}" data-notify="url"></a>' +
     '</div>';

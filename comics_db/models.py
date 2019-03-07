@@ -1,14 +1,19 @@
 from django.db import models
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.encoding import escape_uri_path
+from django.contrib.auth.models import User
+from knox.models import AuthToken
+
+from comicsdb import settings
+
 
 # Create your models here.
 
 
-# Parser logs
-from django.utils import timezone
-from django.utils.encoding import escape_uri_path
-
-from comicsdb import settings
-
+########################################################################################################################
+# Parsers
+########################################################################################################################
 
 class ParserRun(models.Model):
     PARSER_CHOICES = (
@@ -40,6 +45,23 @@ class ParserRun(models.Model):
             self.processed = 1
         self.save()
 
+    @property
+    def parser_name(self):
+        return self.get_parser_display()
+
+    @property
+    def status_name(self):
+        return self.get_status_display()
+
+    @property
+    def run_details_url(self):
+        if self.parser == 'CLOUD_FILES':
+            return reverse('parserrun-details-cloud', args=(self.id, ))
+        return None
+
+    class Meta:
+        ordering = ["-start"]
+
 
 class ParserRunDetail(models.Model):
     STATUS_CHOICES = (
@@ -67,8 +89,13 @@ class ParserRunDetail(models.Model):
         self.end = timezone.now()
         self.save()
 
+    @property
+    def status_name(self):
+        return self.get_status_display()
+
     class Meta:
         abstract = True
+        ordering = ["parser_run", "-start"]
 
 
 class CloudFilesParserRunDetail(ParserRunDetail):
@@ -78,7 +105,10 @@ class CloudFilesParserRunDetail(ParserRunDetail):
     issue = models.ForeignKey("Issue", null=True, on_delete=models.SET_NULL)
     created = models.BooleanField(default=False)
 
-# Comics DB structure
+
+########################################################################################################################
+# Comics Info
+########################################################################################################################
 
 
 class Publisher(models.Model):
@@ -171,3 +201,23 @@ class Issue(models.Model):
     class Meta:
         unique_together = (("name", "title", "publish_date"),)
         ordering = ["title", "publish_date", "number"]
+
+
+########################################################################################################################
+# System
+########################################################################################################################
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
+    unlimited_api = models.BooleanField(default=False)
+
+
+class AppToken(models.Model):
+    app_name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    token = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="app_tokens")
+
+    class Meta:
+        unique_together = (("user", "app_name"), )

@@ -1,0 +1,107 @@
+{% load static %}
+<!-- - var menuBorder = true-->
+<!DOCTYPE html>
+<html class="loading" lang="en" data-textdirection="ltr">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <title>ComicsDB - Login Page</title>
+  <link rel="icon" href="{% static "images/favicon.png" %}">
+  <link
+      href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,500,500i%7COpen+Sans:300,300i,400,400i,600,600i,700,700i"
+      rel="stylesheet">
+  <!-- BEGIN VENDOR CSS-->
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/vendors.css" %}">
+  <!-- END VENDOR CSS-->
+  <!-- BEGIN STACK CSS-->
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/app.min.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/app.css" %}">
+  <!-- END STACK CSS-->
+  <!-- BEGIN Page Level CSS-->
+  <link rel="stylesheet" type="text/css"
+        href="{% static "app-assets/css/core/menu/menu-types/vertical-menu.min.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/pages/login-register.min.css" %}">
+  <!-- END Page Level CSS-->
+  <!-- BEGIN Custom CSS-->
+  <link rel="stylesheet" type="text/css" href="{% static "css/common.css" %}">
+  <!-- END Custom CSS-->
+</head>
+<body class="vertical-layout vertical-menu 1-column   menu-expanded blank-page blank-page" data-open="click"
+      data-menu="vertical-menu" data-col="1-column">
+<!-- ////////////////////////////////////////////////////////////////////////////-->
+<div class="app-content content">
+  <div class="content-wrapper">
+    <div class="content-header row">
+    </div>
+    <div class="content-body">
+      <section class="flexbox-container">
+        <div class="col-12 d-flex align-items-center justify-content-center">
+          <div class="col-md-4 col-10 box-shadow-2 p-0">
+            <div class="card border-grey border-lighten-3 m-0">
+              <div class="card-header border-0">
+                <div class="card-title text-center">
+                  <div class="p-1"><img src="{% static "images/logo.png" %}" alt="branding logo">
+                    <span>ComicsDB</span>
+                  </div>
+                </div>
+                <h6 class="card-subtitle line-on-side text-muted text-center font-small-3 pt-2">
+                  <span>Login</span></h6>
+              </div>
+
+              {% if form.errors %}
+                <div class="alert alert-danger alert-dismissible ml-2 mr-2" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                  </button>
+                  Invalid username or password
+                </div>
+              {% endif %}
+              <div class="card-content">
+                <div class="card-body">
+                  <form class="form-horizontal form-simple" action method="post" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}"/>
+                    <fieldset class="form-group position-relative has-icon-left mb-0">
+                      <input type="text" class="form-control form-control-lg" id="user-name" placeholder="Your Username"
+                             required name="username">
+                      <div class="form-control-position">
+                        <i class="ft-user"></i>
+                      </div>
+                    </fieldset>
+                    <fieldset class="form-group position-relative has-icon-left">
+                      <input type="password" class="form-control form-control-lg" id="user-password"
+                             placeholder="Enter Password" required name="password">
+                      <div class="form-control-position">
+                        <i class="fa fa-key"></i>
+                      </div>
+                    </fieldset>
+                    <button type="submit" class="btn btn-primary btn-lg btn-block"><i class="ft-unlock"></i> Login
+                    </button>
+                  </form>
+                </div>
+              </div>
+              <div class="card-footer">
+                <div class="">
+                  <p class="float-sm-left text-center m-0"><a href="{% url "auth_password_reset" %}" class="card-link">Recover
+                    password</a></p>
+                  <p class="float-sm-right text-center m-0">New to ComicsDB? <a href="/accounts/register"
+                                                                             class="card-link">Sign Up</a></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+<!-- ////////////////////////////////////////////////////////////////////////////-->
+
+<script src="{% static "app-assets/vendors/js/vendors.min.js" %}"></script>
+{#<script src="{% static "app-assets/vendors/js/forms/icheck/icheck.min.js" %}"></script>#}
+<script src="{% static "app-assets/js/core/app-menu.min.js" %}"></script>
+<script src="{% static "app-assets/js/core/app.min.js" %}"></script>
+</body>
+</html>

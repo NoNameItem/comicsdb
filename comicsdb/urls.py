@@ -16,5 +16,6 @@ Including another URLconf
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include("comics_db.urls"))
+    path('', include("comics_db.urls")),
+    path('accounts/', include('registration.backends.default.urls')),
 ]

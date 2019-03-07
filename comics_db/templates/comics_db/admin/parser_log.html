@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Parsers run log{% endblock %}
+
+{% block page_title %}{% endblock %}
+
+{% block breadcrumb_items %}
+{% endblock %}
+
+{% block vendor_css %}
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/vendors/css/tables/datatable/dataTables.bootstrap4.min.css" %}">
+{% endblock %}
+
+{% block content %}
+  <div id="simple-card" class="card" style="zoom: 1;">
+            <div class="card-header">
+                <h2 class="card-title">Parsers run log</h2>
+                <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+                <div class="heading-elements">
+                    <ul class="list-inline mb-0">
+                        <li><a data-action="reload"><i class="ft-rotate-cw"></i></a></li>
+                        <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="card-body card-dashboard">
+                  <table class="table table-striped table-bordered" id="log-table">
+                    <thead>
+                      <tr>
+                        <th>Parser</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block vendor_js %}
+  <script type="text/javascript" src="{% static "app-assets/vendors/js/tables/datatable/dataTables.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "app-assets/vendors/js/tables/datatable/dataTables.bootstrap4.min.js" %}"></script>
+{% endblock %}
+
+{% block page_js %}
+  <script type="text/javascript" src="{% static "comics_db/js/parser_log.js" %}"></script>
+{% endblock %}
