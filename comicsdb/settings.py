@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'registration',
     'knox',
+    'django_celery_beat',
     'comics_db',
 ]
 
@@ -199,3 +200,8 @@ LOGIN_REDIRECT_URL = "main"
 ACCOUNT_ACTIVATION_DAYS = 30
 LOGIN_URL = "/accounts/login"
 LOGOUT_REDIRECT_URL = "main"
+
+# Celery settings
+CELERY_BROKER_URL = custom_settings.CELERY_BROKER_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'

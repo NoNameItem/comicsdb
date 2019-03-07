@@ -1,5 +1,5 @@
 """
-Different parsers for getting comix info
+Different parsers for getting comics info
 """
 import datetime
 import inspect
@@ -78,7 +78,7 @@ class BaseParser:
         """
         return True
 
-    def run(self):
+    def run(self, celery_task_id=None):
         """
         Main method for running parser.
 
@@ -89,6 +89,7 @@ class BaseParser:
         try:
             # Initializing Run
             self._parser_run = ParserRun()
+            self._parser_run.celery_task_id = celery_task_id
 
             # Checking parser code
             # Parser code is overridden
@@ -166,6 +167,11 @@ class CloudFilesParser(BaseParser):
                         re.IGNORECASE)
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
+    def __init__(self, path_prefix):
+        print('aa')
+        self.path_prefix = path_prefix
+        super().__init__()
+
     def _prepare(self):
         try:
             session = boto3.session.Session()
@@ -174,7 +180,7 @@ class CloudFilesParser(BaseParser):
                                   aws_access_key_id=settings.DO_KEY_ID,
                                   aws_secret_access_key=settings.DO_SECRET_ACCESS_KEY)
             bucket = s3.Bucket(settings.DO_STORAGE_BUCKET_NAME)
-            bucket_comics = bucket.objects.filter(Prefix="content/Marvel/Earth-616/2004")
+            bucket_comics = bucket.objects.filter(Prefix=self.path_prefix)
             self._data = [x.key for x in bucket_comics if self._FILE_REGEX.search(x.key)]
             self._parser_run.processed = 0
 
@@ -277,3 +283,5 @@ class CloudFilesParser(BaseParser):
             if run_detail:
                 run_detail.end_with_error('Critical Error', err)
             raise RuntimeParserError("Error while processing data", err.args[0])
+
+

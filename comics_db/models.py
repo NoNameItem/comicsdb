@@ -37,6 +37,7 @@ class ParserRun(models.Model):
     processed = models.IntegerField(null=True)
     error = models.TextField(blank=True)
     error_detail = models.TextField(blank=True)
+    celery_task_id = models.CharField(max_length=100, blank=True)
 
     def inc_processed(self):
         if self.processed:
