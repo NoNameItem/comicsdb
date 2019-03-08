@@ -221,13 +221,20 @@ class CloudFilesParserRunDetailFilter(filters.FilterSet):
         help_text="`end` greater than or equal. Date format: YYYY-MM-DDThh:mm:ss.sTZD (iso-8601 datetime)"
     )
     status = filters.ChoiceFilter(
-        field_name="get_status_display",
+        field_name="status",
         lookup_expr="iexact",
-        choices=RUN_STATUS_CHOICES,
+        choices=RUN_DETAIL_STATUS_CHOICES,
         label="Status",
         help_text="`status` equals (ignore_case).\n"
-                  "Possible choices are:\n{0}".format("\n".join(map(lambda x: "* `%s` - %s" % x, RUN_STATUS_CHOICES)))
+                  "Possible choices are:\n{0}".format("\n".join(map(lambda x: "* `%s` - "
+                                                                              "%s" % x, RUN_DETAIL_STATUS_CHOICES)))
 
+    )
+    file_key = filters.CharFilter(
+        field_name="file_key",
+        lookup_expr="icontains",
+        label="File key",
+        help_text="`file_key` contains (ignore case)"
     )
     error = filters.CharFilter(
         field_name="error",

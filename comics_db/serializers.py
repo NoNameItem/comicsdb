@@ -181,7 +181,7 @@ class ParserRunListSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = models.ParserRun
         fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "parser_code", "parser_name", "status_code",
-                  "status_name", "start", "end", "error")
+                  "status_name", "start", "end", "error", "page")
         read_only_fields = fields
         extra_kwargs = {
             'id': {'help_text': "Unique identifier"},
@@ -231,10 +231,12 @@ class ParserRunDetailSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class CloudFilesParserRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
+    step_name=serializers.CharField(source="file_key")
+
     class Meta:
         model = models.CloudFilesParserRunDetail
         fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
-                  "created")
+                  "created", "step_name")
         read_only_fields = fields
         extra_kwargs = {
             'id': {'help_text': "Unique identifier"},
@@ -250,7 +252,6 @@ class CloudFilesParserRunDetailListSerializer(serializers.HyperlinkedModelSerial
 
 class CloudFilesParserRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
     issue_name = serializers.CharField(
-        source="issue.__str__",
         read_only=True,
         help_text="Name of issue matching file key "
     )

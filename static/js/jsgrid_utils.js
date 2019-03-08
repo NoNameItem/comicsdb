@@ -24,7 +24,10 @@ MyDateField.prototype = new jsGrid.Field({
     },
 
     filterTemplate: function(value) {
+      if (this.filtering)
         return this._filterPicker = $("<input>").datetimepicker({format: 'DD.MM.YYYY' });
+      else
+        return "";
     },
 
     editTemplate: function(value) {

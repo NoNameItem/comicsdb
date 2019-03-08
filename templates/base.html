@@ -18,6 +18,7 @@
   <!-- BEGIN VENDOR CSS-->
   <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/vendors.css" %}">
   <link type="text/css" rel="stylesheet" href="{% static "animate_css/animate.css" %}"/>
+  <link type="text/css" rel="stylesheet" href="{% static "fontawesome/css/all.min.css" %}"/>
   {% block vendor_css %}{% endblock %}
   <!-- END VENDOR CSS-->
   <!-- BEGIN STACK CSS-->
@@ -128,10 +129,15 @@
 <footer class="footer footer-static footer-light navbar-border">
   <p class="clearfix blue-grey lighten-2 text-sm-center mb-0 px-2"><span
       class="float-md-left d-block d-md-inline-block">Copyright  &copy; 2019 <a href="{% url "main" %}">ComicsDB</a>, All rights reserved. </span>
-    {% if user.is_authenticated %}<span class="float-md-right d-block d-md-inline-block d-none d-lg-block">We build API for this shit, <a
-        href="{% url "api-root" %}" target="_blank">check this out</a></span></p>{% endif %}
+    {% if user.is_authenticated %}
+      <span class="float-md-right d-block d-md-inline-block d-none d-lg-block">We build API for this shit, <a
+          href="{% url "api-root" %}" target="_blank">check this out</a></span></p>{% endif %}
 </footer>
 
+<!-- MODALS -->
+
+{% block modals %}
+{% endblock %}
 <!-- BEGIN VENDOR JS-->
 <script src="{% static "app-assets/js/core/libraries/jquery.min.js" %}" type="text/javascript"></script>
 <script src="{% static "app-assets/vendors/js/ui/popper.min.js" %}" type="text/javascript"></script>

@@ -80,17 +80,21 @@ $('#grid').jsGrid({
   pageLoading : true,
   filtering   : true,
   pagerFormat : "",
-  pageSize    : 5,
+  pageSize    : 20,
 
   controller : controller,
   autoload   : true,
+
+  rowClick : function (obj) {
+    window.location.href = obj.item.page;
+  },
 
   fields : [
     {
       type         : "control",
       width        : 25,
       itemTemplate : function (value, item) {
-        return "<a href='#'><i class='fa fa-list'></i></a>";
+        return "<a href='"+item.page+"'><i class='fa fa-list'></i></a>";
       }
     },
     {

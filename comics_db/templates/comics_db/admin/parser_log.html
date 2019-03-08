@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Parsers run log{% endblock %}
+{% block title %}Parsers log{% endblock %}
 
-{% block page_title %}{% endblock %}
+{% block page_title %}Parsers log{% endblock %}
 
 {% block breadcrumb_items %}
 {% endblock %}
@@ -20,32 +20,36 @@
 
 {% block content %}
   <div id="grid-card" class="card" style="zoom: 1;">
-            <div class="card-header">
-                <h2 class="card-title">Parsers run log</h2>
-                <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
-                <div class="heading-elements">
-                    <ul class="list-inline mb-0">
-                        <li><a onclick="$('#grid').jsGrid('clearFilter');"><i class="ft-rotate-cw"></i></a></li>
-                        <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card-content">
-                <div class="card-body card-dashboard">
-                  <div id="grid"></div>
-                  <div class="card-footer">
-                    <div id="pager"></div>
-                  </div>
-                </div>
-            </div>
-        </div>
+    <div class="card-header">
+      {#                <h2 class="card-title">Parsers log</h2>#}
+      <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+      <div class="heading-elements">
+        <ul class="list-inline mb-0">
+          <li><a onclick="$('#grid').jsGrid('clearFilter');"><i class="ft-rotate-cw"></i></a></li>
+          <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="card-content">
+      <div class="card-body card-dashboard">
+        <div id="grid"></div>
+
+      </div>
+    </div>
+    <div class="card-footer">
+      <div id="pager"></div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block vendor_js %}
   <script src="{% static "app-assets/vendors/js/tables/jsgrid/jsgrid.min.js" %}" type="text/javascript"></script>
-  <script src="{% static "app-assets/vendors/js/pagination/jquery.twbsPagination.min.js" %}" type="text/javascript"></script>
-  <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}" type="text/javascript"></script>
-  <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pagination/jquery.twbsPagination.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}"
+          type="text/javascript"></script>
 {% endblock %}
 
 {% block page_js %}

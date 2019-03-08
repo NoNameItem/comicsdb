@@ -60,6 +60,10 @@ class ParserRun(models.Model):
             return reverse('parserrun-details-cloud', args=(self.id, ))
         return None
 
+    @property
+    def page(self):
+        return reverse('parser-log-detail', args=(self.id, ))
+
     class Meta:
         ordering = ["-start"]
 
@@ -67,7 +71,7 @@ class ParserRun(models.Model):
 class ParserRunDetail(models.Model):
     STATUS_CHOICES = (
         ("RUNNING", "Running"),
-        ("SUCCESS", "Successfully ended"),
+        ("SUCCESS", "Success"),
         ("ERROR", "Error")
     )
 
@@ -105,6 +109,12 @@ class CloudFilesParserRunDetail(ParserRunDetail):
     groups = models.TextField(blank=True)
     issue = models.ForeignKey("Issue", null=True, on_delete=models.SET_NULL)
     created = models.BooleanField(default=False)
+
+    def issue_name(self):
+        if self.issue:
+            return self.issue.name
+        else:
+            return None
 
 
 ########################################################################################################################

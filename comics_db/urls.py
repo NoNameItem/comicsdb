@@ -21,6 +21,7 @@ from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
 from comics_db import views
+from comics_db.views import ParserRunDetail
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'app_token', views.AppTokenViewSet, basename='app_token')
@@ -44,7 +45,8 @@ schema_view = get_schema_view(
 urlpatterns = [
     # Pages
     path('', TemplateView.as_view(template_name="comics_db/main_page.html"), name="main"),
-    path('parser_logs/', TemplateView.as_view(template_name="comics_db/admin/parser_log.html"), name="parser_log"),
+    path('parser_log', TemplateView.as_view(template_name="comics_db/admin/parser_log.html"), name="parser_log"),
+    path('parser_log/<int:pk>', ParserRunDetail.as_view(), name="parser-log-detail"),
 
     # API
     path('api/', include(router.urls)),

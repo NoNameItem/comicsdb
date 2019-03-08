@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.views.generic import DetailView
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_multiple_settings.filter_backends.django_filters import FilterBackend
 from drf_multiple_settings.viewsets import ReadOnlyModelMultipleSettingsViewSet, MultipleSettingsOrderingFilter
@@ -22,6 +23,26 @@ from comics_db import models, serializers, filtersets
 ########################################################################################################################
 # Site
 ########################################################################################################################
+
+
+class ParserRunDetail(DetailView):
+    model = models.ParserRun
+    context_object_name = 'parser_run'
+    template_name = "comics_db/admin/parser_run.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        status_css = None
+        if self.object.status == "RUNNING":
+            status_css = 'info'
+        elif self.object.status == "SUCCESS":
+            status_css = 'success'
+        elif self.object.status == "ENDED_WITH_ERRORS":
+            status_css = 'warning'
+        elif self.object.status in ("CRITICAL_ERROR", "INVALID_PARSER"):
+            status_css = 'danger'
+        context['status_css'] = status_css
+        return context
 
 
 ########################################################################################################################

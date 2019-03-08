@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ parser_run.parser_name }}: {{ parser_run.start|date:"d.m.Y H:i:s" }}{% endblock %}
+
+{% block page_title %}{{ parser_run.parser_name }}: {{ parser_run.start|date:"d.m.Y H:i:s" }}{% endblock %}
+
+{% block breadcrumb_items %}
+  <li class="breadcrumb-item" aria-current="page"><a href="{% url "parser_log" %}">Parsers log</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Parser run details</li>
+{% endblock %}
+
+{% block vendor_css %}
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid-theme.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/pickers/datetime/bootstrap-datetimepicker.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/ui/prism.min.css" %}">
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-4 col-sm-12">
+      <div id="run-card" class="card" style="zoom: 1;">
+        <div class="card-header card-head-inverse bg-{{ status_css }}">
+          <h2 class="card-title">Run info</h2>
+          <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-content border-{{ status_css }} collapse show">
+          <div class="card-body card-dashboard">
+            <form class="form">
+              <div class="form-body">
+                <h4 class="form-section"><i class="ft-info"></i> Main info</h4>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="parser-name" class="text-bold-700">Parser</label>
+                      <input type="text" id="parser-name" class="form-control-plaintext"
+                             value="{{ parser_run.parser_name }}">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="status" class="text-bold-700">Status</label>
+                      <input type="text" id="status" class="form-control-plaintext text-{{ status_css }}"
+                             value="{{ parser_run.status_name }}">
+                    </div>
+                  </div>
+                </div>
+
+                <h4 class="form-section"><i class="far fa-clock"></i> Execution time</h4>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="start" class="text-bold-700">Start</label>
+                      <input type="text" id="start" class="form-control-plaintext"
+                             value="{{ parser_run.start|date:"d.m.Y H:i:s" }}">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="end" class="text-bold-700">End</label>
+                      <input type="text" id="end" class="form-control-plaintext"
+                             value="{{ parser_run.end|date:"d.m.Y H:i:s" }}">
+                    </div>
+                  </div>
+
+                </div>
+
+                <h4 class="form-section"><i class="fa fa-list"></i> Records</h4>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="records-total" class="text-bold-700">Total</label>
+                      <input type="text" id="records-total" class="form-control-plaintext"
+                             value="{{ parser_run.items_count }}">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="records-processed" class="text-bold-700">Processed</label>
+                      <input type="text" id="records-processed" class="form-control-plaintext"
+                             value="{{ parser_run.processed }}">
+                    </div>
+                  </div>
+
+                </div>
+
+                {% if parser_run.error or parser_run.error_detail %}
+                  <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
+                  {% if parser_run.error %}
+                    <p>{{ parser_run.error }}</p>
+                  {% endif %}
+                  {% if parser_run.error_detail %}
+                    <p class="text-bold-300">{{ parser_run.error_detail }}</p>
+                  {% endif %}
+                {% endif %}
+
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if parser_run.parser == 'CLOUD_FILES' %}
+      <div class="col-md-8 col-sm-12">
+        <div id="run-detail-card" class="card" style="zoom: 1;">
+          <div class="card-header card-head-inverse bg-{{ status_css }}">
+            <h2 class="card-title">Parser steps</h2>
+            <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+            <div class="heading-elements">
+              <ul class="list-inline mb-0">
+                <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+                <li><a onclick="$('#grid').jsGrid('clearFilter');"><i class="ft-rotate-cw"></i></a></li>
+                <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="card-content border-{{ status_css }} collapse show">
+            <div class="card-body" style="overflow-x: auto">
+              <div id="grid"></div>
+            </div>
+          </div>
+          <div class="card-footer border-{{ status_css }}">
+            <div id="pager"></div>
+          </div>
+        </div>
+      </div>
+      </div>
+    {% endif %}
+{% endblock %}
+
+{% block modals %}
+  {% if parser_run.parser == 'CLOUD_FILES' %}
+    <div class="modal fade" id="run-detail-modal">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="modal-content">
+          <div class="modal-header bg-success white" id="modal-header">
+            <h4 class="modal-title">Parser step</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+
+          </div>
+          <div class="modal-body">
+            <form class="form">
+              <div class="form-body">
+                <h4 class="form-section border-bottom-success"><i class="ft-info"></i> Main info</h4>
+                <div class="row">
+                  <div class="col-md-10">
+                    <div class="form-group">
+                      <label for="modal-file-key" class="text-bold-700">File key</label>
+                      <span id="modal-file-key" class="form-control-plaintext">test</span>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="modal-status" class="text-bold-700">Status</label>
+                      <span id="modal-status" class="form-control-plaintext">test</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <h4 class="form-section"><i class="fas fa-book"></i> Issue</h4>
+                <div class="row">
+                  <div class="col-md-10">
+                    <div class="form-group">
+                      <label for="modal-issue" class="text-bold-700">Issue name</label>
+                      <span id="modal-issue" class="form-control-plaintext">test</span>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="modal-created" class="text-bold-700">Created</label>
+                      <span id="modal-created" class="form-control-plaintext"><i class="far fa-check-circle success fa-2x"></i></span>
+
+                    </div>
+                  </div>
+                </div>
+
+                <h4 class="form-section"><i class="fas fa-book"></i> Parser detail</h4>
+                <div class="form-group">
+                  <label for="modal-regex" class="text-bold-700">Regex</label>
+                  <span id="modal-regex" class="form-control-plaintext">test</span>
+                </div>
+                <div class="form-group">
+                  <label for="modal-groups" class="text-bold-700">Matched groups</label>
+                  <pre><code id="modal-groups" class="language-json">
+                  {'publisher': 'Marvel', 'universe': 'Earth-616', 'year': '1961', 'title_type': 'Ongoing', 'title': 'Fantastic Four', 'issue_name': 'Fantastic Four #1 The Fantastic Four!', 'number': '1'}
+                  </code></pre>
+                </div>
+
+                <h4 class="form-section"><i class="far fa-clock"></i> Execution time</h4>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="modal-start" class="text-bold-700">Start</label>
+                      <input type="text" id="modal-start" class="form-control-plaintext"
+                             value="test">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="modal-end" class="text-bold-700">End</label>
+                      <input type="text" id="modal-end" class="form-control-plaintext"
+                             value="test">
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer" id="modal-footer">
+            <button id="modal-close-btn" type="button" class="btn btn-outline-success" data-dismiss="modal">Close
+            </button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+  {% endif %}
+{% endblock %}
+
+{% block vendor_js %}
+  <script src="{% static "app-assets/vendors/js/tables/jsgrid/jsgrid.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pagination/jquery.twbsPagination.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/ui/prism.min.js" %}"
+          type="text/javascript"></script>
+{% endblock %}
+
+{% block page_js %}
+  <script src="{% static "js/jsgrid_utils.js" %}" type="text/javascript"></script>
+  {% if parser_run.parser == 'CLOUD_FILES' %}
+    <script type="text/javascript" src="{% static "comics_db/js/cloud_files_parser_run.js" %}"></script>{% endif %}
+  <script>
+    let details_url = "{{ parser_run.run_details_url }}";
+  </script>
+{% endblock %}
