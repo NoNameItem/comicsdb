@@ -31,3 +31,17 @@ html body .content .content-wrapper .content-header-title,
 .notify [data-notify="message"] {
   font-size: 80%;
 }
+
+.jsgrid-pager {
+  padding: 0;
+}
+
+.jsgrid {
+  padding-bottom: .5em;
+  overflow: visible;
+}
+
+.jsgrid .selected td {
+  background-color: #c4e2ff;
+  border-color: #c4e2ff;
+}

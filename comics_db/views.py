@@ -456,7 +456,7 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         'details_cloud': filtersets.CloudFilesParserRunDetailFilter
     }
     ordering_fields_set = {
-        'list': (("parser_name", "Parser"), ("status_name", "Status"), ("start", "Start date and time"),
+        'list': (("parser", "Parser"), ("status", "Status"), ("start", "Start date and time"),
                  ("end", "End date and time"),),
         'details_cloud': (("status_name", "Status"), ("start", "Start date and time"), ("end", "End date and time"),
                           ("file_key", "File key in DO cloud"))
