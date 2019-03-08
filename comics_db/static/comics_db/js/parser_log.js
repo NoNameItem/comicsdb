@@ -162,3 +162,36 @@ $('#grid').jsGrid({
 
   }
 });
+
+function startParser() {
+  let d = {};
+  d.parser_code = $('#parser-code').val();
+  $('.parser-run-input').map(function () {
+    d[$(this).attr("name")] = $(this).val();
+  });
+  // console.log(d);
+  $.ajax({
+      type : "POST",
+      url  : "/run_parser",
+      data : d
+    }
+  ).done(function(response){
+    console.log(response);
+    if (response.status === 'error'){
+      errorNotify("Can't start parser", response.message);
+    } else {
+      successNotify("Parser started", response.message);
+      $('#grid').jsGrid()
+    }
+  });
+}
+
+$(document).ready(function (){
+  $('#parser-code').change(function () {
+    $('.parser-run-form-group').hide();
+    $('.parser-run-form-group-' + $('#parser-code').val()).show();
+  });
+  $('#start-parser-btn').click(startParser);
+  $('#start-parser-modal').modal('hide');
+  $('#grid').jsGrid('clearFilter');
+});

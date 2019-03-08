@@ -20,8 +20,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
-from comics_db import views
-from comics_db.views import ParserRunDetail
+from comics_db import views, models
 
 router = DefaultRouter(trailing_slash=False)
 router.register(r'app_token', views.AppTokenViewSet, basename='app_token')
@@ -33,20 +32,23 @@ router.register(r'parser_run', views.ParserRunViewSet)
 router.register(r'cloud_parser_run_details', views.CloudFilesParserRunDetailViewSet)
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="ComicsDB API Doc",
-      default_version='v1',
-      description="We are really not trying. What are you waited for?!",
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
+    openapi.Info(
+        title="ComicsDB API Doc",
+        default_version='v1',
+        description="We are really not trying. What are you waited for?!",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
     # Pages
     path('', TemplateView.as_view(template_name="comics_db/main_page.html"), name="main"),
-    path('parser_log', TemplateView.as_view(template_name="comics_db/admin/parser_log.html"), name="parser_log"),
-    path('parser_log/<int:pk>', ParserRunDetail.as_view(), name="parser-log-detail"),
+    path('parser_log', TemplateView.as_view(template_name="comics_db/admin/parser_log.html",
+                                            extra_context={'parser_choices': models.ParserRun.PARSER_CHOICES}),
+         name="parser_log"),
+    path('parser_log/<int:pk>', views.ParserRunDetail.as_view(), name="parser-log-detail"),
+    path('run_parser', views.RunParser.as_view(), name="run-parser"),
 
     # API
     path('api/', include(router.urls)),
@@ -54,5 +56,3 @@ urlpatterns = [
     path('api-doc', schema_view.with_ui('swagger', cache_timeout=0), name='api-doc'),
     path('api/auth/', include('knox.urls')),
 ]
-
-

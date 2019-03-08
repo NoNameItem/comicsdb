@@ -58,6 +58,29 @@ function errorNotify(title, message) {
   );
 }
 
+/**
+ * @summary Стандартная функция вывода сообщений об успехе. Использует myNotify
+ * @param title - Заголовок сообщения об ошибке
+ * @param message - Сообщение об ошибке
+ */
+function successNotify(title, message) {
+  myNotify(
+    {
+      title   : title,
+      message : message,
+      icon    : "fas fa-check"
+    },
+    {
+      type          : "success",
+      delay         : 0,
+      newest_on_top : true,
+      animate       : {
+		    enter : 'animated fadeInDown',
+		    exit  : 'animated fadeOutDown'},
+    }
+  );
+}
+
 // Добавляем в идентификацию ajax-запросов csrf-токен там, где это необходимо
 $.ajaxSetup({
   beforeSend: function (xhr, settings) {

@@ -1,7 +1,8 @@
 from django.core.exceptions import ValidationError
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView
+from django.views.generic.base import View
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_multiple_settings.filter_backends.django_filters import FilterBackend
 from drf_multiple_settings.viewsets import ReadOnlyModelMultipleSettingsViewSet, MultipleSettingsOrderingFilter
@@ -17,7 +18,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from knox.settings import CONSTANTS, knox_settings
 
-from comics_db import models, serializers, filtersets
+from comics_db import models, serializers, filtersets, tasks
 
 
 ########################################################################################################################
@@ -44,6 +45,23 @@ class ParserRunDetail(DetailView):
         context['status_css'] = status_css
         return context
 
+
+class RunParser(View):
+    parser_dict = dict(models.ParserRun.PARSER_CHOICES)
+
+    def post(self, request):
+        try:
+            parser = request.POST['parser_code']
+            args = tuple()
+            if not parser or parser == 'BASE':
+                return JsonResponse({'status': 'error', 'message': 'Invalid parser code "%s"' % parser})
+            if parser == 'CLOUD_FILES':
+                path_root = request.POST['cloud-path-root']
+                args = (path_root, )
+            tasks.parser_run_task.delay(parser, args)
+            return JsonResponse({'status': 'success', 'message': '%s started' % self.parser_dict[parser]})
+        except Exception as err:
+            return JsonResponse({'status': 'error', 'message': err.args[0]})
 
 ########################################################################################################################
 # API

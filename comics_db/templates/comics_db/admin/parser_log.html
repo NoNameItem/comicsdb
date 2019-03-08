@@ -21,10 +21,14 @@
 {% block content %}
   <div id="grid-card" class="card" style="zoom: 1;">
     <div class="card-header">
-      {#                <h2 class="card-title">Parsers log</h2>#}
       <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
       <div class="heading-elements">
         <ul class="list-inline mb-0">
+          <li>
+            <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#start-parser-modal">
+              Start parser
+            </button>
+          </li>
           <li><a onclick="$('#grid').jsGrid('clearFilter');"><i class="ft-rotate-cw"></i></a></li>
           <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
         </ul>
@@ -38,6 +42,46 @@
     </div>
     <div class="card-footer">
       <div id="pager"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block modals %}
+  <!-- Modal -->
+  <div class="modal fade" id="start-parser-modal" tabindex="-1" role="dialog" aria-labelledby="start-parser-modal-title"
+       aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Start parser</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="parser-code">Parser</label>
+            <select class="form-control" name="parser-code" id="parser-code">
+              <option></option>
+              {% for parser_choice in parser_choices %}
+              {% if parser_choice.0 != 'BASE' %}
+                <option value="{{ parser_choice.0 }}">{{ parser_choice.1 }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group parser-run-form-group parser-run-form-group-CLOUD_FILES" style="display: none">
+            <label for="cloud-path-root">Root directory</label>
+            <input type="text" class="form-control parser-run-input" name="cloud-path-root" id="cloud-path-root"
+                   aria-describedby="cloud-path-root-help" placeholder="Root directory to parse">
+            <small id="cloud-path-root-help" class="form-text text-muted">Directory in cloud for file parser</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="start-parser-btn">Start</button>
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}
