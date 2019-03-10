@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Parser schedule{% endblock %}
+
+{% block page_title %}Parser schedule{% endblock %}
+
+{% block breadcrumb_items %}
+  <li class="breadcrumb-item active" aria-current="page"><a href="{% url "parser-schedule" %}">Parsers schedule</a></li>
+{% endblock %}
+
+{% block vendor_css %}
+{% endblock %}
+
+{% block page_css %}
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header bg-primary">
+          <h4 class="card-title">Add task</h4>
+          <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+          <div class="heading-elements heading-top-elements">
+						<nav aria-label="Page navigation">
+							<ul>
+								<li class="page-item">
+									<button class="page-link btn-sm" aria-label="Add task" id="add-task-btn">
+									<i class="fas fa-plus"></i><span> Add</span>
+									</button>
+								</li>
+							</ul>
+						</nav>
+					</div>
+        </div>
+        <div class="card-content">
+          <div class="card-body">
+            <form class="form">
+              <div class="form-body">
+                <h4 class="form-section"><i class="fas fa-info"></i> Task info</h4>
+                <div class="form-group">
+                  <label for="task-name">Task name</label>
+                  <input type="text"
+                         class="form-control add-task-input" name="task-name" id="task-name"
+                         placeholder="Short task name">
+                </div>
+                <div class="form-group">
+                  <label for="task-desc">Task description</label>
+                  <textarea class="form-control add-task-input" name="task-desc" id="task-desc" rows="3"></textarea>
+                </div>
+
+                <h4 class="form-section"><i class="fas fa-cog"></i> Parser</h4>
+                <div class="form-group">
+                  <label for="parser-code">Parser</label>
+                  <select class="form-control add-task-input" name="parser" id="parser-code">
+                    <option></option>
+                    {% for parser_choice in parser_choices %}
+                      {% if parser_choice.0 != 'BASE' %}
+                        <option value="{{ parser_choice.0 }}">{{ parser_choice.1 }}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group parser-run-form-group parser-run-form-group-CLOUD_FILES" style="display: none">
+                  <label for="cloud-path-root">Root directory</label>
+                  <input type="text" class="form-control parser-run-input add-task-input" name="cloud-path-root" id="cloud-path-root"
+                         aria-describedby="cloud-path-root-help" placeholder="Root directory to parse">
+                  <small id="cloud-path-root-help" class="form-text text-muted">Directory in cloud for file parser
+                  </small>
+                </div>
+                <h4 class="form-section"><i class="far fa-calendar-alt"></i> Schedule</h4>
+                <div class="form-group">
+                  <label for="schedule-type">Schedule type</label>
+                  <select class="form-control add-task-input" name="schedule_type" id="schedule-type">
+                    <option value="INTERVAL">Interval</option>
+                    <option value="CRON">Cron tab</option>
+                  </select>
+                </div>
+                <div class="row INTERVAL schedule-parameters">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="interval-every">Every</label>
+                      <input type="number"
+                             class="form-control add-task-input" name="interval__every" id="interval-every"
+                             placeholder="every">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="interval-period">Period</label>
+                      <select class="form-control add-task-input" name="interval__period" id="interval-period">
+                        {% for period_choice in period_choices %}
+                          <option value="{{ period_choice.0 }}">{{ period_choice.1 }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row CRON schedule-parameters" style="display: none">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="crontab-minute">Minute</label>
+                      <input type="text"
+                             class="form-control add-task-input" name="crontab__minute" id="crontab-minute" placeholder="*">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="crontab-hour">Hour</label>
+                      <input type="text"
+                             class="form-control add-task-input" name="crontab__hour" id="crontab-hour" placeholder="*">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row CRON schedule-parameters" style="display: none">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="crontab-day-of-week">Day of week</label>
+                      <input type="text"
+                             class="form-control add-task-input" name="crontab__day_of_week" id="crontab-day-of-week"
+                             placeholder="*">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="crontab-day-of-month">Day of month</label>
+                      <input type="text"
+                             class="form-control add-task-input" name="crontab__day_of_month" id="crontab-day-of-month"
+                             placeholder="*">
+                    </div>
+                  </div>
+                </div>
+                <div class="row CRON schedule-parameters" style="display: none">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="crontab-month-of-year">Month of year</label>
+                      <input type="text"
+                             class="form-control add-task-input" name="crontab__month_of_year" id="crontab-month-of-year"
+                             placeholder="*">
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="col-md-9">
+      <div class="card">
+        <div class="card-header bg-primary">
+          <h4 class="card-title">Schedule</h4>
+          <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-content">
+          <div class="card-body">
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block vendor_js %}
+  <script src="{% static "app-assets/vendors/js/tables/jsgrid/jsgrid.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pagination/jquery.twbsPagination.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}"
+          type="text/javascript"></script>
+{% endblock %}
+
+{% block page_js %}
+  <script src="{% static "js/jsgrid_utils.js" %}" type="text/javascript"></script>
+  <script type="text/javascript" src="{% static "comics_db/js/parser_schedule.js" %}"></script>
+{% endblock %}

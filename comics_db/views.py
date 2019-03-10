@@ -1,14 +1,17 @@
+import json
+
 from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 from django.views.generic.base import View
+from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_multiple_settings.filter_backends.django_filters import FilterBackend
 from drf_multiple_settings.viewsets import ReadOnlyModelMultipleSettingsViewSet, MultipleSettingsOrderingFilter
 from knox.models import AuthToken
 from knox.views import LoginView
-from rest_framework import mixins
+from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import PageNumberPagination
@@ -62,6 +65,7 @@ class RunParser(View):
             return JsonResponse({'status': 'success', 'message': '%s started' % self.parser_dict[parser]})
         except Exception as err:
             return JsonResponse({'status': 'error', 'message': err.args[0]})
+
 
 ########################################################################################################################
 # API
@@ -538,3 +542,76 @@ class CloudFilesParserRunDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet
     permission_classes = (IsAdminUser,)
     queryset = models.CloudFilesParserRunDetail.objects.all()
     serializer_class = serializers.CloudFilesParserRunDetailDetailSerializer
+
+
+class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+    permission_classes = (IsAdminUser,)
+    queryset = PeriodicTask.objects.filter(task='comics_db.tasks.parser_run_task')
+    serializer_class = serializers.ParserScheduleSerializer
+
+    def create(self, request, *args, **kwargs):
+        try:
+            # Task info
+            name = request.data['task-name']
+            if not name:
+                return Response({'status': 'error', 'message': 'Task name can\'t be empty'})
+            desc = request.data['task-desc']
+
+            # Parser
+            parser = request.data['parser']
+            if parser == 'CLOUD_FILES':
+                root = request.data['cloud-path-root']
+                init_args = (root, )
+                task_args = json.dumps((parser, init_args))
+            else:
+                return Response({'status': 'error', 'message': 'Unknown parser code "%s"' % parser})
+
+            # Schedule
+            schedule_type = request.data['schedule_type']
+            if schedule_type == 'INTERVAL':
+                try:
+                    every = int(request.data['interval__every'])
+                except ValueError:
+                    return Response({'status': 'error', 'message': 'Parameter "Every" should be integer number'})
+                period = request.data['interval__period']
+                schedule, _ = IntervalSchedule.objects.get_or_create(
+                    every=every,
+                    period=period
+                )
+                PeriodicTask.objects.create(
+                    interval=schedule,
+                    task='comics_db.tasks.parser_run_task',
+                    args=task_args,
+                    name=name,
+                    description=desc
+                )
+            elif schedule_type == 'CRONE':
+                minute = request.data['crontab__minute'] or '*'
+                hour = request.data['crontab__hour'] or '*'
+                day_of_week = request.data['crontab__day_of_week'] or '*'
+                day_of_month = request.data['crontab__day_of_month'] or '*'
+                month_of_year = request.data['crontab__month_of_year'] or '*'
+
+                schedule = CrontabSchedule.objects.get_or_create(
+                    minute=minute,
+                    hour=hour,
+                    day_of_week=day_of_week,
+                    day_of_month=day_of_month,
+                    month_of_year=month_of_year
+                )
+                PeriodicTask.objects.create(
+                    crontab=schedule,
+                    task='comics_db.tasks.parser_run_task',
+                    args=task_args,
+                    name=name,
+                    description=desc
+                )
+            else:
+                return Response({'status': 'error', 'message': 'Unknown schedule type "%s"' % schedule_type})
+
+            return Response({'status': 'created', 'message': 'Schedule created'}, status=status.HTTP_201_CREATED)
+        except KeyError as err:
+            return Response({'status': 'error', 'message': 'Parameter "%s" not found' % err})
+        except Exception as err:
+            return Response({'status': 'error', 'message': err.args[0]})
+

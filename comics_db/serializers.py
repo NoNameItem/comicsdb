@@ -1,4 +1,7 @@
 # Serializer for use in django-rest-framework views
+import json
+
+from django_celery_beat.models import PeriodicTask
 from rest_framework import serializers
 
 from comics_db import models
@@ -292,3 +295,77 @@ class AppTokenSerializer(serializers.ModelSerializer):
             'description': {'help_text': "App description"},
             'token': {'help_text': "Token"},
         }
+
+
+#  Schedule
+
+
+class ParserScheduleSerializer(serializers.ModelSerializer):
+    parser = serializers.SerializerMethodField()
+    init_args = serializers.SerializerMethodField()
+    schedule_type = serializers.SerializerMethodField()
+
+    interval__every = serializers.SerializerMethodField()
+    interval__period = serializers.SerializerMethodField()
+
+    crontab__minute = serializers.SerializerMethodField()
+    crontab__hour = serializers.SerializerMethodField()
+    crontab__day_of_week = serializers.SerializerMethodField()
+    crontab__day_of_month = serializers.SerializerMethodField()
+    crontab__month_of_year = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PeriodicTask
+        fields = ("id", "name", "parser", "init_args", "enabled", "last_run_at", "total_run_count", "description",
+                  "interval__every", "interval__period", "crontab__minute", "crontab__hour", "crontab__day_of_week",
+                  "crontab__day_of_month", "crontab__month_of_year", "schedule_type")
+        read_only_fields = fields
+
+    def get_parser(self, obj):
+        data = json.loads(obj.args)
+        return data[0]
+
+    def get_init_args(self, obj):
+        data = json.loads(obj.args)
+        return json.dumps(data[1:])
+
+    def get_schedule_type(self, obj):
+        if obj.crontab:
+            return 'Crone tab'
+        else:
+            return 'Interval'
+
+    def get_interval__every(self, obj):
+        if obj.interval:
+            return obj.interval.every
+        return None
+
+    def get_interval__period(self, obj):
+        if obj.interval:
+            return obj.interval.period
+        return None
+
+    def get_crontab__minute(self, obj):
+        if obj.crontab:
+            return obj.crontab.minute
+        return None
+
+    def get_crontab__hour(self, obj):
+        if obj.crontab:
+            return obj.crontab.hour
+        return None
+
+    def get_crontab__day_of_week(self, obj):
+        if obj.crontab:
+            return obj.crontab.day_of_week
+        return None
+
+    def get_crontab__day_of_month(self, obj):
+        if obj.crontab:
+            return obj.crontab.day_of_month
+        return None
+
+    def get_crontab__month_of_year(self, obj):
+        if obj.crontab:
+            return obj.crontab.month_of_year
+        return None

@@ -181,7 +181,8 @@ function startParser() {
       errorNotify("Can't start parser", response.message);
     } else {
       successNotify("Parser started", response.message);
-      $('#grid').jsGrid()
+      $('#start-parser-modal').modal('hide');
+      $('#grid').jsGrid('clearFilter');
     }
   });
 }
@@ -192,6 +193,5 @@ $(document).ready(function (){
     $('.parser-run-form-group-' + $('#parser-code').val()).show();
   });
   $('#start-parser-btn').click(startParser);
-  $('#start-parser-modal').modal('hide');
-  $('#grid').jsGrid('clearFilter');
+
 });

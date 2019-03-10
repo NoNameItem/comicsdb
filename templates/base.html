@@ -95,8 +95,11 @@
   <div class="main-menu-content">
     <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
       <!-- admin menu items-->
-      <li class="{% if request.resolver_match.url_name|startswith:"parser_log" %}active{% else %}menu-item{% endif %}">
-        <a href="{% url 'parser_log' %}"><i class="ft-refresh-cw"></i> Parsers log</span></a>
+      <li class="{% if request.resolver_match.url_name|startswith:"parser-log" %}active{% else %}menu-item{% endif %}">
+        <a href="{% url 'parser-log' %}"><i class="ft-refresh-cw"></i> Parsers log</a>
+      </li>
+      <li class="{% if request.resolver_match.url_name == "parser-schedule" %}active{% else %}menu-item{% endif %}">
+        <a href="{% url 'parser-schedule' %}"><i class="far fa-calendar-alt"></i> Parser schedule</a>
       </li>
     </ul>
   </div>

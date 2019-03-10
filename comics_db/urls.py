@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.urls import path, include, re_path
 from django.views.generic import TemplateView
+from django_celery_beat.models import IntervalSchedule
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -30,6 +31,7 @@ router.register(r'title', views.TitleViewSet)
 router.register(r'issue', views.IssueViewSet)
 router.register(r'parser_run', views.ParserRunViewSet)
 router.register(r'cloud_parser_run_details', views.CloudFilesParserRunDetailViewSet)
+router.register(r'parser_schedule', views.ParserScheduleViewSet)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -46,9 +48,15 @@ urlpatterns = [
     path('', TemplateView.as_view(template_name="comics_db/main_page.html"), name="main"),
     path('parser_log', TemplateView.as_view(template_name="comics_db/admin/parser_log.html",
                                             extra_context={'parser_choices': models.ParserRun.PARSER_CHOICES}),
-         name="parser_log"),
+         name="parser-log"),
     path('parser_log/<int:pk>', views.ParserRunDetail.as_view(), name="parser-log-detail"),
     path('run_parser', views.RunParser.as_view(), name="run-parser"),
+    path('parser_schedule', TemplateView.as_view(template_name="comics_db/admin/parser_schedule.html",
+                                                 extra_context={
+                                                     'parser_choices': models.ParserRun.PARSER_CHOICES,
+                                                     'period_choices': IntervalSchedule.PERIOD_CHOICES,
+                                                 }),
+         name="parser-schedule"),
 
     # API
     path('api/', include(router.urls)),
