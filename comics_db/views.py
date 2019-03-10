@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView, ListView
-from django.views.generic.base import View
+from django.views.generic.base import View, TemplateView
 from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_multiple_settings.filter_backends.django_filters import FilterBackend
@@ -27,6 +27,18 @@ from comics_db import models, serializers, filtersets, tasks
 ########################################################################################################################
 # Site
 ########################################################################################################################
+
+
+class MainPageView(TemplateView):
+    template_name = "comics_db/main_page.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['titles_count'] = models.Title.objects.count()
+        context['issues_count'] = models.Issue.objects.count()
+        context['publishers_count'] = models.Publisher.objects.count()
+        context['universes_count'] = models.Universe.objects.count()
+        return context
 
 
 class ParserRunDetail(DetailView):

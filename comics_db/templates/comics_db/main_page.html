@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 
 {% block page_title %}
@@ -8,4 +9,84 @@
 
 {% block breadcrumb_items %}
   <li class="breadcrumb-item active"><a href="/">Home</a></li>
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "app-assets/css/core/colors/palette-gradient.min.css" %}">
+{% endblock %}
+
+{% block content %}
+  <!-- Statistics -->
+  <div class="row">
+    <div class="col-xl-3 col-lg-6 col-12">
+      <div class="card bg-gradient-directional-success">
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-building white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ publishers_count }}</h3>
+                <span>Publisher{{ publishers_count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-12">
+      <div class="card bg-gradient-directional-warning">
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-globe-asia white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ universes_count }}</h3>
+                <span>Universe{{ universe_count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <div class="col-xl-3 col-lg-6 col-12">
+      <div class="card bg-gradient-directional-primary">
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-books white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ titles_count }}</h3>
+                <span>Title{{ titles_count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-12">
+      <div class="card bg-gradient-directional-danger">
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-book-open white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ issues_count }}</h3>
+                <span>Issue{{ issues_count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 {% endblock %}
