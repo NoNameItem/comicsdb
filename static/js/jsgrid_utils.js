@@ -16,7 +16,11 @@ MyDateField.prototype = new jsGrid.Field({
     },
 
     itemTemplate: function(value) {
-        return new Date(value).toLocaleString();
+        if (value){
+          return new Date(value).toLocaleString();
+        } else {
+          return null;
+        }
     },
 
     insertTemplate: function(value) {
