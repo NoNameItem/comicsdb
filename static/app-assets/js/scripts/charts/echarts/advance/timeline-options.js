@@ -4,7 +4,7 @@
  *
  *  Timeline chart addition
  *
- *  Version: 3.0
+ *  Version: 3.2
  *  Latest update: August 1, 2015
  *
  * ---------------------------------------------------------------------------- */

@@ -1,3 +1,6 @@
+.bootstrap-duallistbox-container select.form-control {
+  overflow: scroll; }
+
 .bootstrap-duallistbox-container select option {
   padding: 0.35rem 0.7rem; }
 

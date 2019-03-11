@@ -12,4 +12,7 @@ $(document).ready(function(){
 			radioClass: 'iradio_square-blue',
 		});
 	}
+	// For change default year in copyright
+	var $year = new Date().getFullYear();
+	$(".year").text($year);
 });

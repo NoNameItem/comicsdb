@@ -3,14 +3,14 @@
   Description: The Typeahead plugin from Twitter's Bootstrap 2 ready to use with Bootstrap 4
   ------------------------------------------------------------------------------------------
   Item Name: Stack - Responsive Admin Theme
-  Version: 3.0
+  Version: 3.2
   Author: Pixinvent
   Author URL: hhttp://www.themeforest.net/user/pixinvent
 ==============================================================================================*/
-(function(window, document, $) {
+(function (window, document, $) {
   'use strict';
 
-  var substringMatcher = function(strs) {
+  var substringMatcher = function (strs) {
     return function findMatches(q, cb) {
       var matches, substrRegex;
 
@@ -22,7 +22,7 @@
 
       // iterate through the pool of strings and for any string that
       // contains the substring `q`, add it to the `matches` array
-      $.each(strs, function(i, str) {
+      $.each(strs, function (i, str) {
         if (substrRegex.test(str)) {
           matches.push(str);
         }
@@ -48,10 +48,10 @@
     highlight: true,
     minLength: 1
   },
-  {
-    name: 'states',
-    source: substringMatcher(states)
-  });
+    {
+      name: 'states',
+      source: substringMatcher(states)
+    });
 
   // constructs the suggestion engine Bloodhound
   var states = new Bloodhound({
@@ -65,10 +65,10 @@
     highlight: true,
     minLength: 1
   },
-  {
-    name: 'states',
-    source: states
-  });
+    {
+      name: 'states',
+      source: states
+    });
 
   // Prefetch Data
   var countries = new Bloodhound({
@@ -112,7 +112,7 @@
     templates: {
       empty: [
         '<div class="empty-message">',
-          'Unable to find any Best Picture winners that match the current query',
+        'Unable to find any Best Picture winners that match the current query',
         '</div>'
       ].join('\n'),
       suggestion: Handlebars.compile('<div><strong>{{value}}</strong> – <em>{{year}}</em></div>')
@@ -123,7 +123,7 @@
   var nflTeams = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.obj.whitespace('team'),
     queryTokenizer: Bloodhound.tokenizers.whitespace,
-    identify: function(obj) { return obj.team; },
+    identify: function (obj) { return obj.team; },
     prefetch: '../../../app-assets/data/nfl.json'
   });
 
@@ -141,11 +141,11 @@
     minLength: 0,
     highlight: true
   },
-  {
-    name: 'nfl-teams',
-    display: 'team',
-    source: nflTeamsWithDefaults
-  });
+    {
+      name: 'nfl-teams',
+      display: 'team',
+      source: nflTeamsWithDefaults
+    });
 
   // Multiple Datasets
   var nbaTeams = new Bloodhound({
@@ -163,22 +163,22 @@
   $('.multiple-datasets').typeahead({
     highlight: true
   },
-  {
-    name: 'nba-teams',
-    display: 'team',
-    source: nbaTeams,
-    templates: {
-      header: '<h3 class="league-name">NBA Teams</h3>'
-    }
-  },
-  {
-    name: 'nhl-teams',
-    display: 'team',
-    source: nhlTeams,
-    templates: {
-      header: '<h3 class="league-name">NHL Teams</h3>'
-    }
-  });
+    {
+      name: 'nba-teams',
+      display: 'team',
+      source: nbaTeams,
+      templates: {
+        header: '<h3 class="league-name">NBA Teams</h3>'
+      }
+    },
+    {
+      name: 'nhl-teams',
+      display: 'team',
+      source: nhlTeams,
+      templates: {
+        header: '<h3 class="league-name">NHL Teams</h3>'
+      }
+    });
 
   // Scrollable Dropdown Menu
   $('.scrollable-dropdown-menu').typeahead(null, {
@@ -197,10 +197,10 @@
   $('.rtl-support').typeahead({
     hint: false
   },
-  {
-    name: 'States',
-    source: statePhrases
-  });
+    {
+      name: 'States',
+      source: statePhrases
+    });
 
   // Scrollable Dropdown Menu
   $('.add-item').typeahead(null, {

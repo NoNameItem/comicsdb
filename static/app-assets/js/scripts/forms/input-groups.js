@@ -3,7 +3,7 @@
 	Description: Input Groups js
 	----------------------------------------------------------------------------------------
 	Item Name: Stack - Responsive Admin Theme
-	Version: 3.0
+	Version: 3.2
 	Author: PIXINVENT
 	Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -23,8 +23,6 @@
 	//vertical TouchSpin
 	$(".touchspin-vertical").TouchSpin({
 		verticalbuttons: true,
-		verticalupclass: 'fa fa-angle-up',
-		verticaldownclass: 'fa fa-angle-down',
 		buttondown_class: "btn btn-primary",
 		buttonup_class: "btn btn-primary",
 	});

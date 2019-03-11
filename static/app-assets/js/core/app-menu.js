@@ -4,7 +4,7 @@
   initialization and manipulations
   ----------------------------------------------------------------------------------------
   Item Name: Stack - Responsive Admin Theme
-  Version: 3.0
+  Version: 3.2
   Author: Pixinvent
   Author URL: hhttp://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -31,10 +31,9 @@
 
       init: function() {
         var scroll_theme = ($('.main-menu').hasClass('menu-dark')) ? 'light' : 'dark';
-        this.obj = $(".main-menu-content").perfectScrollbar({
+        this.obj = new PerfectScrollbar(".main-menu-content", {
           suppressScrollX: true,
-          theme: scroll_theme
-        });
+       });
       },
 
       update: function() {
@@ -56,17 +55,19 @@
                 $('.main-menu').data('scroll-to-active', 'false');
               },300);
           }
-          $(".main-menu-content").perfectScrollbar('update');
+          this.obj.update();
         }
       },
 
       enable: function() {
-        this.init();
+        if(!$('.main-menu-content').hasClass('ps')){
+          this.init();
+        }
       },
 
       disable: function() {
         if (this.obj) {
-          $('.main-menu-content').perfectScrollbar('destroy');
+          this.obj.destroy();
         }
       },
 
@@ -159,7 +160,7 @@
             }
             break;
           case 'md':
-            if(menuType === 'vertical-overlay-menu'){
+            if(menuType === 'vertical-overlay-menu' || menuType === 'vertical-menu-modern'){
               this.hide();
             }
             else{
@@ -177,7 +178,7 @@
 
       // On the small and extra small screen make them overlay menu
       if(menuType === 'vertical-menu'  || menuType === 'vertical-menu-modern'){
-        this.toOverlayMenu(currentBreakpoint.name);
+        this.toOverlayMenu(currentBreakpoint.name, menuType);
       }
 
       if($body.is('.horizontal-layout') && !$body.hasClass('.horizontal-menu-demo')){
@@ -368,11 +369,21 @@
         $body.removeClass('menu-hide menu-collapsed').addClass('menu-open');
         this.hidden = false;
         this.expanded = true;
+
+        if($body.hasClass('vertical-overlay-menu')){
+          $('.sidenav-overlay').removeClass('d-none').addClass('d-block');
+          $('body').css('overflow', 'hidden');
+        }
       }, function() {
         if(!$('.main-menu').hasClass('menu-native-scroll') && $('.main-menu').hasClass('menu-fixed') ){
           this.manualScroller.enable();
           $('.main-menu-content').css('height', $(window).height() - $('.header-navbar').height() - $('.main-menu-header').outerHeight() - $('.main-menu-footer').outerHeight() );
           // this.manualScroller.update();
+        }
+
+        if(!$body.hasClass('vertical-overlay-menu')){
+          $('.sidenav-overlay').removeClass('d-block d-none');
+          $('body').css('overflow', 'auto');
         }
       });
     },
@@ -383,9 +394,19 @@
         $body.removeClass('menu-open menu-expanded').addClass('menu-hide');
         this.hidden = true;
         this.expanded = false;
+
+        if($body.hasClass('vertical-overlay-menu')){
+          $('.sidenav-overlay').removeClass('d-block').addClass('d-none');
+          $('body').css('overflow', 'auto');
+        }
       }, function() {
         if(!$('.main-menu').hasClass('menu-native-scroll') && $('.main-menu').hasClass('menu-fixed')){
           this.manualScroller.enable();
+        }
+
+        if(!$body.hasClass('vertical-overlay-menu')){
+          $('.sidenav-overlay').removeClass('d-block d-none');
+          $('body').css('overflow', 'auto');
         }
       });
     },
@@ -409,6 +430,7 @@
           this.collapsed = false;
           this.expanded = true;
 
+          $('.sidenav-overlay').removeClass('d-block d-none');
         }, function() {
 
           if( ($('.main-menu').hasClass('menu-native-scroll') || $body.data('menu') == 'horizontal-menu')){
@@ -447,6 +469,7 @@
           this.collapsed = true;
           this.expanded  = false;
 
+          $('.content-overlay').removeClass('d-block d-none');
         }, function() {
 
           if( ($body.data('menu') == 'horizontal-menu') &&  $body.hasClass('vertical-overlay-menu')){
@@ -477,16 +500,30 @@
       }
     },
 
-    toOverlayMenu: function(screen){
+    toOverlayMenu: function(screen, menuType){
       var menu = $body.data('menu');
-      if(screen == 'sm' || screen == 'xs'){
-        if($body.hasClass(menu)){
-          $body.removeClass(menu).addClass('vertical-overlay-menu');
+      if(menuType == 'vertical-menu-modern'){
+        if(screen == 'md' || screen == 'sm' || screen == 'xs'){
+          if($body.hasClass(menu)){
+            $body.removeClass(menu).addClass('vertical-overlay-menu');
+          }
+        }
+        else{
+          if($body.hasClass('vertical-overlay-menu')){
+            $body.removeClass('vertical-overlay-menu').addClass(menu);
+          }
         }
       }
       else{
-        if($body.hasClass('vertical-overlay-menu')){
-          $body.removeClass('vertical-overlay-menu').addClass(menu);
+        if(screen == 'sm' || screen == 'xs'){
+          if($body.hasClass(menu)){
+            $body.removeClass(menu).addClass('vertical-overlay-menu');
+          }
+        }
+        else{
+          if($body.hasClass('vertical-overlay-menu')){
+            $body.removeClass('vertical-overlay-menu').addClass(menu);
+          }
         }
       }
     },
@@ -592,7 +629,6 @@
       switch (currentBreakpoint.name) {
         case 'xl':
         case 'lg':
-        case 'md':
           if(expanded === true){
             if(menu == 'vertical-overlay-menu'){
               this.hide();
@@ -603,6 +639,24 @@
           }
           else{
             if(menu == 'vertical-overlay-menu'){
+              this.open();
+            }
+            else{
+              this.expand();
+            }
+          }
+          break;
+        case 'md':
+          if(expanded === true){
+            if(menu == 'vertical-overlay-menu' || menu == 'vertical-menu-modern' ){
+              this.hide();
+            }
+            else{
+              this.collapse();
+            }
+          }
+          else{
+            if(menu == 'vertical-overlay-menu' || menu == 'vertical-menu-modern' ){
               this.open();
             }
             else{
@@ -896,9 +950,7 @@
         'max-height': popOutMenuHeight,
       });
 
-      $('.main-menu-content > ul.menu-content').perfectScrollbar({
-        theme:scroll_theme,
-      });
+      var menu_content = new PerfectScrollbar('.main-menu-content > ul.menu-content');
     },
 
     collapse: function($listItem, callback) {

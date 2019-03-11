@@ -3,7 +3,7 @@
     Description: Fullcalendar
     --------------------------------------------------------------------------------------
     Item Name: Stack - Responsive Admin Theme
-    Version: 3.0
+    Version: 3.2
     Author: PIXINVENT
     Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -623,95 +623,95 @@ $(document).ready(function(){
 	/****************************************
 	*				Languages				*
 	****************************************/
-	var initialLangCode = 'en';
+	var initialLocaleCode = 'en';
 
-	$('#fc-languages').fullCalendar({
-		header: {
-			left: 'prev,next today',
-			center: 'title',
-			right: 'month,agendaWeek,agendaDay'
-		},
-		defaultDate: '2016-06-12',
-		lang: initialLangCode,
-		buttonIcons: false, // show the prev/next text
-		weekNumbers: true,
-		editable: true,
-		defaultView: 'agendaWeek',
-		eventLimit: true, // allow "more" link when too many events
-		events: [
-			{
-				title: 'All Day Event',
-				start: '2016-06-01'
-			},
-			{
-				title: 'Long Event',
-				start: '2016-06-07',
-				end: '2016-06-10'
-			},
-			{
-				id: 999,
-				title: 'Repeating Event',
-				start: '2016-06-09T16:00:00'
-			},
-			{
-				id: 999,
-				title: 'Repeating Event',
-				start: '2016-06-16T16:00:00'
-			},
-			{
-				title: 'Conference',
-				start: '2016-06-11',
-				end: '2016-06-13'
-			},
-			{
-				title: 'Meeting',
-				start: '2016-06-12T10:30:00',
-				end: '2016-06-12T12:30:00'
-			},
-			{
-				title: 'Lunch',
-				start: '2016-06-12T12:00:00'
-			},
-			{
-				title: 'Meeting',
-				start: '2016-06-12T14:30:00'
-			},
-			{
-				title: 'Happy Hour',
-				start: '2016-06-12T17:30:00'
-			},
-			{
-				title: 'Dinner',
-				start: '2016-06-12T20:00:00'
-			},
-			{
-				title: 'Birthday Party',
-				start: '2016-06-13T07:00:00'
-			},
-			{
-				title: 'Click for Google',
-				url: 'http://google.com/',
-				start: '2016-06-28'
-			}
-		]
-	});
+    $('#fc-languages').fullCalendar({
+      header: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'month,agendaWeek,agendaDay,listMonth'
+      },
+      defaultDate: '2019-01-12',
+      locale: initialLocaleCode,
+      buttonIcons: false, // show the prev/next text
+      weekNumbers: true,
+      navLinks: true, // can click day/week names to navigate views
+      editable: true,
+      eventLimit: true, // allow "more" link when too many events
+      events: [
+        {
+          title: 'All Day Event',
+          start: '2019-01-01'
+        },
+        {
+          title: 'Long Event',
+          start: '2019-01-07',
+          end: '2019-01-10'
+        },
+        {
+          id: 999,
+          title: 'Repeating Event',
+          start: '2019-01-09T16:00:00'
+        },
+        {
+          id: 999,
+          title: 'Repeating Event',
+          start: '2019-01-16T16:00:00'
+        },
+        {
+          title: 'Conference',
+          start: '2019-01-11',
+          end: '2019-01-13'
+        },
+        {
+          title: 'Meeting',
+          start: '2019-01-12T10:30:00',
+          end: '2019-01-12T12:30:00'
+        },
+        {
+          title: 'Lunch',
+          start: '2019-01-12T12:00:00'
+        },
+        {
+          title: 'Meeting',
+          start: '2019-01-12T14:30:00'
+        },
+        {
+          title: 'Happy Hour',
+          start: '2019-01-12T17:30:00'
+        },
+        {
+          title: 'Dinner',
+          start: '2019-01-12T20:00:00'
+        },
+        {
+          title: 'Birthday Party',
+          start: '2019-01-13T07:00:00'
+        },
+        {
+          title: 'Click for Google',
+          url: 'http://google.com/',
+          start: '2019-01-28'
+        }
+      ]
+    });
 
-	// build the language selector's options
-	$.each($.fullCalendar.langs, function(langCode) {
-		$('#lang-selector').append(
-			$('<option/>')
-				.attr('value', langCode)
-				.prop('selected', langCode == initialLangCode)
-				.text(langCode)
-		);
-	});
+    // build the locale selector's options
+    $.each($.fullCalendar.locales, function(localeCode) {
+      $('#lang-selector').append(
+        $('<option/>')
+          .attr('value', localeCode)
+          .prop('selected', localeCode == initialLocaleCode)
+          .text(localeCode)
+      );
+    });
 
-	// when the selected option changes, dynamically change the calendar option
-	$('#lang-selector').on('change', function() {
-		if (this.value) {
-			$('#fc-languages').fullCalendar('option', 'lang', this.value);
-		}
-	});
+    // when the selected option changes, dynamically change the calendar option
+    $('#lang-selector').on('change', function() {
+      if (this.value) {
+        $('#fc-languages').fullCalendar('option', 'locale', this.value);
+      }
+    });
 
 
 	/****************************************

@@ -15,44 +15,44 @@
   color: #000000; }
 
 .tooltip-bg-primary .tooltip-inner {
-  background-color: #00B5B8; }
+  background-color: #00b5b8; }
   .tooltip-bg-primary .tooltip-inner:before {
-    border-top-color: #00B5B8 !important; }
+    border-top-color: #00b5b8 !important; }
 
 .tooltip-text-primary .tooltip-inner {
-  color: #00B5B8; }
+  color: #00b5b8; }
 
 .tooltip-bg-success .tooltip-inner {
-  background-color: #16D39A; }
+  background-color: #16d39a; }
   .tooltip-bg-success .tooltip-inner:before {
-    border-top-color: #16D39A !important; }
+    border-top-color: #16d39a !important; }
 
 .tooltip-text-success .tooltip-inner {
-  color: #16D39A; }
+  color: #16d39a; }
 
 .tooltip-bg-info .tooltip-inner {
-  background-color: #2DCEE3; }
+  background-color: #2dcee3; }
   .tooltip-bg-info .tooltip-inner:before {
-    border-top-color: #2DCEE3 !important; }
+    border-top-color: #2dcee3 !important; }
 
 .tooltip-text-info .tooltip-inner {
-  color: #2DCEE3; }
+  color: #2dcee3; }
 
 .tooltip-bg-warning .tooltip-inner {
-  background-color: #FFA87D; }
+  background-color: #ffa87d; }
   .tooltip-bg-warning .tooltip-inner:before {
-    border-top-color: #FFA87D !important; }
+    border-top-color: #ffa87d !important; }
 
 .tooltip-text-warning .tooltip-inner {
-  color: #FFA87D; }
+  color: #ffa87d; }
 
 .tooltip-bg-danger .tooltip-inner {
-  background-color: #FF7588; }
+  background-color: #ff7588; }
   .tooltip-bg-danger .tooltip-inner:before {
-    border-top-color: #FF7588 !important; }
+    border-top-color: #ff7588 !important; }
 
 .tooltip-text-danger .tooltip-inner {
-  color: #FF7588; }
+  color: #ff7588; }
 
 .tooltip-bg-red .tooltip-inner {
   background-color: #F44336; }

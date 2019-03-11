@@ -3,7 +3,7 @@
     Description: Image Cropper
     --------------------------------------------------------------------------------------
     Item Name: Robust - Responsive Admin Theme
-    Version: 3.0
+    Version: 3.2
     Author: PIXINVENT
     Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -28,13 +28,13 @@ $(document).ready(function(){
         aspectRatio: 16 / 9,
         preview: '.img-preview',
         crop: function(e) {
-            $dataX.val(Math.round(e.x));
-            $dataY.val(Math.round(e.y));
-            $dataHeight.val(Math.round(e.height));
-            $dataWidth.val(Math.round(e.width));
-            $dataRotate.val(e.rotate);
-            $dataScaleX.val(e.scaleX);
-            $dataScaleY.val(e.scaleY);
+            $dataX.val(Math.round(e.detail.x));
+            $dataY.val(Math.round(e.detail.y));
+            $dataHeight.val(Math.round(e.detail.height));
+            $dataWidth.val(Math.round(e.detail.width));
+            $dataRotate.val(e.detail.rotate);
+            $dataScaleX.val(e.detail.scaleX);
+            $dataScaleY.val(e.detail.scaleY);
         }
     };
 

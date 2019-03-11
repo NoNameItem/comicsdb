@@ -3,80 +3,74 @@
 	Description: scrollabr intialisations
 	----------------------------------------------------------------------------------------
 	Item Name: Stack - Responsive Admin Theme
-	Version: 3.0
+	Version: 3.2
 	Author: Pixinvent
 	Author URL: hhttp://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
-$(document).ready(function(){
+$(document).ready(function() {
+   // Vertical Scroll
+   var vertical_scroll = new PerfectScrollbar(".vertical-scroll", {
+      wheelPropagation: true
+   });
 
-	// Vertical Scroll
-	$('.vertical-scroll').perfectScrollbar({
-		suppressScrollX : true,
-        theme: 'dark',
-        wheelPropagation: true
-	});
+   // Horizontal Scroll
+   var horizontal_scroll = new PerfectScrollbar(".horizontal-scroll", {
+      wheelPropagation: true
+   });
 
-	// Horizontal Scroll
-	$('.horizontal-scroll').perfectScrollbar({
-		suppressScrollY : true,
-        theme: 'dark',
-        wheelPropagation: true
-	});
+   // Both Side Scroll
+   var both_side_scroll = new PerfectScrollbar(".both-side-scroll", {
+      wheelPropagation: true
+   });
 
-	// Both Side Scroll
-	$('.both-side-scroll').perfectScrollbar({
-        theme: 'dark',
-        wheelPropagation: true
-	});
+   // Always Visible Scroll
+   var visible_scroll = new PerfectScrollbar(".visible-scroll", {
+      wheelPropagation: true
+   });
 
-	// Always Visible Scroll
-	$('.visible-scroll').perfectScrollbar({
-        theme: 'dark',
-        wheelPropagation: true
-	});
+   // Minimum Scroll Length
+   var min_scroll_length = new PerfectScrollbar(".min-scroll-length", {
+      minScrollbarLength: 200,
+      wheelPropagation: true
+   });
 
-	// Minimum Scroll Length
-	$('.min-scroll-length').perfectScrollbar({
-        minScrollbarLength: 200,
-        wheelPropagation: true
-	});
+   // Scrollbar Margins
+   var scrollbar_margins = new PerfectScrollbar(".scrollbar-margins", {
+      minScrollbarLength: 200,
+      wheelPropagation: true
+   });
 
-	// Scrollbar Margins
-	$('.scrollbar-margins').perfectScrollbar({
-		wheelPropagation: true
-	});
+   // Default Handlers
+   var default_handlers = new PerfectScrollbar(".default-handlers", {
+      wheelPropagation: true
+   });
 
-	// Default Handlers
-	$('.default-handlers').perfectScrollbar({
-		wheelPropagation: true
-	});
+   // No Keyboard
+   var no_keyboard = new PerfectScrollbar(".no-keyboard", {
+      handlers: ['click-rail', 'drag-thumb', 'wheel', 'touch'],
+      wheelPropagation: true
+   });
 
-	// No Keyboard
-	$('.no-keyboard').perfectScrollbar({
-		handlers: ['click-rail', 'drag-scrollbar', 'wheel', 'touch'],
-		wheelPropagation: true
-	});
+   // Click and Drag
+   var click_drag_handler = new PerfectScrollbar(".click-drag-handler", {
+      handlers: ['click-rail', 'drag-thumb'],
+      wheelPropagation: true
+   });
 
-	// Click and Drag
-	$('.click-drag-handler').perfectScrollbar({
-		handlers: ['click-rail', 'drag-scrollbar'],
-		wheelPropagation: true
-	});
+   // Default Wheel Speed : 1
+   var default_wheel_speed = new PerfectScrollbar(".default-wheel-speed", {
+      wheelPropagation: true
+   });
 
-	// Default Wheel Speed : 1
-	$('.default-wheel-speed').perfectScrollbar({
-		wheelPropagation: true
-	});
+   // Higher Wheel Speed : 10
+   var higher_wheel_speed = new PerfectScrollbar(".higher-wheel-speed", {
+      wheelSpeed: 10,
+      wheelPropagation: true
+   });
 
-	// Higher Wheel Speed : 10
-	$('.higher-wheel-speed').perfectScrollbar({
-		wheelSpeed: 10,
-		wheelPropagation: true
-	});
-
-	// Lower Wheel Speed : 10
-	$('.lower-wheel-speed').perfectScrollbar({
-		wheelSpeed: 0.1,
-		wheelPropagation: true
-	});
+   // Lower Wheel Speed : 10
+   var lower_wheel_speed = new PerfectScrollbar(".lower-wheel-speed", {
+      wheelSpeed: 0.1,
+      wheelPropagation: true
+   });
 });

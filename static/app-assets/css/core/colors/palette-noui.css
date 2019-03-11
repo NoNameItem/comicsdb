@@ -23,64 +23,64 @@
   background: #000000 !important; }
 
 .slider-primary .noUi-connect {
-  background: #00B5B8 !important; }
+  background: #00b5b8 !important; }
 
 .slider-primary.noUi-connect {
-  background: #00B5B8 !important; }
+  background: #00b5b8 !important; }
 
 .slider-primary .noUi-handle {
-  border-color: #00B5B8 !important; }
+  border-color: #00b5b8 !important; }
 
 .slider-primary.circle-filled .noUi-handle, .slider-primary.square .noUi-handle {
-  background: #00B5B8 !important; }
+  background: #00b5b8 !important; }
 
 .slider-success .noUi-connect {
-  background: #16D39A !important; }
+  background: #16d39a !important; }
 
 .slider-success.noUi-connect {
-  background: #16D39A !important; }
+  background: #16d39a !important; }
 
 .slider-success .noUi-handle {
-  border-color: #16D39A !important; }
+  border-color: #16d39a !important; }
 
 .slider-success.circle-filled .noUi-handle, .slider-success.square .noUi-handle {
-  background: #16D39A !important; }
+  background: #16d39a !important; }
 
 .slider-info .noUi-connect {
-  background: #2DCEE3 !important; }
+  background: #2dcee3 !important; }
 
 .slider-info.noUi-connect {
-  background: #2DCEE3 !important; }
+  background: #2dcee3 !important; }
 
 .slider-info .noUi-handle {
-  border-color: #2DCEE3 !important; }
+  border-color: #2dcee3 !important; }
 
 .slider-info.circle-filled .noUi-handle, .slider-info.square .noUi-handle {
-  background: #2DCEE3 !important; }
+  background: #2dcee3 !important; }
 
 .slider-warning .noUi-connect {
-  background: #FFA87D !important; }
+  background: #ffa87d !important; }
 
 .slider-warning.noUi-connect {
-  background: #FFA87D !important; }
+  background: #ffa87d !important; }
 
 .slider-warning .noUi-handle {
-  border-color: #FFA87D !important; }
+  border-color: #ffa87d !important; }
 
 .slider-warning.circle-filled .noUi-handle, .slider-warning.square .noUi-handle {
-  background: #FFA87D !important; }
+  background: #ffa87d !important; }
 
 .slider-danger .noUi-connect {
-  background: #FF7588 !important; }
+  background: #ff7588 !important; }
 
 .slider-danger.noUi-connect {
-  background: #FF7588 !important; }
+  background: #ff7588 !important; }
 
 .slider-danger .noUi-handle {
-  border-color: #FF7588 !important; }
+  border-color: #ff7588 !important; }
 
 .slider-danger.circle-filled .noUi-handle, .slider-danger.square .noUi-handle {
-  background: #FF7588 !important; }
+  background: #ff7588 !important; }
 
 .slider-red .noUi-connect {
   background: #F44336 !important; }

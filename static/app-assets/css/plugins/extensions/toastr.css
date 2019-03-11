@@ -5,20 +5,19 @@
 
 #toast-container > div:hover {
   -webkit-box-shadow: 2px 2px 10px 0px rgba(0, 0, 0, 0.75);
-  -moz-box-shadow: 2px 2px 10px 0px rgba(0, 0, 0, 0.75);
   box-shadow: 2px 2px 10px 0px rgba(0, 0, 0, 0.75); }
 
 .toast {
-  background-color: #00B5B8; }
+  background-color: #00b5b8; }
 
 .toast-success {
-  background-color: #16D39A; }
+  background-color: #16d39a; }
 
 .toast-error {
-  background-color: #FF7588; }
+  background-color: #ff7588; }
 
 .toast-info {
-  background-color: #2DCEE3; }
+  background-color: #2dcee3; }
 
 .toast-warning {
-  background-color: #FFA87D; }
+  background-color: #ffa87d; }

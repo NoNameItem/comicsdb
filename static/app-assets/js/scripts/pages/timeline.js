@@ -3,7 +3,7 @@
     Description: Checkbox & Radio buttons with icheck, bootstrap switch & switchery etc..
     ----------------------------------------------------------------------------------------
     Item Name: Stack - Responsive Admin Theme
-    Version: 3.0
+    Version: 3.2
     Author: PIXINVENT
     Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/

@@ -3,7 +3,7 @@
 	Description: A beautiful replacement for javascript alerts
 	----------------------------------------------------------------------------------------
 	Item Name: Stack - Responsive Admin Theme
-	Version: 3.0
+	Version: 3.2
 	Author: Pixinvent
 	Author URL: hhttp://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -47,7 +47,7 @@ $(document).ready(function(){
 	});
 
 	$('#custom-icon').on('click',function(){
-		swal({   title: "Sweet!",   text: "Here's a custom image.",   icon: "../../../app-assets/images/icons/thumbs-up.jpg" });
+		swal({   title: "Sweet!",   text: "Here's a custom image.",   icon: "../../../app-assets/images/logo/stack-80x80.png" });
 	});
 
 	$('#auto-close').on('click',function(){

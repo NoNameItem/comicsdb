@@ -4,9 +4,11 @@
 .noUi-target {
   background-color: #e4e9f2;
   border: none;
+  -webkit-box-shadow: none;
   box-shadow: none;
   border-radius: 1rem; }
   .noUi-target.noUi-connect {
+    -webkit-box-shadow: none;
     box-shadow: none; }
 
 .noUi-horizontal {
@@ -42,22 +44,23 @@
       top: -8px; }
 
 .noUi-handle {
+  -webkit-box-shadow: none;
   box-shadow: none;
   border: none;
   border-radius: 50%;
   background: #FFF;
-  border: 5px solid #00B5B8; }
+  border: 5px solid #00b5b8; }
   .noUi-handle:after, .noUi-handle:before {
     display: none; }
 
 .circle-filled .noUi-handle {
-  background: #00B5B8;
+  background: #00b5b8;
   border-radius: 50%; }
   .circle-filled .noUi-handle:after, .circle-filled .noUi-handle:before {
     display: none; }
 
 .square .noUi-handle {
-  background: #00B5B8;
+  background: #00b5b8;
   border-radius: 3px; }
   .square .noUi-handle:before {
     display: block;
@@ -89,7 +92,8 @@
   top: 2px; }
 
 .noUi-connect {
-  background: #00B5B8;
+  background: #00b5b8;
+  -webkit-box-shadow: none;
   box-shadow: none; }
 
 .noUi-vertical {
@@ -102,7 +106,7 @@
     top: -5px;
     left: -6px; }
   .noUi-vertical.square .noUi-handle {
-    background: #00B5B8;
+    background: #00b5b8;
     border-radius: 3px; }
     .noUi-vertical.square .noUi-handle:before {
       display: block;
@@ -116,3 +120,9 @@
       height: 2px;
       left: -1px;
       top: 7px; }
+
+.example-val {
+  font: 400 12px Arial;
+  color: #888;
+  display: block;
+  margin: 15px 0; }

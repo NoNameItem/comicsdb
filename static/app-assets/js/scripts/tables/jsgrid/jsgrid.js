@@ -3,7 +3,7 @@
     Description: jsgrid Datatable.
     ----------------------------------------------------------------------------------------
     Item Name: Stack - Responsive Admin Theme
-    Version: 3.0
+    Version: 3.2
     Author: Pixinvent
     Author URL: hhttp://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -53,7 +53,7 @@ fields: [
                 var d = $.Deferred();
 
                 $.ajax({
-                    url: "http://services.odata.org/V3/(S(3mnweai3qldmghnzfshavfok))/OData/OData.svc/Products",
+                    url: "https://services.odata.org/V3/(S(3mnweai3qldmghnzfshavfok))/OData/OData.svc/Products",
                     dataType: "json"
                 }).done(function(response) {
                     d.resolve(response.value);

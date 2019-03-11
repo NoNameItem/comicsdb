@@ -14,8 +14,8 @@ html body .content {
   padding : 0;
   position : relative;
   -webkit-transition : 300ms ease all;
-     -moz-transition : 300ms ease all;
        -o-transition : 300ms ease all;
+     -moz-transition : 300ms ease all;
           transition : 300ms ease all;
   -webkit-backface-visibility : hidden;
      -moz-backface-visibility : hidden;
@@ -136,7 +136,7 @@ html body .pace .pace-progress {
 	Description: content sidebar specific scss.
 	----------------------------------------------------------------------------------------
 	Item Name: Stack - Responsive Admin Theme
-	Version: 3.0
+	Version: 3.2
 	Author: PIXINVENT
 	Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -155,6 +155,26 @@ html body .pace .pace-progress {
   position : fixed;
   height : 100%;
   overflow : scroll;
+}
+
+.sidenav-overlay {
+  position : fixed;
+  top : 0;
+  right : 0;
+  left : 0;
+  height : 120vh;
+  background-color : rgba(0, 0, 0, 0.5);
+  z-index : 997;
+  display : none;
+}
+
+.drag-target {
+  height : 100%;
+  width : 40px;
+  position : fixed;
+  top : 0;
+  right : -10px;
+  z-index : 1036;
 }
 
 @media (min-width: 992px) {
@@ -193,13 +213,13 @@ footer.footer-dark {
 }
 
 /*=========================================================================================
-	File Name: navigations.scss
-	Description: Common mixin for menus, contain dark and light version scss.
-	----------------------------------------------------------------------------------------
-	Item Name: Stack - Responsive Admin Theme
-	Version: 3.0
-	Author: PIXINVENT
-	Author URL: http://www.themeforest.net/user/pixinvent
+    File Name: navigations.scss
+    Description: Common mixin for menus, contain dark and light version scss.
+    ----------------------------------------------------------------------------------------
+    Item Name: Stack - Responsive Admin Theme
+    Version: 3.2
+    Author: PIXINVENT
+    Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
 .main-menu {
   z-index : 1000;
@@ -675,8 +695,8 @@ footer.footer-dark {
   width : 150px;
   white-space : nowrap;
   -webkit-transition : all 0.3s ease 0.15s;
-     -moz-transition : all 0.3s ease 0.15s;
        -o-transition : all 0.3s ease 0.15s;
+     -moz-transition : all 0.3s ease 0.15s;
           transition : all 0.3s ease 0.15s;
 }
 
@@ -692,15 +712,15 @@ footer.footer-dark {
 .main-menu-footer.footer-open {
   max-height : 500px;
   -webkit-transition : max-height 0.2s ease-in-out;
-     -moz-transition : max-height 0.2s ease-in-out;
        -o-transition : max-height 0.2s ease-in-out;
+     -moz-transition : max-height 0.2s ease-in-out;
           transition : max-height 0.2s ease-in-out;
 }
 .main-menu-footer.footer-close {
   max-height : 15px;
   -webkit-transition : max-height 0.2s ease-in-out;
-     -moz-transition : max-height 0.2s ease-in-out;
        -o-transition : max-height 0.2s ease-in-out;
+     -moz-transition : max-height 0.2s ease-in-out;
           transition : max-height 0.2s ease-in-out;
 }
 .main-menu-footer a {
@@ -719,8 +739,7 @@ footer.footer-dark {
       -ms-transform : rotate(0deg);
        -o-transform : rotate(0deg);
           transform : rotate(0deg);
-  -webkit-transition : -webkit-transform 0.2s ease-in-out;
-          transition : -webkit-transform 0.2s ease-in-out;
+  transition : -webkit-transform 0.2s ease-in-out;
 }
 .main-menu-footer .content {
   padding : 0;
@@ -728,7 +747,7 @@ footer.footer-dark {
 .main-menu-footer .content .actions > a {
   display : block;
   float : right;
-  width : 33.333333%;
+  width : 33.33333%;
   padding : 1rem 0;
   color : #C9D0DD;
   text-align : center;
@@ -753,7 +772,7 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
 
 .vertical-layout.menu-expanded .menu-icon-right ul.navigation li > a > i, .vertical-overlay-menu .menu-icon-right ul.navigation li > a > i {
   float : left !important;
-  margin : 0 0  0 -12px !important;
+  margin : 0 0 0 -12px !important;
 }
 
 .horizontal-layout .navbar-icon-right ul.nav > li > a:after {
@@ -774,10 +793,12 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
 
 @media (max-width: 767.98px) {
   .menu-hide .main-menu, .menu-open .main-menu {
-    -webkit-transition : -webkit-transform 0.25s, top 0.35s, height 0.35s;
-       -moz-transition :    -moz-transform 0.25s, top 0.35s, height 0.35s;
-         -o-transition :      -o-transform 0.25s, top 0.35s, height 0.35s;
-            transition :         transform 0.25s, top 0.35s, height 0.35s;
+    -webkit-transition : top 0.35s, height 0.35s, -webkit-transform 0.25s;
+            transition : top 0.35s, height 0.35s, -webkit-transform 0.25s;
+         -o-transition : top 0.35s, height 0.35s, -o-transform 0.25s;
+       -moz-transition : transform 0.25s, top 0.35s, height 0.35s, -moz-transform 0.25s;
+            transition : transform 0.25s, top 0.35s, height 0.35s;
+            transition : transform 0.25s, top 0.35s, height 0.35s, -webkit-transform 0.25s, -moz-transform 0.25s, -o-transform 0.25s;
   }
   .main-menu {
     -webkit-transform : translate3d(240px, 0, 0);
@@ -810,6 +831,13 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   }
   .horizontal-layout.vertical-overlay-menu .navbar .navbar-container {
     margin-right : 0;
+    max-width : 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .drag-target {
+    z-index : 0;
   }
 }
 
@@ -1708,7 +1736,7 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
 	Description: Search  functionality.
 	----------------------------------------------------------------------------------------
 	Item Name: Stack - Responsive Admin Theme
-	Version: 3.0
+	Version: 3.2
 	Author: PIXINVENT
 	Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -1726,8 +1754,8 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   border : none;
   background : none;
   -webkit-transition : all 0.2s ease-out;
-     -moz-transition : all 0.2s ease-out;
        -o-transition : all 0.2s ease-out;
+     -moz-transition : all 0.2s ease-out;
           transition : all 0.2s ease-out;
   line-height : 16px;
 }
@@ -1737,8 +1765,8 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   outline : none;
   background : none;
   -webkit-transition : all 0.3s ease-out;
-     -moz-transition : all 0.3s ease-out;
        -o-transition : all 0.3s ease-out;
+     -moz-transition : all 0.3s ease-out;
           transition : all 0.3s ease-out;
 }
 
@@ -1760,17 +1788,9 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   border-bottom : 1px solid #F5F7FA;
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 767.98px) {
   #navbar-mobile .search-input.open .input {
-    width : 180px;
     color : #404E67;
-    border-bottom : 1px solid #404E67;
-    overflow : hidden;
-    position : relative;
-    background : #FFFFFF;
-    z-index : 1;
-    padding : 8px 10px;
-    top : -13px;
   }
 }
 
@@ -2323,8 +2343,8 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   border-color : #F7931E;
 }
 .btn-openid:focus, .btn-openid.focus {
-  -webkit-box-shadow : 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
-          box-shadow : 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow : 0 0 0 0.2rem rgba(223, 224, 224, 0.5);
+          box-shadow : 0 0 0 0.2rem rgba(223, 224, 224, 0.5);
 }
 .btn-openid.disabled, .btn-openid:disabled {
   color : #2A2E30;
@@ -2337,8 +2357,8 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   border-color : #DFDFDF;
 }
 .btn-openid:not(:disabled):not(.disabled):active:focus, .btn-openid:not(:disabled):not(.disabled).active:focus, .show > .btn-openid.dropdown-toggle:focus {
-  -webkit-box-shadow : 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
-          box-shadow : 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow : 0 0 0 0.2rem rgba(223, 224, 224, 0.5);
+          box-shadow : 0 0 0 0.2rem rgba(223, 224, 224, 0.5);
 }
 
 .btn-pinterest {
@@ -2383,8 +2403,8 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   border-color : #000000;
 }
 .btn-reddit:focus, .btn-reddit.focus {
-  -webkit-box-shadow : 0 0 0 0.2rem rgba(0, 0, 0, 0.5);
-          box-shadow : 0 0 0 0.2rem rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow : 0 0 0 0.2rem rgba(6, 7, 7, 0.5);
+          box-shadow : 0 0 0 0.2rem rgba(6, 7, 7, 0.5);
 }
 .btn-reddit.disabled, .btn-reddit:disabled {
   color : #2A2E30;
@@ -2397,8 +2417,8 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   border-color : black;
 }
 .btn-reddit:not(:disabled):not(.disabled):active:focus, .btn-reddit:not(:disabled):not(.disabled).active:focus, .show > .btn-reddit.dropdown-toggle:focus {
-  -webkit-box-shadow : 0 0 0 0.2rem rgba(0, 0, 0, 0.5);
-          box-shadow : 0 0 0 0.2rem rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow : 0 0 0 0.2rem rgba(6, 7, 7, 0.5);
+          box-shadow : 0 0 0 0.2rem rgba(6, 7, 7, 0.5);
 }
 
 .btn-soundcloud {
@@ -2473,8 +2493,8 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   border-color : #55ACEE;
 }
 .btn-twitter:focus, .btn-twitter.focus {
-  -webkit-box-shadow : 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
-          box-shadow : 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow : 0 0 0 0.2rem rgba(223, 224, 224, 0.5);
+          box-shadow : 0 0 0 0.2rem rgba(223, 224, 224, 0.5);
 }
 .btn-twitter.disabled, .btn-twitter:disabled {
   color : #2A2E30;
@@ -2487,8 +2507,8 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   border-color : #DFDFDF;
 }
 .btn-twitter:not(:disabled):not(.disabled):active:focus, .btn-twitter:not(:disabled):not(.disabled).active:focus, .show > .btn-twitter.dropdown-toggle:focus {
-  -webkit-box-shadow : 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
-          box-shadow : 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow : 0 0 0 0.2rem rgba(223, 224, 224, 0.5);
+          box-shadow : 0 0 0 0.2rem rgba(223, 224, 224, 0.5);
 }
 
 .btn-vimeo {
@@ -2880,7 +2900,7 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
 	Description: CSS used for demo purpose only. Remove this css from your project.
 	----------------------------------------------------------------------------------------
 	Item Name: Stack - Responsive Admin Theme
-	Version: 3.0
+	Version: 3.2
 	Author: PIXINVENT
 	Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -2897,8 +2917,8 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
 .fonticon-container > .fonticon-wrap > i {
   font-size : 2.28rem;
   -webkit-transition : all 0.2s ease-in-out;
-     -moz-transition : all 0.2s ease-in-out;
        -o-transition : all 0.2s ease-in-out;
+     -moz-transition : all 0.2s ease-in-out;
           transition : all 0.2s ease-in-out;
 }
 .fonticon-container > .fonticon-wrap.youtube {
@@ -2973,7 +2993,7 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
 	Description: CSS used for demo purpose only. Remove this css from your project.
 	----------------------------------------------------------------------------------------
 	Item Name: Stack - Responsive Admin Theme
-	Version: 3.0
+	Version: 3.2
 	Author: PIXINVENT
 	Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -2988,8 +3008,8 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   bottom : 0;
   height : 100vh;
   -webkit-transition : left 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99);
-     -moz-transition : left 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99);
        -o-transition : left 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99);
+     -moz-transition : left 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99);
           transition : left 0.4s cubic-bezier(0.05, 0.74, 0.2, 0.99);
   -webkit-backface-visibility : hidden;
      -moz-backface-visibility : hidden;
@@ -3042,899 +3062,11 @@ body.vertical-layout.vertical-menu.menu-expanded .main-menu-footer .content {
   color : #FFFFFF;
 }
 
-.ps-container {
-  -ms-touch-action : none;
-      touch-action : none;
-  overflow : hidden !important;
-  -ms-overflow-style : none;
-}
-@supports (-ms-overflow-style: none) {
-  .ps-container {
-    overflow : auto !important;
-  }
-}
-@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
-  .ps-container {
-    overflow : auto !important;
-  }
-}
-.ps-container.ps-active-x > .ps-scrollbar-x-rail, .ps-container.ps-active-y > .ps-scrollbar-y-rail {
-  display : block;
-  background-color : transparent;
-}
-.ps-container.ps-in-scrolling {
-  pointer-events : none;
-}
-.ps-container.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.ps-container.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : #999999;
-}
-.ps-container.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.ps-container.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : #999999;
-}
-.ps-container > .ps-scrollbar-x-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  bottom : 3px;
-  /* there must be 'bottom' for ps-scrollbar-x-rail */
-  height : 8px;
-}
-.ps-container > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : #AAAAAA;
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  bottom : 0;
-  /* there must be 'bottom' for ps-scrollbar-x */
-  height : 8px;
-}
-.ps-container > .ps-scrollbar-y-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  left : 3px;
-  /* there must be 'right' for ps-scrollbar-y-rail */
-  width : 8px;
-}
-.ps-container > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : #AAAAAA;
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y */
-  width : 8px;
-}
-.ps-container:hover.ps-in-scrolling {
-  pointer-events : none;
-}
-.ps-container:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.ps-container:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : #999999;
-}
-.ps-container:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.ps-container:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : #999999;
-}
-.ps-container:hover > .ps-scrollbar-x-rail, .ps-container:hover > .ps-scrollbar-y-rail {
-  opacity : 0.6;
-}
-.ps-container:hover > .ps-scrollbar-x-rail:hover {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.ps-container:hover > .ps-scrollbar-x-rail:hover > .ps-scrollbar-x {
-  background-color : #999999;
-}
-.ps-container:hover > .ps-scrollbar-y-rail:hover {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.ps-container:hover > .ps-scrollbar-y-rail:hover > .ps-scrollbar-y {
-  background-color : #999999;
-}
-
-.ps-theme-dark {
-  -ms-touch-action : none;
-      touch-action : none;
-  overflow : hidden !important;
-  -ms-overflow-style : none;
-}
-@supports (-ms-overflow-style: none) {
-  .ps-theme-dark {
-    overflow : auto !important;
-  }
-}
-@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
-  .ps-theme-dark {
-    overflow : auto !important;
-  }
-}
-.ps-theme-dark.ps-active-x > .ps-scrollbar-x-rail, .ps-theme-dark.ps-active-y > .ps-scrollbar-y-rail {
-  display : block;
-  background-color : transperant;
-}
-.ps-theme-dark.ps-in-scrolling {
-  pointer-events : none;
-}
-.ps-theme-dark.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.ps-theme-dark.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.ps-theme-dark.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.ps-theme-dark.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.ps-theme-dark > .ps-scrollbar-x-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  bottom : 3px;
-  /* there must be 'bottom' for ps-scrollbar-x-rail */
-  height : 8px;
-}
-.ps-theme-dark > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : rgba(0, 0, 0, 0.2);
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  bottom : 0;
-  /* there must be 'bottom' for ps-scrollbar-x */
-  height : 8px;
-}
-.ps-theme-dark > .ps-scrollbar-y-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y-rail */
-  width : 6px;
-}
-.ps-theme-dark > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : rgba(0, 0, 0, 0.2);
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y */
-  width : 6px;
-}
-.ps-theme-dark:hover.ps-in-scrolling {
-  pointer-events : none;
-}
-.ps-theme-dark:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.ps-theme-dark:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.ps-theme-dark:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.ps-theme-dark:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.ps-theme-dark:hover > .ps-scrollbar-x-rail, .ps-theme-dark:hover > .ps-scrollbar-y-rail {
-  opacity : 0.6;
-}
-.ps-theme-dark:hover > .ps-scrollbar-x-rail:hover {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.ps-theme-dark:hover > .ps-scrollbar-x-rail:hover > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.ps-theme-dark:hover > .ps-scrollbar-y-rail:hover {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.ps-theme-dark:hover > .ps-scrollbar-y-rail:hover > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-
-.ps-theme-light {
-  -ms-touch-action : none;
-      touch-action : none;
-  overflow : hidden !important;
-  -ms-overflow-style : none;
-}
-@supports (-ms-overflow-style: none) {
-  .ps-theme-light {
-    overflow : auto !important;
-  }
-}
-@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
-  .ps-theme-light {
-    overflow : auto !important;
-  }
-}
-.ps-theme-light.ps-active-x > .ps-scrollbar-x-rail, .ps-theme-light.ps-active-y > .ps-scrollbar-y-rail {
-  display : block;
-  background-color : transperant;
-}
-.ps-theme-light.ps-in-scrolling {
-  pointer-events : none;
-}
-.ps-theme-light.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : rgba(255, 255, 255, 0.2);
-  opacity : 0.9;
-}
-.ps-theme-light.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : rgba(255, 255, 255, 0.8);
-}
-.ps-theme-light.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : rgba(255, 255, 255, 0.2);
-  opacity : 0.9;
-}
-.ps-theme-light.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : rgba(255, 255, 255, 0.8);
-}
-.ps-theme-light > .ps-scrollbar-x-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  bottom : 3px;
-  /* there must be 'bottom' for ps-scrollbar-x-rail */
-  height : 8px;
-}
-.ps-theme-light > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : rgba(255, 255, 255, 0.5);
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  bottom : 0;
-  /* there must be 'bottom' for ps-scrollbar-x */
-  height : 8px;
-}
-.ps-theme-light > .ps-scrollbar-y-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y-rail */
-  width : 6px;
-}
-.ps-theme-light > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : rgba(255, 255, 255, 0.5);
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y */
-  width : 6px;
-}
-.ps-theme-light:hover.ps-in-scrolling {
-  pointer-events : none;
-}
-.ps-theme-light:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : rgba(255, 255, 255, 0.2);
-  opacity : 0.9;
-}
-.ps-theme-light:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : rgba(255, 255, 255, 0.8);
-}
-.ps-theme-light:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : rgba(255, 255, 255, 0.2);
-  opacity : 0.9;
-}
-.ps-theme-light:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : rgba(255, 255, 255, 0.8);
-}
-.ps-theme-light:hover > .ps-scrollbar-x-rail, .ps-theme-light:hover > .ps-scrollbar-y-rail {
-  opacity : 0.6;
-}
-.ps-theme-light:hover > .ps-scrollbar-x-rail:hover {
-  background-color : rgba(255, 255, 255, 0.2);
-  opacity : 0.9;
-}
-.ps-theme-light:hover > .ps-scrollbar-x-rail:hover > .ps-scrollbar-x {
-  background-color : rgba(255, 255, 255, 0.8);
-}
-.ps-theme-light:hover > .ps-scrollbar-y-rail:hover {
-  background-color : rgba(255, 255, 255, 0.2);
-  opacity : 0.9;
-}
-.ps-theme-light:hover > .ps-scrollbar-y-rail:hover > .ps-scrollbar-y {
-  background-color : rgba(255, 255, 255, 0.8);
-}
-
-.menu-collapsed .ps-theme-dark {
-  -ms-touch-action : none;
-      touch-action : none;
-  overflow : hidden !important;
-  -ms-overflow-style : none;
-}
-@supports (-ms-overflow-style: none) {
-  .menu-collapsed .ps-theme-dark {
-    overflow : auto !important;
-  }
-}
-@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
-  .menu-collapsed .ps-theme-dark {
-    overflow : auto !important;
-  }
-}
-.menu-collapsed .ps-theme-dark.ps-active-x > .ps-scrollbar-x-rail, .menu-collapsed .ps-theme-dark.ps-active-y > .ps-scrollbar-y-rail {
-  display : block;
-  background-color : transparent;
-}
-.menu-collapsed .ps-theme-dark.ps-in-scrolling {
-  pointer-events : none;
-}
-.menu-collapsed .ps-theme-dark.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.menu-collapsed .ps-theme-dark.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : #999999;
-}
-.menu-collapsed .ps-theme-dark.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.menu-collapsed .ps-theme-dark.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : #999999;
-}
-.menu-collapsed .ps-theme-dark > .ps-scrollbar-x-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  bottom : 3px;
-  /* there must be 'bottom' for ps-scrollbar-x-rail */
-  height : 8px;
-}
-.menu-collapsed .ps-theme-dark > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : #55595C !important;
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  bottom : 0;
-  /* there must be 'bottom' for ps-scrollbar-x */
-  height : 8px;
-}
-.menu-collapsed .ps-theme-dark > .ps-scrollbar-y-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y-rail */
-  width : 6px;
-}
-.menu-collapsed .ps-theme-dark > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : #55595C !important;
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y */
-  width : 6px;
-}
-.menu-collapsed .ps-theme-dark:hover.ps-in-scrolling {
-  pointer-events : none;
-}
-.menu-collapsed .ps-theme-dark:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.menu-collapsed .ps-theme-dark:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : #999999;
-}
-.menu-collapsed .ps-theme-dark:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.menu-collapsed .ps-theme-dark:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : #999999;
-}
-.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-x-rail, .menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-y-rail {
-  opacity : 0;
-}
-.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-x-rail:hover {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-x-rail:hover > .ps-scrollbar-x {
-  background-color : #999999;
-}
-.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-y-rail:hover {
-  background-color : #EEEEEE;
-  opacity : 0.9;
-}
-.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-y-rail:hover > .ps-scrollbar-y {
-  background-color : #999999;
-}
-
-.menu-collapsed ul.ps-theme-dark {
-  -ms-touch-action : none;
-      touch-action : none;
-  overflow : hidden !important;
-  -ms-overflow-style : none;
-}
-@supports (-ms-overflow-style: none) {
-  .menu-collapsed ul.ps-theme-dark {
-    overflow : auto !important;
-  }
-}
-@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
-  .menu-collapsed ul.ps-theme-dark {
-    overflow : auto !important;
-  }
-}
-.menu-collapsed ul.ps-theme-dark.ps-active-x > .ps-scrollbar-x-rail, .menu-collapsed ul.ps-theme-dark.ps-active-y > .ps-scrollbar-y-rail {
-  display : block;
-  background-color : transperant;
-}
-.menu-collapsed ul.ps-theme-dark.ps-in-scrolling {
-  pointer-events : none;
-}
-.menu-collapsed ul.ps-theme-dark.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.menu-collapsed ul.ps-theme-dark.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.menu-collapsed ul.ps-theme-dark.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.menu-collapsed ul.ps-theme-dark.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.menu-collapsed ul.ps-theme-dark > .ps-scrollbar-x-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  bottom : 3px;
-  /* there must be 'bottom' for ps-scrollbar-x-rail */
-  height : 8px;
-}
-.menu-collapsed ul.ps-theme-dark > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : rgba(0, 0, 0, 0.2);
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  bottom : 0;
-  /* there must be 'bottom' for ps-scrollbar-x */
-  height : 8px;
-}
-.menu-collapsed ul.ps-theme-dark > .ps-scrollbar-y-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y-rail */
-  width : 6px;
-}
-.menu-collapsed ul.ps-theme-dark > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : rgba(0, 0, 0, 0.2);
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y */
-  width : 6px;
-}
-.menu-collapsed ul.ps-theme-dark:hover.ps-in-scrolling {
-  pointer-events : none;
-}
-.menu-collapsed ul.ps-theme-dark:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.menu-collapsed ul.ps-theme-dark:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.menu-collapsed ul.ps-theme-dark:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.menu-collapsed ul.ps-theme-dark:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-x-rail, .menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-y-rail {
-  opacity : 0.6;
-}
-.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-x-rail:hover {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-x-rail:hover > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-y-rail:hover {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-y-rail:hover > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-
-.vertical-menu-modern.menu-collapsed .ps-theme-dark {
-  -ms-touch-action : none;
-      touch-action : none;
-  overflow : hidden !important;
-  -ms-overflow-style : none;
-}
-@supports (-ms-overflow-style: none) {
-  .vertical-menu-modern.menu-collapsed .ps-theme-dark {
-    overflow : auto !important;
-  }
-}
-@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
-  .vertical-menu-modern.menu-collapsed .ps-theme-dark {
-    overflow : auto !important;
-  }
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark.ps-active-x > .ps-scrollbar-x-rail, .vertical-menu-modern.menu-collapsed .ps-theme-dark.ps-active-y > .ps-scrollbar-y-rail {
-  display : block;
-  background-color : transperant;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark.ps-in-scrolling {
-  pointer-events : none;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark > .ps-scrollbar-x-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  bottom : 3px;
-  /* there must be 'bottom' for ps-scrollbar-x-rail */
-  height : 8px;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : rgba(0, 0, 0, 0.2);
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  bottom : 0;
-  /* there must be 'bottom' for ps-scrollbar-x */
-  height : 8px;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark > .ps-scrollbar-y-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y-rail */
-  width : 6px;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : rgba(0, 0, 0, 0.2);
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y */
-  width : 6px;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark:hover.ps-in-scrolling {
-  pointer-events : none;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-x-rail, .vertical-menu-modern.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-y-rail {
-  opacity : 0.6;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-x-rail:hover {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-x-rail:hover > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-y-rail:hover {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed .ps-theme-dark:hover > .ps-scrollbar-y-rail:hover > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark {
-  -ms-touch-action : none;
-      touch-action : none;
-  overflow : hidden !important;
-  -ms-overflow-style : none;
-}
-@supports (-ms-overflow-style: none) {
-  .vertical-menu-modern.menu-collapsed ul.ps-theme-dark {
-    overflow : auto !important;
-  }
-}
-@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
-  .vertical-menu-modern.menu-collapsed ul.ps-theme-dark {
-    overflow : auto !important;
-  }
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark.ps-active-x > .ps-scrollbar-x-rail, .vertical-menu-modern.menu-collapsed ul.ps-theme-dark.ps-active-y > .ps-scrollbar-y-rail {
-  display : block;
-  background-color : transperant;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark.ps-in-scrolling {
-  pointer-events : none;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark > .ps-scrollbar-x-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  bottom : 3px;
-  /* there must be 'bottom' for ps-scrollbar-x-rail */
-  height : 8px;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : rgba(0, 0, 0, 0.2);
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  bottom : 0;
-  /* there must be 'bottom' for ps-scrollbar-x */
-  height : 8px;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark > .ps-scrollbar-y-rail {
-  display : none;
-  position : absolute;
-  /* please don't change 'position' */
-  border-radius : 4px;
-  opacity : 0;
-  -webkit-transition : background-color 0.2s linear, opacity 0.2s linear;
-     -moz-transition : background-color 0.2s linear, opacity 0.2s linear;
-       -o-transition : background-color 0.2s linear, opacity 0.2s linear;
-          transition : background-color 0.2s linear, opacity 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y-rail */
-  width : 6px;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  position : absolute;
-  /* please don't change 'position' */
-  background-color : rgba(0, 0, 0, 0.2);
-  border-radius : 4px;
-  -webkit-transition : background-color 0.2s linear;
-     -moz-transition : background-color 0.2s linear;
-       -o-transition : background-color 0.2s linear;
-          transition : background-color 0.2s linear;
-  left : 0;
-  /* there must be 'right' for ps-scrollbar-y */
-  width : 6px;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover.ps-in-scrolling {
-  pointer-events : none;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover.ps-in-scrolling.ps-x > .ps-scrollbar-x-rail > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-x-rail, .vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-y-rail {
-  opacity : 0.6;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-x-rail:hover {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-x-rail:hover > .ps-scrollbar-x {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-y-rail:hover {
-  background-color : rgba(0, 0, 0, 0.1);
-  opacity : 0.9;
-}
-.vertical-menu-modern.menu-collapsed ul.ps-theme-dark:hover > .ps-scrollbar-y-rail:hover > .ps-scrollbar-y {
-  background-color : rgba(0, 0, 0, 0.4);
-}
-
-/* to make scrollbars always visible */
-.always-visible.ps-container > .ps-scrollbar-x-rail, .always-visible.ps-container > .ps-scrollbar-y-rail {
-  opacity : 0.6;
-}
-
-.large-margin.ps-container > .ps-scrollbar-x-rail {
-  margin : 0 25%;
-}
-
-.large-margin.ps-container > .ps-scrollbar-y-rail {
-  margin : 100px 0;
+.buy-now {
+  position : fixed;
+  bottom : 5%;
+  left : 2%;
+  z-index : 1031;
 }
 
 @media screen and (min-width: 0) {
@@ -4004,10 +3136,6 @@ body:after {
 .block {
   display : block;
   width : 100%;
-}
-
-select[multiple='multiple'] {
-  overflow : hidden;
 }
 
 /* Input with icon */
@@ -4334,7 +3462,7 @@ div.dataTables_wrapper {
   width : 100%;
   margin : 0 auto;
 }
-div.dataTables_wrapper div.dataTables_filter label {
+div.dataTables_wrapper div.dataTables_filter label, div.dataTables_wrapper div.dataTables_length label {
   margin-top : 1rem;
 }
 div.dataTables_wrapper div.dataTables_paginate ul.pagination {
@@ -4426,4 +3554,21 @@ tr.shown td.details-control {
 
 .DTFC_LeftBodyLiner, .DTFC_RightBodyLiner {
   background : white;
+}
+
+@media only screen and (max-width: 768px) {
+  div.dataTables_wrapper div.dataTables_paginate ul.pagination {
+    -webkit-box-pack : center;
+    -webkit-justify-content : center;
+       -moz-box-pack : center;
+    -ms-flex-pack : center;
+            justify-content : center;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  div.dataTables_wrapper div.dataTables_info {
+    display : inline-block;
+    float : right;
+  }
 }

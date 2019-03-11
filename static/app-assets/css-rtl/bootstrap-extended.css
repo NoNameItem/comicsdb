@@ -152,7 +152,6 @@ pre code {
 .example-content-main {
   position : relative;
   width : 100%;
-  min-height : 1px;
   padding-left : 15px;
   padding-right : 15px;
 }
@@ -169,18 +168,17 @@ pre code {
 @media (min-width: 992px) {
   .example-content-main {
     -webkit-box-flex : 0;
-    -webkit-flex : 0 0 66.666667%;
+    -webkit-flex : 0 0 66.66667%;
        -moz-box-flex : 0;
-        -ms-flex : 0 0 66.666667%;
-            flex : 0 0 66.666667%;
-    max-width : 66.666667%;
+        -ms-flex : 0 0 66.66667%;
+            flex : 0 0 66.66667%;
+    max-width : 66.66667%;
   }
 }
 
 .example-content-secondary {
   position : relative;
   width : 100%;
-  min-height : 1px;
   padding-left : 15px;
   padding-right : 15px;
 }
@@ -197,11 +195,11 @@ pre code {
 @media (min-width: 992px) {
   .example-content-secondary {
     -webkit-box-flex : 0;
-    -webkit-flex : 0 0 33.333333%;
+    -webkit-flex : 0 0 33.33333%;
        -moz-box-flex : 0;
-        -ms-flex : 0 0 33.333333%;
-            flex : 0 0 33.333333%;
-    max-width : 33.333333%;
+        -ms-flex : 0 0 33.33333%;
+            flex : 0 0 33.33333%;
+    max-width : 33.33333%;
   }
 }
 
@@ -439,6 +437,13 @@ form .custom-control-indicator + .custom-control-description {
 select.form-control {
   padding-top : 0 !important;
   padding-bottom : 0 !important;
+     -moz-appearance : none;
+  -webkit-appearance : none;
+}
+
+.custom-select {
+     -moz-appearance : none;
+  -webkit-appearance : none;
 }
 
 /* 
@@ -480,6 +485,20 @@ Bootstrap Enhance */
 .input-group-addon {
   background-color : #ECEFF1;
   border-color : #BABFC7;
+}
+
+.custom-control-label::before {
+  width : 1.1rem;
+  height : 1.1rem;
+}
+
+.custom-control-label::after {
+  width : 1.1rem;
+  height : 1.1rem;
+}
+
+.tagging-js-tags .form-control, .tagging-methods .form-control {
+  height : auto;
 }
 
 .btn.btn-square {
@@ -560,27 +579,27 @@ button, html [type='button'], [type='reset'], [type='submit'] {
 
 .collapse-icon a[data-toggle='collapse']:after {
   position : absolute;
-  top : 40%;
+  top : 48%;
   left : 20px;
   margin-top : -8px;
   font-family : 'feather';
   content : '\e982';
   -webkit-transition : all 300ms linear 0s;
-     -moz-transition : all 300ms linear 0s;
        -o-transition : all 300ms linear 0s;
+     -moz-transition : all 300ms linear 0s;
           transition : all 300ms linear 0s;
 }
 
 .collapse-icon a[data-toggle='collapse']:before {
   position : absolute;
-  top : 40%;
+  top : 48%;
   left : 20px;
   margin-top : -8px;
   font-family : 'feather';
   content : '\e99d';
   -webkit-transition : all 300ms linear 0s;
-     -moz-transition : all 300ms linear 0s;
        -o-transition : all 300ms linear 0s;
+     -moz-transition : all 300ms linear 0s;
           transition : all 300ms linear 0s;
 }
 
@@ -616,8 +635,15 @@ button, html [type='button'], [type='reset'], [type='submit'] {
           transform : rotate(180deg);
 }
 
+.header-navbar .navbar-container .mega-dropdown-menu .collapse-icon a[data-toggle='collapse']:after {
+  margin-top : -14px;
+}
+
+.header-navbar .navbar-container .mega-dropdown-menu .collapse-icon a[data-toggle='collapse']:before {
+  margin-top : -14px;
+}
+
 .dropdown .dropdown-menu {
-  display : block;
   border : 1px solid #E6E6E6;
   border-radius : 0 0 0.25rem 0.25rem;
   -webkit-transform-origin : top;
@@ -635,8 +661,8 @@ button, html [type='button'], [type='reset'], [type='submit'] {
        -o-transform : scale(1, 0);
           transform : scale(1, 0);
   -webkit-transition : all 0.2s linear;
-     -moz-transition : all 0.2s linear;
        -o-transition : all 0.2s linear;
+     -moz-transition : all 0.2s linear;
           transition : all 0.2s linear;
   -webkit-box-shadow : 0 1px 3px rgba(0, 0, 0, 0.1);
           box-shadow : 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -650,9 +676,11 @@ button, html [type='button'], [type='reset'], [type='submit'] {
 .dropdown .dropdown-menu .dropdown-item {
   padding : 10px 20px;
   width : auto;
+  cursor : pointer;
 }
 .dropdown .dropdown-menu .dropdown-item:active {
   background-color : #F2F4F7 !important;
+  color : #404E67;
 }
 
 .dropdown i {
@@ -693,8 +721,10 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   outline : 0;
 }
 
-.navbar-horizontal .dropdown-toggle::after {
+.navbar-horizontal .dropdown-submenu .dropdown-toggle::after {
   top : -9px !important;
+  margin-top : 1.25rem;
+  left : 1px;
 }
 
 .dropdown-menu-right {
@@ -725,12 +755,10 @@ button, html [type='button'], [type='reset'], [type='submit'] {
 .dropdown-menu .dropdown-submenu > a:after, .dropdown-menu .dropdown-submenu > button:after {
   font-family : 'FontAwesome';
   content : '\f105' !important;
-  left : 8px;
-  top : -15px;
+  left : 5px;
   font-size : 1.2rem;
   float : left;
   border : none;
-  margin-top : 1.15rem;
   position : absolute;
 }
 .dropdown-menu .dropdown-submenu :hover > a:after, .dropdown-menu .dropdown-submenu :hover > button:after {
@@ -901,7 +929,7 @@ button, html [type='button'], [type='reset'], [type='submit'] {
     horiznotal main navigation bar related SCSS.
     ----------------------------------------------------------------------------------------------
     Item Name: Stack - Responsive Admin Theme
-    Version: 3.0
+    Version: 3.2
     Author: PIXINVENT
     Author URL: http://www.themeforest.net/user/pixinvent
 ================================================================================================*/
@@ -914,8 +942,8 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   min-height : 4rem;
   font-family : 'Montserrat', Georgia, 'Times New Roman', Times, serif;
   -webkit-transition : 300ms ease all;
-     -moz-transition : 300ms ease all;
        -o-transition : 300ms ease all;
+     -moz-transition : 300ms ease all;
           transition : 300ms ease all;
   /* For sm screen*/
 }
@@ -939,6 +967,7 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   width : 150px;
   position : absolute;
   right : 50%;
+  top : 0;
   padding : 0;
   margin : 0;
   -webkit-transform : translate(50%, 0);
@@ -956,8 +985,8 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   position : relative;
   padding : 0rem 1rem;
   -webkit-transition : 300ms ease all;
-     -moz-transition : 300ms ease all;
        -o-transition : 300ms ease all;
+     -moz-transition : 300ms ease all;
           transition : 300ms ease all;
 }
 .header-navbar .navbar-header .navbar-brand {
@@ -975,8 +1004,8 @@ button, html [type='button'], [type='reset'], [type='submit'] {
 .header-navbar .navbar-container {
   padding : 0rem 18px;
   -webkit-transition : 300ms ease all;
-     -moz-transition : 300ms ease all;
        -o-transition : 300ms ease all;
+     -moz-transition : 300ms ease all;
           transition : 300ms ease all;
   background : inherit;
 }
@@ -1046,6 +1075,7 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   .header-navbar .navbar-header {
     width : 100% !important;
     padding : 0.5rem 1rem;
+    position : relative;
   }
   .header-navbar .navbar-header .menu-toggle {
     top : 2px;
@@ -1071,6 +1101,49 @@ button, html [type='button'], [type='reset'], [type='submit'] {
     padding : 0rem 1rem;
     margin : 0;
     height : auto;
+  }
+}
+
+/* Modern menu For md screen*/
+@media (max-width: 991.98px) {
+  [data-menu='vertical-menu-modern'] .header-navbar .navbar-header {
+    width : 100% !important;
+    padding : 0.5rem 1rem;
+    position : relative;
+  }
+  [data-menu='vertical-menu-modern'] .header-navbar .navbar-header .menu-toggle {
+    top : 2px;
+    position : relative;
+  }
+  [data-menu='vertical-menu-modern'] .header-navbar .navbar-header .open-navbar-container i {
+    font-size : 1.8rem;
+  }
+  [data-menu='vertical-menu-modern'] .header-navbar .navbar-header .navbar-brand {
+    position : absolute;
+    right : 50%;
+    top : 0;
+    -webkit-transform : translate(50%, 0);
+       -moz-transform : translate(50%, 0);
+        -ms-transform : translate(50%, 0);
+         -o-transform : translate(50%, 0);
+            transform : translate(50%, 0);
+  }
+  [data-menu='vertical-menu-modern'] .header-navbar.navbar-with-menu .navbar-container {
+    width : 100%;
+    display : table;
+    background : #FFFFFF;
+    padding : 0rem 1rem;
+    margin : 0;
+    height : auto;
+  }
+  [data-menu='vertical-menu-modern'] .navbar-dark .navbar-header .navbar-nav .nav-link, [data-menu='vertical-menu-modern'] .navbar-semi-dark .navbar-header .navbar-nav .nav-link {
+    color : #FFFFFF;
+  }
+  [data-menu='vertical-menu-modern'] .navbar-dark .navbar-container .navbar-nav .nav-link, [data-menu='vertical-menu-modern'] .navbar-semi-dark .navbar-container .navbar-nav .nav-link {
+    color : #404E67;
+  }
+  [data-menu='vertical-menu-modern'] .navbar-light .navbar-header .navbar-nav .nav-link {
+    color : #404E67;
   }
 }
 
@@ -1298,8 +1371,8 @@ button, html [type='button'], [type='reset'], [type='submit'] {
        -o-transform : rotate(0deg);
           transform : rotate(0deg);
   -webkit-transition : 0.5s ease-in-out;
-     -moz-transition : 0.5s ease-in-out;
        -o-transition : 0.5s ease-in-out;
+     -moz-transition : 0.5s ease-in-out;
           transition : 0.5s ease-in-out;
   cursor : pointer;
 }
@@ -1319,8 +1392,8 @@ button, html [type='button'], [type='reset'], [type='submit'] {
        -o-transform : rotate(0deg);
           transform : rotate(0deg);
   -webkit-transition : 0.25s ease-in-out;
-     -moz-transition : 0.25s ease-in-out;
        -o-transition : 0.25s ease-in-out;
+     -moz-transition : 0.25s ease-in-out;
           transition : 0.25s ease-in-out;
 }
 
@@ -1418,9 +1491,11 @@ button, html [type='button'], [type='reset'], [type='submit'] {
 .headroom {
   will-change : transform;
   -webkit-transition : -webkit-transform 200ms linear;
-     -moz-transition :    -moz-transform 200ms linear;
+          transition : -webkit-transform 200ms linear;
        -o-transition :      -o-transform 200ms linear;
+     -moz-transition :         transform 200ms linear, -moz-transform 200ms linear;
           transition :         transform 200ms linear;
+          transition :         transform 200ms linear, -webkit-transform 200ms linear, -moz-transform 200ms linear, -o-transform 200ms linear;
 }
 
 .headroom--pinned-top {
@@ -1465,11 +1540,17 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   .header-navbar .navbar-container ul.nav li a.dropdown-user-link {
     padding : 0.8rem 0.6rem;
   }
+  .header-navbar .navbar-container ul.nav li a.dropdown-user-link .user-name {
+    display : none;
+  }
   .header-navbar .navbar-container ul.nav li a.nav-link-label {
     padding : 1.2rem 0.8rem 1rem 0rem;
   }
   .header-navbar .navbar-container ul.nav li a.nav-link-search, .header-navbar .navbar-container ul.nav li a.nav-link-expand {
     padding : 1.5rem 1rem 1rem 1rem;
+  }
+  .header-navbar .navbar-container ul.nav li .selected-language {
+    display : none;
   }
   .header-navbar .navbar-container ul.nav li .dropdown-toggle::after {
     margin-left : 0;
@@ -1477,19 +1558,33 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   }
 }
 
-@media (max-width: 1199.98px) {
-  .header-navbar .navbar-container ul.nav li .selected-language {
-    display : none;
-  }
-  .header-navbar .navbar-container ul.nav li a.dropdown-user-link .user-name {
-    display : none;
-  }
-}
-
 @media (max-width: 767px) {
   #navbar-mobile.navbar-collapse .navbar-nav {
     margin : 0;
+    -webkit-box-orient : horizontal;
+    -webkit-box-direction : normal;
     -webkit-flex-flow : row wrap;
+       -moz-box-orient : horizontal;
+       -moz-box-direction : normal;
+        -ms-flex-flow : row wrap;
+            flex-flow : row wrap;
+  }
+  #navbar-mobile.navbar-collapse .navbar-nav .dropdown-menu {
+    position : absolute;
+  }
+  #navbar-mobile.navbar-collapse .navbar-nav .nav-item {
+    float : right;
+  }
+}
+
+@media (max-width: 991.98px) {
+  #navbar-mobile.navbar-collapse .navbar-nav {
+    margin : 0;
+    -webkit-box-orient : horizontal;
+    -webkit-box-direction : normal;
+    -webkit-flex-flow : row wrap;
+       -moz-box-orient : horizontal;
+       -moz-box-direction : normal;
         -ms-flex-flow : row wrap;
             flex-flow : row wrap;
   }
@@ -1586,7 +1681,7 @@ button, html [type='button'], [type='reset'], [type='submit'] {
 .card-header .heading-elements, .card-header .heading-elements-toggle {
   background-color : inherit;
   position : absolute;
-  top : 14px;
+  top : 20px;
   left : 21px;
 }
 .card-header .heading-elements.heading-top-elements .page-item, .card-header .heading-elements-toggle.heading-top-elements .page-item {
@@ -1909,7 +2004,7 @@ button, html [type='button'], [type='reset'], [type='submit'] {
 }
 @media (min-width: 576px) {
   .nav.nav-pills.nav-justified .nav-item {
-    display : table-cell;
+    display : table;
     width : 1%;
   }
   .nav.nav-pills.nav-justified .nav-link {
@@ -2035,7 +2130,7 @@ button, html [type='button'], [type='reset'], [type='submit'] {
 }
 @media (min-width: 576px) {
   .nav.nav-tabs.nav-justified .nav-item {
-    display : table-cell;
+    display : table;
     width : 1%;
   }
   .nav.nav-tabs.nav-justified .nav-link {
@@ -2091,8 +2186,8 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   color : #74777B;
   line-height : 1;
   -webkit-transition : color 0.2s;
-     -moz-transition : color 0.2s;
        -o-transition : color 0.2s;
+     -moz-transition : color 0.2s;
           transition : color 0.2s;
 }
 .nav.nav-tabs.nav-topline .nav-item a.nav-link.active {
@@ -2144,8 +2239,8 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   line-height : 2.5;
   padding : 0.5rem 1rem;
   -webkit-transition : color 0.2s;
-     -moz-transition : color 0.2s;
        -o-transition : color 0.2s;
+     -moz-transition : color 0.2s;
           transition : color 0.2s;
   color : #2DCEE3;
   border : none;
@@ -2178,9 +2273,11 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   background : #2DCEE3;
   content : '';
   -webkit-transition : -webkit-transform 0.3s;
-     -moz-transition :    -moz-transform 0.3s;
+          transition : -webkit-transform 0.3s;
        -o-transition :      -o-transform 0.3s;
+     -moz-transition :         transform 0.3s, -moz-transform 0.3s;
           transition :         transform 0.3s;
+          transition :         transform 0.3s, -webkit-transform 0.3s, -moz-transform 0.3s, -o-transform 0.3s;
   -webkit-transform : translate3d(0, 150%, 0);
      -moz-transform : translate3d(0, 150%, 0);
           transform : translate3d(0, 150%, 0);
@@ -2280,8 +2377,8 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   width : 100%;
   border : none;
   -webkit-transition : color 0.3s cubic-bezier(0.7, 0, 0.3, 1);
-     -moz-transition : color 0.3s cubic-bezier(0.7, 0, 0.3, 1);
        -o-transition : color 0.3s cubic-bezier(0.7, 0, 0.3, 1);
+     -moz-transition : color 0.3s cubic-bezier(0.7, 0, 0.3, 1);
           transition : color 0.3s cubic-bezier(0.7, 0, 0.3, 1);
 }
 .nav.nav-tabs.nav-iconfall .nav-item a:hover, .nav.nav-tabs.nav-iconfall .nav-item a:focus {
@@ -2320,9 +2417,11 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   content : '';
   opacity : 0;
   -webkit-transition : -webkit-transform 0.2s ease-in;
-     -moz-transition :    -moz-transform 0.2s ease-in;
+          transition : -webkit-transform 0.2s ease-in;
        -o-transition :      -o-transform 0.2s ease-in;
+     -moz-transition :         transform 0.2s ease-in, -moz-transform 0.2s ease-in;
           transition :         transform 0.2s ease-in;
+          transition :         transform 0.2s ease-in, -webkit-transform 0.2s ease-in, -moz-transform 0.2s ease-in, -o-transform 0.2s ease-in;
   -webkit-transform : scale3d(0, 1, 1);
      -moz-transform : scale3d(0, 1, 1);
           transform : scale3d(0, 1, 1);
@@ -2332,9 +2431,12 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   margin : 0 0 0.35em;
   opacity : 0;
   -webkit-transition : -webkit-transform 0.2s, opacity 0.2s;
-     -moz-transition :    -moz-transform 0.2s, opacity 0.2s;
-       -o-transition :      -o-transform 0.2s, opacity 0.2s;
+  -webkit-transition : opacity 0.2s, -webkit-transform 0.2s;
+          transition : opacity 0.2s, -webkit-transform 0.2s;
+       -o-transition : opacity 0.2s, -o-transform 0.2s;
+     -moz-transition :         transform 0.2s, opacity 0.2s, -moz-transform 0.2s;
           transition :         transform 0.2s, opacity 0.2s;
+          transition :         transform 0.2s, opacity 0.2s, -webkit-transform 0.2s, -moz-transform 0.2s, -o-transform 0.2s;
   -webkit-transform : translate3d(0, -100px, 0);
      -moz-transform : translate3d(0, -100px, 0);
           transform : translate3d(0, -100px, 0);
@@ -2569,7 +2671,7 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   Description: Extended bootstrap progress bar scss.
   ----------------------------------------------------------------------------------------
   Item Name: Stack - Responsive Admin Theme
-  Version: 3.0
+  Version: 3.2
   Author: PIXINVENT
   Author URL: http://www.themeforest.net/user/pixinvent
   ----------------------------------------------------------------------------------------
@@ -2607,7 +2709,7 @@ button, html [type='button'], [type='reset'], [type='submit'] {
 	Description: Contain list item, list group related extended SCSS.
 	----------------------------------------------------------------------------------------------
 	Item Name: Stack - Responsive Admin Theme
-	Version: 3.0
+	Version: 3.2
 	Author: PIXINVENT
 	Author URL: http://www.themeforest.net/user/pixinvent
 ================================================================================================*/
@@ -2618,6 +2720,68 @@ ul.list-inline li {
 ul.list-inline.list-inline-pipe > li + li:before {
   content : ' | ';
   color : #626E82;
+}
+
+.toast-bs-container {
+  z-index : 1040;
+  position : fixed;
+  top : 0;
+  right : 0;
+  width : 100%;
+}
+.toast-bs-container .toast-position {
+  position : relative;
+  top : 0;
+  left : 0;
+  display : -webkit-box;
+  display : -webkit-flex;
+  display :    -moz-box;
+  display : -ms-flexbox;
+  display :         flex;
+  -webkit-box-orient : vertical;
+  -webkit-box-direction : normal;
+  -webkit-flex-direction : column;
+     -moz-box-orient : vertical;
+     -moz-box-direction : normal;
+      -ms-flex-direction : column;
+          flex-direction : column;
+  -webkit-flex-wrap : wrap-reverse;
+      -ms-flex-wrap : wrap-reverse;
+          flex-wrap : wrap-reverse;
+}
+.toast-bs-container .toast-position .toast.show {
+  opacity : 1;
+  z-index : 1030;
+}
+
+.toast-placement {
+  position : static;
+  top : 0;
+}
+.toast-placement .toast {
+  position : absolute;
+  top : 0;
+  z-index : 1030;
+}
+
+.toast {
+  display : none;
+  background-color : white;
+  margin-top : 0.75rem;
+}
+
+.toast.show.toast-wrapper {
+  position : static;
+}
+
+.toast.toast-translucent {
+  opacity : 1;
+  display : block;
+}
+
+.toast-header img {
+  width : 20px;
+  height : 20px;
 }
 
 .modal-sm {
@@ -2793,5 +2957,12 @@ a:hover {
        -moz-transform : rotate(-360deg);
          -o-transform : rotate(-360deg);
             transform : rotate(-360deg);
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  .line-on-side {
+    border-bottom : none;
+    line-height : 1.25rem;
   }
 }

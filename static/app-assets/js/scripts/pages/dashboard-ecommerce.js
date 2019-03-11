@@ -3,16 +3,16 @@
     Description: intialize advance cards
     ----------------------------------------------------------------------------------------
     Item Name: Stack - Responsive Admin Theme
-    Version: 3.0
+    Version: 3.2
     Author: PIXINVENT
     Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
     // Area chart
 // ------------------------------
 $(window).on("load", function(){
-    $('#recent-buyers').perfectScrollbar({
+    var recent_buyers = new PerfectScrollbar("#recent-buyers", {
         wheelPropagation: true
-    });
+     });
     /********************************************
     *               PRODUCTS SALES              *
     ********************************************/

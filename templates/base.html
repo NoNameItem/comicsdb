@@ -16,13 +16,16 @@
       href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,500,500i%7COpen+Sans:300,300i,400,400i,600,600i,700,700i"
       rel="stylesheet">
   <!-- BEGIN VENDOR CSS-->
-  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/vendors.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/vendors/css/vendors.min.css" %}">
   <link type="text/css" rel="stylesheet" href="{% static "animate_css/animate.css" %}"/>
   <link type="text/css" rel="stylesheet" href="{% static "fontawesome/css/all.min.css" %}"/>
   {% block vendor_css %}{% endblock %}
   <!-- END VENDOR CSS-->
   <!-- BEGIN STACK CSS-->
-  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/app.min.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/bootstrap.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/bootstrap-extended.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/colors.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/components.css" %}">
   <!-- END STACK CSS-->
   <!-- BEGIN Page Level CSS-->
   <link rel="stylesheet" type="text/css"
@@ -41,9 +44,9 @@
       <ul class="nav navbar-nav flex-row">
         <li class="nav-item mobile-menu d-md-none mr-auto"><a class="nav-link nav-menu-main menu-toggle hidden-xs"
                                                               href="#"><i class="ft-menu font-large-1"></i></a></li>
-        <li class="nav-item"><a class="navbar-brand" href="{% url "main" %}"><img class="brand-logo"
-                                                                                  alt="stack admin logo"
-                                                                                  src="{% static "images/logo.png" %}">
+        <li class="nav-item"><a class="navbar-brand" href="{% url "site-main" %}"><img class="brand-logo"
+                                                                                       alt="stack admin logo"
+                                                                                       src="{% static "images/logo.png" %}">
           <h2 class="brand-text">ComicsDB</h2></a></li>
         <li class="nav-item d-md-none"><a class="nav-link open-navbar-container" data-toggle="collapse"
                                           data-target="#navbar-mobile"><i class="fa fa-ellipsis-v"></i></a></li>
@@ -94,9 +97,12 @@
   <!-- main menu content-->
   <div class="main-menu-content">
     <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
+    <li class="{% if request.resolver_match.url_name|startswith:"site-publisher" %}active{% else %}menu-item{% endif %}">
+        <a href="{% url 'site-publisher-list' %}"><i class="fal fa-building"></i></i> Publishers</a>
+      </li>
       <!-- admin menu items-->
       <li class="{% if request.resolver_match.url_name|startswith:"parser-log" %}active{% else %}menu-item{% endif %}">
-        <a href="{% url 'parser-log' %}"><i class="ft-refresh-cw"></i> Parsers log</a>
+        <a href="{% url 'site-parser-log' %}"><i class="ft-refresh-cw"></i> Parsers log</a>
       </li>
       <li class="{% if request.resolver_match.url_name == "parser-schedule" %}active{% else %}menu-item{% endif %}">
         <a href="{% url 'parser-schedule' %}"><i class="far fa-calendar-alt"></i> Parser schedule</a>
@@ -111,8 +117,8 @@
 
 <div class="app-content content">
   <div class="content-wrapper">
-    <div class="content-header row">
-      <div class="content-header-left col-md-6 col-12 mb-1">
+    <div class="content-header row mb-1">
+      <div class="content-header-left col-md-6 col-12">
         <h3 class="content-header-title">{% block page_title %}{% endblock %}</h3>
       </div>
       <div class="content-header-right breadcrumbs-right breadcrumbs-top col-md-6 col-12">
@@ -135,7 +141,7 @@
 
 <footer class="footer footer-static footer-light navbar-border">
   <p class="clearfix blue-grey lighten-2 text-sm-center mb-0 px-2"><span
-      class="float-md-left d-block d-md-inline-block">Copyright  &copy; 2019 <a href="{% url "main" %}">ComicsDB</a>, All rights reserved. </span>
+      class="float-md-left d-block d-md-inline-block">Copyright  &copy; 2019 <a href="{% url "site-main" %}">ComicsDB</a>, All rights reserved. </span>
     {% if user.is_authenticated %}
       <span class="float-md-right d-block d-md-inline-block d-none d-lg-block">We build API for this shit, <a
           href="{% url "api-root" %}" target="_blank">check this out</a></span></p>{% endif %}

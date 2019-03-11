@@ -3,7 +3,7 @@
 	Description: Table Components js
 	----------------------------------------------------------------------------------------
 	Item Name: Stack - Responsive Admin Theme
-	Version: 3.0
+	Version: 3.2
 	Author: Pixinvent
 	Author URL: hhttp://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -116,27 +116,47 @@
     // Switchery
     var i = 0;
     if (Array.prototype.forEach) {
-        var elems = Array.prototype.slice.call(document.querySelectorAll('.switchery'));
-
-        elems.forEach(function (html) {
-            var switchery = new Switchery(html);
-        });
-    } else {
-        var elems1 = document.querySelectorAll('.switchery');
-
-        for (i = 0; i < elems1.length; i++) {
-            var switchery = new Switchery(elems1[i]);
+      var elems = $('.switchery');
+      $.each( elems, function( key, value ) {
+        var $size="", $color="",$sizeClass="", $colorCode="";
+        $size = $(this).data('size');
+        var $sizes ={
+          'lg' : "large",
+          'sm' : "small",
+          'xs' : "xsmall"
+        };
+        if($(this).data('size')!== undefined){
+          $sizeClass = "switchery switchery-"+$sizes[$size];
         }
-    }
+        else{
+          $sizeClass = "switchery";
+        }
 
-    var elemSmall = document.querySelectorAll('.switchery-sm');
-    for (i = 0; i < elemSmall.length; i++) {
-        new Switchery(elemSmall[i], {className:"switchery switchery-small"});
-    }
+        $color = $(this).data('color');
+        var $colors ={
+          'primary' : "#967ADC",
+          'success' : "#37BC9B",
+          'danger' : "#DA4453",
+          'warning' : "#F6BB42",
+          'info' : "#3BAFDA"
+        };
+        if($color !== undefined){
+          $colorCode = $colors[$color];
+        }
+        else{
+          $colorCode = "#37BC9B";
+        }
 
-    var danger = document.querySelectorAll('.switchery-danger');
-    for (i = 0; i < danger.length; i++) {
-      new Switchery(danger[i], { color: '#DA4453' });
+        var switchery = new Switchery($(this)[0], { className: $sizeClass, color: $colorCode });
+      });
+    } else {
+      var elems1 = document.querySelectorAll('.switchery');
+
+      for (i = 0; i < elems1.length; i++) {
+        var $size = elems1[i].data('size');
+        var $color = elems1[i].data('color');
+        var switchery = new Switchery(elems1[i], { color: '#37BC9B' });
+      }
     }
     /*  Toggle Ends   */
 
@@ -168,7 +188,7 @@
     function iconFormat(icon) {
         var originalOption = icon.element;
         if (!icon.id) { return icon.text; }
-        var $icon = "<i class='icon-" + $(icon.element).data('icon') + "'></i>" + icon.text;
+        var $icon = "<i class='" + $(icon.element).data('icon') + "'></i>" + icon.text;
 
         return $icon;
     }

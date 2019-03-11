@@ -3,7 +3,7 @@
     Description: Dual list box js
     ----------------------------------------------------------------------------------------
     Item Name: Robust - Responsive Admin Theme
-    Version: 3.0
+    Version: 3.2
     Author: PIXINVENT
     Author URL: http://www.themeforest.net/user/pixinvent
 ==========================================================================================*/

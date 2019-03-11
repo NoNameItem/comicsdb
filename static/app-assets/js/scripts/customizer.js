@@ -3,7 +3,7 @@
   Description: Template customizer js.
   ----------------------------------------------------------------------------------------
   Item Name: Stack - Responsive Admin Theme
-  Version: 3.0
+  Version: 3.2
   Author: Pixinvent
   Author URL: hhttp://www.themeforest.net/user/pixinvent
 ==========================================================================================*/
@@ -22,9 +22,7 @@
         $('.customizer').removeClass('open');
     });
     if($('.customizer-content').length > 0){
-        $('.customizer-content').perfectScrollbar({
-            theme:"dark"
-        });
+        var customizer_content = new PerfectScrollbar('.customizer-content');
     }
 
     /************************************
@@ -61,6 +59,10 @@
         $('.color-options li:eq(3) a').tab('show');
     }
 
+    if(menu_type === 'vertical-menu-modern'){
+        $('#brand-center').parent('.custom-checkbox').attr('style','display: none !important');
+    }
+
     // Layouts
 
     // If overlay menu template then collapsed sidebar should be checked by default
@@ -90,8 +92,8 @@
             if( !header_navbar.hasClass('fixed-top') && horz_layout === false ){
                 header_navbar.addClass('fixed-top');
             }
-            if( !footer.hasClass('navbar-fixed-bottom')){
-                footer.addClass('navbar-fixed-bottom');
+            if( !footer.hasClass('fixed-bottom')){
+                footer.addClass('fixed-bottom');
             }
             if( !horz_header_navbar.hasClass('navbar-fixed') && horz_layout === true){
                 horz_header_navbar.addClass('navbar-fixed');
@@ -102,7 +104,7 @@
             footer.removeClass('footer-static');
         }
         else{
-            footer.removeClass('navbar-fixed-bottom');
+            footer.removeClass('fixed-bottom');
         }
     });
 
@@ -146,7 +148,7 @@
             header_navbar.removeClass('fixed-top');
             horz_header_navbar.removeClass('menu-fixed');
             menu.removeClass('menu-fixed');
-            footer.removeClass('navbar-fixed-bottom');
+            footer.removeClass('fixed-bottom');
             $.app.menu.manualScroller.disable();
         }
         else{
@@ -206,7 +208,7 @@
             body.removeClass('fixed-navbar');
             header_navbar.removeClass('fixed-top');
             menu.removeClass('menu-fixed');
-            footer.removeClass('navbar-fixed-bottom');
+            footer.removeClass('fixed-bottom');
             $.app.menu.manualScroller.disable();
         }
         else{
@@ -355,6 +357,9 @@
         if(semiDark == true){
             el.removeClass('navbar-semi-dark').addClass('navbar-semi-light');
         }
+        if( !$('.header-navbar').hasClass('navbar-semi-light') ){
+            $('.nav-semi-light').trigger('click');
+        }
         bgClass = chkBgClass(el);
         el.removeClass(bgClass).addClass($(this).data('bg'));
     });
@@ -373,6 +378,9 @@
         if(semiLight == true){
             el.removeClass('navbar-semi-light').addClass('navbar-semi-dark');
         }
+        if( !$('.header-navbar').hasClass('navbar-semi-dark') ){
+            $('.nav-semi-dark').trigger('click');
+        }
         var el = $('.navbar-header');
         var bgClass= chkBgClass(el);
         el.removeClass(bgClass).addClass($(this).data('bg'));
@@ -387,6 +395,9 @@
         $('input[name=nav-dark-clr].default').prop('checked', true);
     });
     $("input[name='nav-dark-clr']").change(function(){
+        if( !el.hasClass('navbar-dark') ){
+            $('.nav-dark').trigger('click');
+        }
         var bgClass= chkBgClass(el);
         el.removeClass(bgClass).addClass($(this).data('bg'));
     });
@@ -400,6 +411,9 @@
         $('input[name=nav-light-clr].default').prop('checked', true);
     });
     $("input[name='nav-light-clr']").change(function(){
+        if( !el.hasClass('navbar-light') ){
+            $('.nav-light').trigger('click');
+        }
         var bgClass= chkBgClass(el);
         el.removeClass(bgClass).addClass($(this).data('bg'));
     });
@@ -442,5 +456,15 @@
         else{
             $('.brand-logo').attr('src','../../../app-assets/images/logo/stack-logo.png');
         }
+    }
+
+    // Check local storage if menu is collapsed or not
+    var menuToggle;
+    if (typeof(Storage) !== "undefined") {
+        menuToggle = localStorage.getItem("menuLocked");
+    }
+
+    if(menuToggle === "false"){
+        $('#collapsed-sidebar').prop('checked', true);
     }
 })(window, document, jQuery);
