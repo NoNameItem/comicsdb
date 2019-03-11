@@ -123,9 +123,18 @@ class CloudFilesParserRunDetail(ParserRunDetail):
 ########################################################################################################################
 
 
+MARVEL_API_STATUS_CHOICES = (
+    ('NEW', 'New'),
+    ('NO_ID', 'Can\'t find ID'),
+    ('ID_GET_DATA', 'ID found, need to get data'),
+    ('PROCESSED', 'Processed')
+)
+
+
 class Publisher(models.Model):
     name = models.CharField(max_length=100, unique=True)
     logo = models.ImageField(null=True, upload_to='publisher_logo')
+    poster = models.ImageField(null=True, upload_to='publisher_poster')
     desc = models.TextField(blank=True)
     slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
 
@@ -141,11 +150,12 @@ class Publisher(models.Model):
 
 
 class Creator(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=500)
     bio = models.TextField(blank=True)
     photo = models.ImageField(null=True)
-    birth_date = models.DateField(null=True)
-    death_date = models.DateField(null=True)
+
+    # Marvel-specific fields
+    marvel_api_id = models.IntegerField(null=True)
 
     def __str__(self):
         return self.name
@@ -154,8 +164,9 @@ class Creator(models.Model):
 class Universe(models.Model):
     name = models.CharField(max_length=100)
     desc = models.TextField(blank=True)
-    publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="universes")
     slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
+
+    publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="universes")
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -184,12 +195,26 @@ class TitleType(models.Model):
         return self.name
 
 
+class TitleCreator(models.Model):
+    creator = models.ForeignKey(Creator, on_delete=models.CASCADE)
+    issue = models.ForeignKey('Title', on_delete=models.CASCADE)
+    role = models.CharField(max_length=100)
+
+
 class Title(models.Model):
     name = models.CharField(max_length=500)
+    desc = models.TextField(blank=True)
+    image = models.ImageField(null=True, upload_to='title_image')
+    slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
+
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="titles")
     universe = models.ForeignKey(Universe, on_delete=models.PROTECT, null=True, related_name="titles")
     title_type = models.ForeignKey(TitleType, on_delete=models.PROTECT, related_name="titles")
-    slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
+    creators = models.ManyToManyField(Creator, through=TitleCreator, related_name='titles')
+
+    # Marvel-specific fields
+    marvel_api_id = models.IntegerField(null=True)
+    marvel_api_status = models.CharField(default='NEW', choices=MARVEL_API_STATUS_CHOICES, max_length=30)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -204,24 +229,33 @@ class Title(models.Model):
         ordering = ["publisher", "universe", "name"]
 
 
+class IssueCreator(models.Model):
+    creator = models.ForeignKey(Creator, on_delete=models.CASCADE)
+    issue = models.ForeignKey('Issue', on_delete=models.CASCADE)
+    role = models.CharField(max_length=100)
+
+
 class Issue(models.Model):
     name = models.CharField(max_length=500)
     number = models.IntegerField(null=True)
     desc = models.TextField(blank=True)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="issues")
     publish_date = models.DateField()
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
-
-    writers = models.ManyToManyField(Creator, related_name="written_issues")
-    pencilers = models.ManyToManyField(Creator, related_name="drawn_issues")
-
-    main_cover = models.ImageField(null=True)
+    main_cover = models.ImageField(null=True, upload_to='issue_cover')
     link = models.URLField(max_length=1000, unique=True)
 
+    title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="issues")
+    creators = models.ManyToManyField(Creator, through=IssueCreator, related_name='issues')
     tags = models.ManyToManyField(Tag, related_name="issues")
 
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
+
+    # Marvel-specific fields
+    marvel_api_id = models.IntegerField(null=True)
+    marvel_api_status = models.CharField(default='NEW', choices=MARVEL_API_STATUS_CHOICES, max_length=30)
+    marvel_detail_link = models.URLField(max_length=1000, blank=True)
+    marvel_purchase_link = models.URLField(max_length=1000, blank=True)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -238,6 +272,33 @@ class Issue(models.Model):
     class Meta:
         unique_together = (("name", "title", "publish_date"),)
         ordering = ["title", "publish_date", "number"]
+
+
+class Character(models.Model):
+    name = models.CharField(max_length=500)
+    desc = models.TextField(blank=True)
+    image = models.ImageField(null=True, upload_to='character')
+
+    titles = models.ManyToManyField(Title, related_name='characters')
+    issues = models.ManyToManyField(Issue, related_name='characters')
+
+    # Marvel-specific fields
+    marvel_api_id = models.IntegerField(null=True)
+    marvel_detail_link = models.URLField(max_length=1000, blank=True)
+
+
+class MarvelEvent(models.Model):
+    name = models.CharField(max_length=200)
+    desc = models.TextField(blank=True)
+    image = models.ImageField(null=True, upload_to='event-image')
+    detail_link = models.URLField(max_length=1000, blank=True)
+    start = models.DateField(null=True)
+    end = models.DateField(null=True)
+
+    titles = models.ManyToManyField(Title, related_name='events')
+    issues = models.ManyToManyField(Issue, related_name='events')
+    characters = models.ManyToManyField(Character, related_name='events')
+    creators = models.ManyToManyField(Creator, related_name='events')
 
 
 ########################################################################################################################
