@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import escape_uri_path
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 from knox.models import AuthToken
 
 from comicsdb import settings
@@ -124,6 +125,13 @@ class CloudFilesParserRunDetail(ParserRunDetail):
 
 class Publisher(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    logo = models.ImageField(null=True, upload_to='publisher_logo')
+    desc = models.TextField(blank=True)
+    slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name, allow_unicode=True)
+        super(Publisher, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -147,6 +155,12 @@ class Universe(models.Model):
     name = models.CharField(max_length=100)
     desc = models.TextField(blank=True)
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="universes")
+    slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.slug = slugify(str(self), allow_unicode=True)
+        super(Universe, self).save(force_insert, force_update, using, update_fields)
 
     def __str__(self):
         return "[{0.publisher.name}] {0.name}".format(self)
@@ -175,6 +189,12 @@ class Title(models.Model):
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="titles")
     universe = models.ForeignKey(Universe, on_delete=models.PROTECT, null=True, related_name="titles")
     title_type = models.ForeignKey(TitleType, on_delete=models.PROTECT, related_name="titles")
+    slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.slug = slugify(str(self), allow_unicode=True)
+        super(Title, self).save(force_insert, force_update, using, update_fields)
 
     def __str__(self):
         return "[{0.publisher.name}, {0.universe.name}, {0.title_type.name}] {0.name}".format(self)
@@ -190,6 +210,7 @@ class Issue(models.Model):
     desc = models.TextField(blank=True)
     title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="issues")
     publish_date = models.DateField()
+    slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
 
     writers = models.ManyToManyField(Creator, related_name="written_issues")
     pencilers = models.ManyToManyField(Creator, related_name="drawn_issues")
@@ -201,6 +222,11 @@ class Issue(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.slug = slugify(str(self), allow_unicode=True)
+        super(Issue, self).save(force_insert, force_update, using, update_fields)
 
     def __str__(self):
         return "[{0.title.publisher.name}, {0.title.universe.name}, {0.publish_date.year}] {0.name}".format(self)
