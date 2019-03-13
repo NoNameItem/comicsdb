@@ -248,15 +248,14 @@ class CloudFilesParser(BaseParser):
                         publish_date = datetime.date(int(info['year']), 1, 1)
 
                         # Getting or creating issue
-                        issue, created = comics_models.Issue.objects.get_or_create(name=info['issue_name'],
-                                                                                   number=info['number'],
-                                                                                   title=title,
-                                                                                   publish_date=publish_date,
+                        issue, created = comics_models.Issue.objects.get_or_create(link=file_key,
                                                                                    defaults={
+                                                                                       'name': info['issue_name'],
+                                                                                       'number': info['number'],
+                                                                                       'title': title,
                                                                                        'publish_date': publish_date
                                                                                    })
                         if created:
-                            issue.link = file_key
                             issue.save()
 
                         run_detail.issue = issue
