@@ -78,6 +78,15 @@ class BaseParser:
         """
         return True
 
+    def _postprocessing(self):
+        """
+        Executing podt processing operations. Should be overridden in specific parser classes
+
+        If critical error happens during processing, method should raise RuntimeParserError.
+        Critical error - error which prevent parser from continue work.
+        :return: None
+        """
+
     def run(self, celery_task_id=None):
         """
         Main method for running parser.
@@ -133,6 +142,9 @@ class BaseParser:
                 self._parser_run.status = "SUCCESS"
             else:
                 self._parser_run.status = "ENDED_WITH_ERRORS"
+
+            self._postprocessing()
+
             self._parser_run.end = timezone.now()
             self._parser_run.save()
 
@@ -167,9 +179,13 @@ class CloudFilesParser(BaseParser):
                         re.IGNORECASE)
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
-    def __init__(self, path_prefix):
-        print('aa')
+    def __init__(self, path_prefix, full=False):
         self.path_prefix = path_prefix
+        self._full = full
+        self._publishers = set()
+        self._universes = set()
+        self._titles = set()
+        self._issues = set()
         super().__init__()
 
     def _prepare(self):
@@ -224,12 +240,16 @@ class CloudFilesParser(BaseParser):
                         publisher, created = comics_models.Publisher.objects.get_or_create(name=info['publisher'])
                         if created:
                             publisher.save()
-
+                        if self._full:
+                            self._publishers.add(publisher.id)
                         # Getting or creating Universe
                         universe, created = comics_models.Universe.objects.get_or_create(name=info['universe'],
                                                                                          publisher=publisher)
                         if created:
                             universe.save()
+
+                        if self._full:
+                            self._universes.add(universe.id)
 
                         # Getting or creating Title type
                         title_type, created = comics_models.TitleType.objects.get_or_create(name=info['title_type'])
@@ -244,6 +264,9 @@ class CloudFilesParser(BaseParser):
                                                                                    title_type=title_type)
                         if created:
                             title.save()
+
+                        if self._full:
+                            self._titles.add(title.id)
                         # Getting publish date
                         publish_date = datetime.date(int(info['year']), 1, 1)
 
@@ -257,6 +280,9 @@ class CloudFilesParser(BaseParser):
                                                                                    })
                         if created:
                             issue.save()
+
+                        if self._full:
+                            self._issues.add(issue.id)
 
                         run_detail.issue = issue
                         run_detail.created = created
@@ -283,4 +309,16 @@ class CloudFilesParser(BaseParser):
                 run_detail.end_with_error('Critical Error', err)
             raise RuntimeParserError("Error while processing data", err.args[0])
 
-
+    def _postprocessing(self):
+        """
+        Delete elements which does not have corresponding file key
+        :return:
+        """
+        try:
+            if self._full:
+                comics_models.Issue.objects.exclude(id__in=self._issues).delete()
+                comics_models.Title.objects.exclude(id__in=self._titles).delete()
+                comics_models.Universe.objects.exclude(id__in=self._universes).delete()
+                comics_models.Publisher.objects.exclude(id__in=self._publishers).delete()
+        except Error as err:
+            raise RuntimeParserError("Error while performing postprocessing", err.args[0])
