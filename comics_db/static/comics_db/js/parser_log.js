@@ -7,6 +7,7 @@ let pagerParams = {
 const STATUS_COLORS = {
   SUCCESS           : 'bg-success',
   ENDED_WITH_ERRORS : 'bg-warning',
+  API_THROTTLE      : 'bg-warning',
   CRITICAL_ERROR    : 'bg-danger',
   INVALID_PARSER    : 'bg-danger',
   RUNNING           : 'bg-info'
