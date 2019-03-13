@@ -477,6 +477,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
     unlimited_api = models.BooleanField(default=False)
 
+
 class AppToken(models.Model):
     app_name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
