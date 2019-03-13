@@ -26,6 +26,7 @@ class ParserRun(models.Model):
         ("RUNNING", "Running"),
         ("SUCCESS", "Successfully ended"),
         ("ENDED_WITH_ERRORS", "Ended with errors"),
+        ("API_THROTTLE", "API rate limit has been surpassed."),
         ("CRITICAL_ERROR", "Critical Error"),
         ("INVALID_PARSER", "Invalid parser implementation")
     )
@@ -58,12 +59,12 @@ class ParserRun(models.Model):
     @property
     def run_details_url(self):
         if self.parser == 'CLOUD_FILES':
-            return reverse('parserrun-details-cloud', args=(self.id, ))
+            return reverse('parserrun-details-cloud', args=(self.id,))
         return None
 
     @property
     def page(self):
-        return reverse('parser-log-detail', args=(self.id, ))
+        return reverse('parser-log-detail', args=(self.id,))
 
     class Meta:
         ordering = ["-start"]
@@ -139,8 +140,11 @@ class Publisher(models.Model):
     slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.name, allow_unicode=True)
+        self.slug = self.get_slug()
         super(Publisher, self).save(*args, **kwargs)
+
+    def get_slug(self):
+        return slugify(self.name, allow_unicode=True)
 
     def __str__(self):
         return self.name
@@ -153,12 +157,21 @@ class Creator(models.Model):
     name = models.CharField(max_length=500)
     bio = models.TextField(blank=True)
     photo = models.ImageField(null=True)
+    slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
 
     # Marvel-specific fields
     marvel_api_id = models.IntegerField(null=True)
 
     def __str__(self):
         return self.name
+
+    def get_slug(self):
+        return slugify(self.name, allow_unicode=True)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.slug = self.get_slug()
+        super(Creator, self).save(force_insert, force_update, using, update_fields)
 
 
 class Universe(models.Model):
@@ -170,8 +183,11 @@ class Universe(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        self.slug = slugify(str(self), allow_unicode=True)
+        self.slug = self.get_slug()
         super(Universe, self).save(force_insert, force_update, using, update_fields)
+
+    def get_slug(self):
+        return slugify(str(self), allow_unicode=True)
 
     def __str__(self):
         return "[{0.publisher.name}] {0.name}".format(self)
@@ -218,8 +234,11 @@ class Title(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        self.slug = slugify(str(self), allow_unicode=True)
+        self.slug = self.get_slug()
         super(Title, self).save(force_insert, force_update, using, update_fields)
+
+    def get_slug(self):
+        return slugify(str(self), allow_unicode=True)
 
     def __str__(self):
         return "[{0.publisher.name}, {0.universe.name}, {0.title_type.name}] {0.name}".format(self)
@@ -259,8 +278,11 @@ class Issue(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        self.slug = slugify(str(self), allow_unicode=True)
+        self.slug = self.get_slug()
         super(Issue, self).save(force_insert, force_update, using, update_fields)
+
+    def get_slug(self):
+        return slugify(str(self), allow_unicode=True)
 
     def __str__(self):
         return "[{0.title.publisher.name}, {0.title.universe.name}, {0.publish_date.year}] {0.name}".format(self)
@@ -275,9 +297,10 @@ class Issue(models.Model):
 
 
 class Character(models.Model):
-    name = models.CharField(max_length=500)
+    name = models.CharField(max_length=500, unique=True)
     desc = models.TextField(blank=True)
     image = models.ImageField(null=True, upload_to='character')
+    slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
 
     titles = models.ManyToManyField(Title, related_name='characters')
     issues = models.ManyToManyField(Issue, related_name='characters')
@@ -286,30 +309,173 @@ class Character(models.Model):
     marvel_api_id = models.IntegerField(null=True)
     marvel_detail_link = models.URLField(max_length=1000, blank=True)
 
+    def get_slug(self):
+        return slugify(str(self), allow_unicode=True)
+
+    def __str__(self):
+        return self.name
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.slug = self.get_slug()
+        super(Character, self).save(force_insert, force_update, using, update_fields)
+
 
 class MarvelEvent(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
     desc = models.TextField(blank=True)
     image = models.ImageField(null=True, upload_to='event-image')
     detail_link = models.URLField(max_length=1000, blank=True)
     start = models.DateField(null=True)
     end = models.DateField(null=True)
+    slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
 
     titles = models.ManyToManyField(Title, related_name='events')
     issues = models.ManyToManyField(Issue, related_name='events')
     characters = models.ManyToManyField(Character, related_name='events')
     creators = models.ManyToManyField(Creator, related_name='events')
 
+    def get_slug(self):
+        return slugify(str(self), allow_unicode=True)
+
+    def __str__(self):
+        return self.name
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.slug = self.get_slug()
+        super(MarvelEvent, self).save(force_insert, force_update, using, update_fields)
+
+
+########################################################################################################################
+# Marvel Developer API stage
+########################################################################################################################
+
+
+class MarvelAPICharacter(models.Model):
+    id = models.IntegerField(primary_key=True, help_text='The unique ID of the character resource.')
+    name = models.TextField(blank=True, help_text='The name of the character.')
+    description = models.TextField(blank=True, help_text='A short bio or description of the character.')
+    modified = models.DateField(null=True, help_text='The date the resource was most recently modified.')
+    resource_URI = models.TextField(blank=True, help_text='The canonical URL identifier for this resource.')
+
+
+class MarvelAPICreator(models.Model):
+    id = models.IntegerField(primary_key=True, help_text='The unique ID of the creator resource.')
+    first_name = models.TextField(blank=True, help_text='The first name of the creator.')
+    middle_name = models.TextField(blank=True, help_text='The middle name of the creator.')
+    last_name = models.TextField(blank=True, help_text='The last name of the creator.')
+    suffix = models.TextField(blank=True, help_text='The suffix or honorific for the creator.')
+    full_name = models.TextField(blank=True, help_text='The full name of the creator.')
+    modified = models.DateField(null=True, help_text='The date the resource was most recently modified.')
+    resource_URI = models.TextField(blank=True, help_text='The canonical URL identifier for this resource.')
+
+
+class MarvelAPIEventCreator(models.Model):
+    creator = models.ForeignKey(MarvelAPICreator, on_delete=models.CASCADE)
+    event = models.ForeignKey('MarvelAPIEvent', on_delete=models.CASCADE)
+    role = models.CharField(max_length=50)
+
+
+class MarvelAPIEvent(models.Model):
+    id = models.IntegerField(primary_key=True, help_text='The unique ID of the event resource.')
+    title = models.TextField(blank=True, help_text='The title of the event.')
+    description = models.TextField(blank=True, help_text='A description of the event.')
+    resource_URI = models.TextField(blank=True, help_text='The canonical URL identifier for this resource.')
+    modified = models.DateField(null=True, help_text='The date the resource was most recently modified.')
+    start = models.DateField(null=True, help_text='The date of publication of the first issue in this event.')
+    end = models.DateField(null=True, help_text='The date of publication of the last issue in this event.')
+    characters = models.ManyToManyField(MarvelAPICharacter, related_name='events',
+                                        help_text='Characters which appear in this event.')
+    creators = models.ManyToManyField(MarvelAPIEventCreator, related_name='events',
+                                      help_text='Creators whose work appears in this event.')
+
+
+class MarvelAPISeriesCreator(models.Model):
+    creator = models.ForeignKey(MarvelAPICreator, on_delete=models.CASCADE)
+    series_fk = models.ForeignKey('MarvelAPISeries', on_delete=models.CASCADE)
+    role = models.CharField(max_length=50)
+
+
+class MarvelAPISeries(models.Model):
+    id = models.IntegerField(primary_key=True, help_text='The unique ID of the series resource.')
+    title = models.TextField(blank=True, help_text='The canonical title of the series.')
+    description = models.TextField(blank=True, help_text='A description of the series.')
+    resource_URI = models.TextField(blank=True, help_text='The canonical URL identifier for this resource.')
+    start_year = models.IntegerField(null=True, help_text='The first year of publication for the series.')
+    end_year = models.IntegerField(null=True,
+                                   help_text='The last year of publication for the series '
+                                             '(conventionally, 2099 for ongoing series).')
+    rating = models.TextField(blank=True, help_text='The age-appropriateness rating for the series.')
+    modified = models.DateField(null=True, help_text='The date the resource was most recently modified.')
+    events = models.ManyToManyField(MarvelAPIEvent, related_name='series',
+                                    help_text='Events which take place in comics in this series.')
+    characters = models.ManyToManyField(MarvelAPICharacter, related_name='series',
+                                        help_text='Characters which appear in comics in this series.')
+    creators = models.ManyToManyField(MarvelAPISeriesCreator, related_name='series',
+                                      help_text='Creators whose work appears in comics in this series.')
+
+
+class MarvelAPIComicsCreator(models.Model):
+    creator = models.ForeignKey(MarvelAPICreator, on_delete=models.CASCADE)
+    comics_fk = models.ForeignKey('MarvelAPIComics', on_delete=models.CASCADE)
+    role = models.CharField(max_length=50)
+
+
+class MarvelAPIComics(models.Model):
+    id = models.IntegerField(primary_key=True, help_text='The unique ID of the comic resource.')
+    title = models.TextField(blank=True, help_text='The canonical title of the comic.')
+    issue_number = models.IntegerField(null=True,
+                                       help_text='The number of the issue in the series '
+                                                 '(will generally be 0 for collection formats).')
+    description = models.TextField(blank=True, help_text='The preferred description of the comic.')
+    modified = models.DateField(null=True, help_text='The date the resource was most recently modified.')
+    format = models.TextField(blank=True,
+                              help_text='The publication format of the comic e.g. comic, hardcover, trade paperback.')
+    page_count = models.IntegerField(null=True, help_text='The number of story pages in the comic.')
+    resource_URI = models.TextField(blank=True, help_text='The canonical URL identifier for this resource.')
+    creators = models.ManyToManyField(MarvelAPIComicsCreator, related_name='comics',
+                                      help_text='Creators associated with this comic.')
+    characters = models.ManyToManyField(MarvelAPICharacter, related_name='comics',
+                                        help_text='Characters which appear in this comic.')
+    events = models.ManyToManyField(MarvelAPIEvent, related_name='comics',
+                                    help_text='Events in which this comic appears.')
+    series = models.ForeignKey(MarvelAPISeries, related_name='comics', on_delete=models.CASCADE,
+                               help_text='Series to which this comic belongs.')
+
+
+class MarvelAPIDate(models.Model):
+    type = models.CharField(max_length=30)
+    date = models.DateField()
+    comics = models.ForeignKey(MarvelAPIComics, related_name='dates', on_delete=models.CASCADE)
+
+
+class MarvelAPISiteUrl(models.Model):
+    type = models.CharField(max_length=100, help_text='A text identifier for the URL.')
+    url = models.URLField(max_length=500, help_text='A full URL (including scheme, domain, and path).')
+    character = models.ForeignKey(MarvelAPICharacter, null=True, on_delete=models.SET_NULL, related_name='urls')
+    creator = models.ForeignKey(MarvelAPICreator, null=True, on_delete=models.SET_NULL, related_name='urls')
+    event = models.ForeignKey(MarvelAPIEvent, null=True, on_delete=models.SET_NULL, related_name='urls')
+    comics = models.ForeignKey(MarvelAPIComics, null=True, on_delete=models.SET_NULL, related_name='urls')
+
+
+class MarvelAPIImage(models.Model):
+    path = models.URLField(max_length=500, help_text='The directory path of to the image.')
+    extension = models.CharField(max_length=10, help_text='The file extension for the image.')
+    character = models.OneToOneField(MarvelAPICharacter, null=True, on_delete=models.SET_NULL,
+                                     related_name='thumbnail')
+    creator = models.OneToOneField(MarvelAPICreator, null=True, on_delete=models.SET_NULL, related_name='thumbnail')
+    event = models.OneToOneField(MarvelAPIEvent, null=True, on_delete=models.SET_NULL, related_name='thumbnail')
+    comics = models.OneToOneField(MarvelAPIComics, null=True, on_delete=models.SET_NULL, related_name='thumbnail')
+
 
 ########################################################################################################################
 # System
 ########################################################################################################################
 
-
 class Profile(models.Model):
     user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
     unlimited_api = models.BooleanField(default=False)
-
 
 class AppToken(models.Model):
     app_name = models.CharField(max_length=100)
@@ -318,4 +484,4 @@ class AppToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="app_tokens")
 
     class Meta:
-        unique_together = (("user", "app_name"), )
+        unique_together = (("user", "app_name"),)
