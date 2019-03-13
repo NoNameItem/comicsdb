@@ -168,7 +168,11 @@ function startParser() {
   let d = {};
   d.parser_code = $('#parser-code').val();
   $('.parser-run-input').map(function () {
-    d[$(this).attr("name")] = $(this).val();
+    if ($(this).attr("type") === "checkbox"){
+      d[$(this).attr("name")] = $(this).is(':checked') ? $(this).val() : null;
+    } else {
+      d[$(this).attr("name")] = $(this).val();
+    }
   });
   // console.log(d);
   $.ajax({

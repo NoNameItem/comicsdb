@@ -1,6 +1,12 @@
 function addTask(){
   let d = {};
-  $('.add-task-input').map(function(){d[$(this).attr('name')] = $(this).val()});
+  $('.add-task-input').map(function(){
+    if ($(this).attr("type") === "checkbox"){
+      d[$(this).attr("name")] = $(this).is(':checked') ? $(this).val() : null;
+    } else {
+      d[$(this).attr("name")] = $(this).val();
+    }
+  });
   $.ajax({
       type : "POST",
       url  : "/api/parser_schedule",

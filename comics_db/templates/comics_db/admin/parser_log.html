@@ -76,7 +76,12 @@
             <label for="cloud-path-root">Root directory</label>
             <input type="text" class="form-control parser-run-input" name="cloud-path-root" id="cloud-path-root"
                    aria-describedby="cloud-path-root-help" placeholder="Root directory to parse">
-            <small id="cloud-path-root-help" class="form-text text-muted">Directory in cloud for file parser</small>
+          </div>
+          <div class="form-check parser-run-form-group parser-run-form-group-CLOUD_FILES" style="display: none">
+            <label class="form-check-label">
+              <input type="checkbox" class="form-check-input parser-run-input" name="cloud-full" id="cloud-full" value="true">
+              Full
+            </label>
           </div>
         </div>
         <div class="modal-footer">

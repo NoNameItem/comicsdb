@@ -41,6 +41,18 @@ class MainPageView(TemplateView):
         return context
 
 
+class PublisherListView(ListView):
+    template_name = "comics_db/publisher_list.html"
+    queryset = models.Publisher.objects.all()
+    context_object_name = "publishers"
+
+
+class PublisherDetailView(DetailView):
+    template_name = "comics_db/publisher_detail.html"
+    model = models.Publisher
+    context_object_name = "publisher"
+
+
 class ParserRunDetail(DetailView):
     model = models.ParserRun
     context_object_name = 'parser_run'
@@ -72,7 +84,10 @@ class RunParser(View):
                 return JsonResponse({'status': 'error', 'message': 'Invalid parser code "%s"' % parser})
             if parser == 'CLOUD_FILES':
                 path_root = request.POST['cloud-path-root']
-                args = (path_root, )
+                if not path_root:
+                    return JsonResponse({'status': 'error', 'message': 'Path root should be specified'})
+                full = bool(request.POST['cloud-full'])
+                args = (path_root, full)
             tasks.parser_run_task.delay(parser, args)
             return JsonResponse({'status': 'success', 'message': '%s started' % self.parser_dict[parser]})
         except Exception as err:
@@ -572,8 +587,11 @@ class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, Gene
             # Parser
             parser = request.data['parser']
             if parser == 'CLOUD_FILES':
-                root = request.data['cloud-path-root']
-                init_args = (root, )
+                path_root = request.data['cloud-path-root']
+                if not path_root:
+                    return JsonResponse({'status': 'error', 'message': 'Path root should be specified'})
+                full = bool(request.POST['cloud-full'])
+                init_args = (path_root, full)
                 task_args = json.dumps((parser, init_args))
             else:
                 return Response({'status': 'error', 'message': 'Unknown parser code "%s"' % parser})

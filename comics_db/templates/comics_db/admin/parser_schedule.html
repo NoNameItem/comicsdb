@@ -23,16 +23,16 @@
           <h4 class="card-title">Add task</h4>
           <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
           <div class="heading-elements heading-top-elements">
-						<nav aria-label="Page navigation">
-							<ul>
-								<li class="page-item">
-									<button class="page-link btn-sm" aria-label="Add task" id="add-task-btn">
-									<i class="fas fa-plus"></i><span> Add</span>
-									</button>
-								</li>
-							</ul>
-						</nav>
-					</div>
+            <nav aria-label="Page navigation">
+              <ul>
+                <li class="page-item">
+                  <button class="page-link btn-sm" aria-label="Add task" id="add-task-btn">
+                    <i class="fas fa-plus"></i><span> Add</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
         <div class="card-content">
           <div class="card-body">
@@ -64,10 +64,18 @@
                 </div>
                 <div class="form-group parser-run-form-group parser-run-form-group-CLOUD_FILES" style="display: none">
                   <label for="cloud-path-root">Root directory</label>
-                  <input type="text" class="form-control parser-run-input add-task-input" name="cloud-path-root" id="cloud-path-root"
+                  <input type="text" class="form-control parser-run-input add-task-input" name="cloud-path-root"
+                         id="cloud-path-root"
                          aria-describedby="cloud-path-root-help" placeholder="Root directory to parse">
                   <small id="cloud-path-root-help" class="form-text text-muted">Directory in cloud for file parser
                   </small>
+                </div>
+                <div class="form-check parser-run-form-group parser-run-form-group-CLOUD_FILES" style="display: none">
+                  <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input add-task-input" name="cloud-full" id="cloud-full"
+                           value="true">
+                    Full
+                  </label>
                 </div>
                 <h4 class="form-section"><i class="far fa-calendar-alt"></i> Schedule</h4>
                 <div class="form-group">
@@ -103,7 +111,8 @@
                     <div class="form-group">
                       <label for="crontab-minute">Minute</label>
                       <input type="text"
-                             class="form-control add-task-input" name="crontab__minute" id="crontab-minute" placeholder="*">
+                             class="form-control add-task-input" name="crontab__minute" id="crontab-minute"
+                             placeholder="*">
                     </div>
                   </div>
                   <div class="col-md-6">
@@ -138,7 +147,8 @@
                     <div class="form-group">
                       <label for="crontab-month-of-year">Month of year</label>
                       <input type="text"
-                             class="form-control add-task-input" name="crontab__month_of_year" id="crontab-month-of-year"
+                             class="form-control add-task-input" name="crontab__month_of_year"
+                             id="crontab-month-of-year"
                              placeholder="*">
                     </div>
                   </div>
