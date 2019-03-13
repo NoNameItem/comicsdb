@@ -6,7 +6,8 @@
 {% block page_title %}Parsers log{% endblock %}
 
 {% block breadcrumb_items %}
-  <li class="breadcrumb-item active" aria-current="page"><a href="{% url "parser-log" %}">Parsers log</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
+  <li class="breadcrumb-item active" aria-current="page"><a href="{% url "site-parser-log" %}">Parsers log</a></li>
 {% endblock %}
 
 {% block vendor_css %}
