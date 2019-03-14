@@ -109,3 +109,41 @@ html body .content .content-wrapper .content-header-title,
 .border-right-warning {
     border-right: 1px solid #FFA87D!important;
 }
+
+.card-link{
+    /* only required rule to make this work */
+    position: relative;
+}
+
+.card-link:hover{
+    border: 1px solid #00B5B8;
+    border-top-left-radius: calc(0.25rem - 1px);
+    border-top-right-radius: calc(0.25rem - 1px);
+}
+
+/*.card-link:hover .card-footer{*/
+  /*border: 1px solid #00B5B8!important;*/
+/*}*/
+
+.default-link{
+  /* all rules required to make the whole div clickable */
+  position:absolute;
+  width:100%;
+  height:100%;
+  top:0;
+  left: 0;
+  z-index: 1;
+  /* this is a fix for IE7-9 */
+  background-color:#ffffff;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: alpha(opacity=0);
+  opacity:0;
+}
+
+.heading-elements ul {
+  margin-bottom: 0;
+}
+
+.custom-file-input{
+  cursor: pointer;
+}

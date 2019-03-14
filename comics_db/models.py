@@ -149,6 +149,10 @@ class Publisher(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def issue_count(self):
+        return self.titles.aggregate(models.Count('issues'))['issues__count']
+
     class Meta:
         ordering = ["name"]
 
@@ -178,6 +182,7 @@ class Universe(models.Model):
     name = models.CharField(max_length=100)
     desc = models.TextField(blank=True)
     slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
+    poster = models.ImageField(null=True, upload_to='universe_poster')
 
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="universes")
 
@@ -188,6 +193,10 @@ class Universe(models.Model):
 
     def get_slug(self):
         return slugify(str(self), allow_unicode=True)
+
+    @property
+    def logo(self):
+        return self.publisher.logo
 
     def __str__(self):
         return "[{0.publisher.name}] {0.name}".format(self)
@@ -219,6 +228,7 @@ class TitleCreator(models.Model):
 
 class Title(models.Model):
     name = models.CharField(max_length=500)
+    path_key = models.CharField(max_length=500, unique=True)
     desc = models.TextField(blank=True)
     image = models.ImageField(null=True, upload_to='title_image')
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
@@ -282,7 +292,7 @@ class Issue(models.Model):
         super(Issue, self).save(force_insert, force_update, using, update_fields)
 
     def get_slug(self):
-        return slugify(str(self), allow_unicode=True)
+        return slugify(self.link.replace('/', '_')[8:], allow_unicode=True)
 
     def __str__(self):
         return "[{0.title.publisher.name}, {0.title.universe.name}, {0.publish_date.year}] {0.name}".format(self)

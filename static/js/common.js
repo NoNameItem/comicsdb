@@ -41,21 +41,13 @@ function myNotify(options, settings) {
  * @param message - Сообщение об ошибке
  */
 function errorNotify(title, message) {
-  myNotify(
-    {
-      title   : title,
-      message : message,
-      icon    : "fa fa-exclamation-triangle"
-    },
-    {
-      type          : "danger",
-      delay         : 0,
-      newest_on_top : true,
-      animate       : {
-		    enter : 'animated fadeInDown',
-		    exit  : 'animated fadeOutDown'},
-    }
-  );
+  toastr.error(message, title, {
+    closeButton : true,
+    newestOnTop : true,
+    timeOut     : 0,
+    showMethod  : "slideDown",
+    hideMethod  : "slideUp"
+  });
 }
 
 /**
@@ -64,26 +56,18 @@ function errorNotify(title, message) {
  * @param message - Сообщение об ошибке
  */
 function successNotify(title, message) {
-  myNotify(
-    {
-      title   : title,
-      message : message,
-      icon    : "fas fa-check"
-    },
-    {
-      type          : "success",
-      delay         : 0,
-      newest_on_top : true,
-      animate       : {
-		    enter : 'animated fadeInDown',
-		    exit  : 'animated fadeOutDown'},
-    }
-  );
+  toastr.success(message, title, {
+    closeButton : true,
+    newestOnTop : true,
+    timeOut     : 0,
+    showMethod  : "slideDown",
+    hideMethod  : "slideUp"
+  });
 }
 
 // Добавляем в идентификацию ajax-запросов csrf-токен там, где это необходимо
 $.ajaxSetup({
-  beforeSend: function (xhr, settings) {
+  beforeSend : function (xhr, settings) {
     if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
       xhr.setRequestHeader("X-CSRFToken", csrftoken);
     }

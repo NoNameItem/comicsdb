@@ -240,7 +240,7 @@ var requirejs, require, define;
         return [prefix, name];
     }
 
-    //Creates a parts array for a relName where first part is plugin ID,
+    //Creates a publisher array for a relName where first part is plugin ID,
     //second part is resource ID. Assumes relName has already been normalized.
     function makeRelParts(relName) {
         return relName ? splitPrefix(relName) : [];

@@ -9120,7 +9120,7 @@ var
 	// Document location
 	ajaxLocation = location.href,
 
-	// Segment location into parts
+	// Segment location into publisher
 	ajaxLocParts = rurl.exec( ajaxLocation.toLowerCase() ) || [];
 
 // Base "constructor" for jQuery.ajaxPrefilter and jQuery.ajaxTransport

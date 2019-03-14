@@ -257,11 +257,15 @@ class CloudFilesParser(BaseParser):
                             title_type.save()
 
                         # Getting or creating Title
-                        title, created = comics_models.Title.objects.get_or_create(name=(info['title']
-                                                                                         or info['issue_name']),
+                        title, created = comics_models.Title.objects.get_or_create(path_key=(info['title']
+                                                                                             or info['issue_name']),
                                                                                    publisher=publisher,
                                                                                    universe=universe,
-                                                                                   title_type=title_type)
+                                                                                   title_type=title_type,
+                                                                                   defaults={
+                                                                                       'name': (info['title']
+                                                                                                or info['issue_name'])
+                                                                                   })
                         if created:
                             title.save()
 

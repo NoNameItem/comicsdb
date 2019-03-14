@@ -21,7 +21,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from knox.settings import CONSTANTS, knox_settings
 
-from comics_db import models, serializers, filtersets, tasks
+from comics_db import models, serializers, filtersets, tasks, forms
 
 
 ########################################################################################################################
@@ -42,15 +42,26 @@ class MainPageView(TemplateView):
 
 
 class PublisherListView(ListView):
-    template_name = "comics_db/publisher_list.html"
+    template_name = "comics_db/publisher/publisher_list.html"
     queryset = models.Publisher.objects.all()
     context_object_name = "publishers"
 
 
 class PublisherDetailView(DetailView):
-    template_name = "comics_db/publisher_detail.html"
+    template_name = "comics_db/publisher/publisher_detail.html"
     model = models.Publisher
     context_object_name = "publisher"
+
+    def post(self, request, slug):
+        self.object = self.get_object()
+        form = forms.PublisherForm(request.POST, request.FILES)
+        if form.is_valid():
+            self.object.logo = form.cleaned_data['logo'] or self.object.logo
+            self.object.poster = form.cleaned_data['poster'] or self.object.poster
+            self.object.desc = form.cleaned_data['desc']
+            self.object.save()
+        context = self.get_context_data(object=self.object, form=form)
+        return self.render_to_response(context)
 
 
 class ParserRunDetail(DetailView):

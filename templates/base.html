@@ -17,8 +17,9 @@
       rel="stylesheet">
   <!-- BEGIN VENDOR CSS-->
   <link rel="stylesheet" type="text/css" href="{% static "app-assets/vendors/css/vendors.min.css" %}">
-  <link type="text/css" rel="stylesheet" href="{% static "animate_css/animate.css" %}"/>
   <link type="text/css" rel="stylesheet" href="{% static "fontawesome/css/all.min.css" %}"/>
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/vendors/css/extensions/toastr.css" %}">
+
   {% block vendor_css %}{% endblock %}
   <!-- END VENDOR CSS-->
   <!-- BEGIN STACK CSS-->
@@ -30,8 +31,11 @@
   <!-- BEGIN Page Level CSS-->
   <link rel="stylesheet" type="text/css"
         href="{% static "app-assets/css/core/menu/menu-types/vertical-menu.min.css" %}">
-  <link rel="stylesheet" type="text/css" href="{% static "css/common.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/css/core/colors/palette-gradient.min.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "css/common.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/plugins/extensions/toastr.min.css" %}">
   {% block page_css %}{% endblock %}
+
   <!-- END Page Level CSS-->
 </head>
 <body class="vertical-layout vertical-menu 2-columns menu-expanded fixed-navbar" data-open="click"
@@ -85,27 +89,58 @@
 </nav>
 
 <!-- ////////////////////////////////////////////////////////////////////////////-->
-
+{#<!-- BEGIN: Main Menu-->#}
+{#    <!-- main menu-->#}
+{#    <div class="main-menu menu-fixed menu-light menu-accordion menu-border" data-scroll-to-active="true">#}
+{#        <!-- main menu header-->#}
+{#        <!-- / main menu header-->#}
+{#        <!-- main menu content-->#}
+{#        <div class="main-menu-content">#}
+{#            <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">#}
+{#                <li class=" nav-item">#}
+{#                  <a href="{% url 'site-publisher-list' %}">#}
+{#                    <i class="ft-file"></i><span class="menu-title" data-i18n="">Changelog</span>#}
+{#                  </a>#}
+{#                </li>#}
+{#                <li class=" nav-item"><a href="https://pixinvent.ticksy.com/"><i class="ft-life-buoy"></i><span class="menu-title" data-i18n="">Raise Support</span></a>#}
+{#                </li>#}
+{#                <li class=" nav-item"><a href="https://pixinvent.com/stack-bootstrap-admin-template/documentation"><i class="ft-folder"></i><span class="menu-title" data-i18n="">Documentation</span></a>#}
+{#                </li>#}
+{#            </ul>#}
+{#        </div>#}
+{#        <!-- /main menu content-->#}
+{#        <!-- main menu footer-->#}
+{#        <!-- main menu footer-->#}
+{#    </div>#}
+{#    <!-- / main menu-->#}
+{#    <!-- END: Main Menu-->#}
 
 <!-- main menu-->
-<div class="main-menu menu-fixed menu-light menu-accordion menu-border" data-scroll-to-active="true">
+<div class="main-menu menu-fixed menu-light menu-accordion menu-border" data-scroll-to-active="true"
+     style="touch-action: none; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
   <!-- main menu header-->
   <div class="main-menu-header">
     <input class="menu-search form-control round" type="text" placeholder="Search"/>
   </div>
   <!-- / main menu header-->
   <!-- main menu content-->
-  <div class="main-menu-content">
+  <div class="main-menu-content ps">
     <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
-    <li class="{% if request.resolver_match.url_name|startswith:"site-publisher" %}active{% else %}menu-item{% endif %}">
-        <a href="{% url 'site-publisher-list' %}"><i class="fal fa-building"></i></i> Publishers</a>
+      <li class="{% if request.resolver_match.url_name|startswith:"site-publisher" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-publisher-list' %}">
+          <i class="fal fa-building"></i><span class="menu-title">Publishers</span>
+        </a>
       </li>
       <!-- admin menu items-->
-      <li class="{% if request.resolver_match.url_name|startswith:"parser-log" %}active{% else %}menu-item{% endif %}">
-        <a href="{% url 'site-parser-log' %}"><i class="ft-refresh-cw"></i> Parsers log</a>
+      <li class="{% if request.resolver_match.url_name|startswith:"parser-log" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-parser-log' %}">
+          <i class="ft-refresh-cw"></i><span class="menu-title">Parsers log</span>
+        </a>
       </li>
-      <li class="{% if request.resolver_match.url_name == "parser-schedule" %}active{% else %}menu-item{% endif %}">
-        <a href="{% url 'parser-schedule' %}"><i class="far fa-calendar-alt"></i> Parser schedule</a>
+      <li class="{% if request.resolver_match.url_name == "parser-schedule" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'parser-schedule' %}">
+          <i class="far fa-calendar-alt"></i><span class="menu-title">Parser schedule</span>
+        </a>
       </li>
     </ul>
   </div>
@@ -141,7 +176,8 @@
 
 <footer class="footer footer-static footer-light navbar-border">
   <p class="clearfix blue-grey lighten-2 text-sm-center mb-0 px-2"><span
-      class="float-md-left d-block d-md-inline-block">Copyright  &copy; 2019 <a href="{% url "site-main" %}">ComicsDB</a>, All rights reserved. </span>
+      class="float-md-left d-block d-md-inline-block">Copyright  &copy; 2019 <a
+      href="{% url "site-main" %}">ComicsDB</a>, All rights reserved. </span>
     {% if user.is_authenticated %}
       <span class="float-md-right d-block d-md-inline-block d-none d-lg-block">We build API for this shit, <a
           href="{% url "api-root" %}" target="_blank">check this out</a></span></p>{% endif %}
@@ -149,17 +185,12 @@
 
 
 <!-- BEGIN VENDOR JS-->
-<script src="{% static "app-assets/js/core/libraries/jquery.min.js" %}" type="text/javascript"></script>
-<script src="{% static "app-assets/vendors/js/ui/popper.min.js" %}" type="text/javascript"></script>
-<script src="{% static "app-assets/js/core/libraries/bootstrap.min.js" %}" type="text/javascript"></script>
-<script src="{% static "app-assets/vendors/js/ui/perfect-scrollbar.jquery.min.js" %}" type="text/javascript"></script>
-<script src="{% static "app-assets/vendors/js/ui/unison.min.js" %}" type="text/javascript"></script>
-<script src="{% static "app-assets/vendors/js/ui/blockUI.min.js" %}" type="text/javascript"></script>
-<script src="{% static "app-assets/vendors/js/ui/jquery-sliding-menu.js" %}" type="text/javascript"></script>
+<script src="{% static "app-assets/vendors/js/vendors.min.js" %}" type="text/javascript"></script>
 <script src="{% static "js/js.cookie.js" %}" type="text/javascript"></script>
 <script src="{% static "bootstrap-notify/bootstrap-notify.min.js" %}" type="text/javascript"></script>
 <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}"
         type="text/javascript"></script>
+<script src="{% static "app-assets/vendors/js/extensions/toastr.min.js" %}" type="text/javascript"></script>
 <!-- END VENDOR JS-->
 <!-- BEGIN PAGE VENDOR JS-->
 {% block vendor_js %}{% endblock %}
@@ -167,6 +198,7 @@
 <!-- BEGIN STACK JS-->
 <script src="{% static "app-assets/js/core/app-menu.js" %}" type="text/javascript"></script>
 <script src="{% static "app-assets/js/core/app.js" %}" type="text/javascript"></script>
+<script src="{% static "app-assets/js/scripts/customizer.min.js" %}"></script>
 <!-- END STACK JS-->
 <!-- BEGIN PAGE LEVEL JS-->
 <script src="{% static "js/common.js" %}" type="text/javascript"></script>

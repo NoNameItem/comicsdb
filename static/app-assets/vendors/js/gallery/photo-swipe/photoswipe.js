@@ -2678,7 +2678,7 @@ var _showOrHideTimeout,
 				}
 			
 			}, out ? 25 : 90); // Main purpose of this delay is to give browser time to paint and
-					// create composite layers of PhotoSwipe UI parts (background, controls, caption, arrows).
+					// create composite layers of PhotoSwipe UI publisher (background, controls, caption, arrows).
 					// Which avoids lag at the beginning of scale transition.
 		};
 		startAnimation();

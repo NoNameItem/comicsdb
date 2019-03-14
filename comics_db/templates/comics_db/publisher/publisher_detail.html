@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Publisher: {{ publisher.name }}{% endblock %}
+
+{% block page_title %}{% endblock %}
+
+{% block breadcrumb_items %}
+  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-publisher-list" %}">Publishers</a></li>
+  <li class="breadcrumb-item active"><a href="{% url "site-publisher-detail" publisher.slug %}">{{ publisher.name }}</a>
+  </li>
+{% endblock %}
+
+{% block vendor_css %}
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "comics_db/css/detail_pages.css" %}">
+{% endblock %}
+
+{% block content %}
+  <!-- HEADER -->
+  <div id="detail-card-head">
+    <div class="row">
+      <div class="col-12">
+        <div class="card detail-card-with-cover">
+          <div class="card-img-top img-fluid bg-cover height-600"
+               style="background:
+                   url('{% if publisher.poster %}{{ publisher.poster.url }}{% else %}{% static "images/defaults/default_publisher_poster.png" %}{% endif %}') 50%;"></div>
+          <div class="media detail-card-cover-details w-100">
+            <div class="media-left pl-2 pt-2">
+              <a href="#" class="detail-card-image">
+                <img src="{% if publisher.logo %}
+                {{ publisher.logo.url }}
+                {% else %}
+                {% static "images/defaults/default_publisher_logo.png" %}
+                {% endif %}" class="rounded-circle img-border height-100 width-100" alt="Card image">
+              </a>
+            </div>
+            <div class="media-body pt-3 px-2">
+              <div class="row">
+                <div class="col">
+                  <h3 class="card-title">{{ publisher.name }}</h3>
+                </div>
+                {% if user.is_staff %}
+                  <div class="col text-right">
+                    <div class="btn-group d-none d-md-block float-right ml-2" role="group" aria-label="Basic example">
+                      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#publisher-modal">
+                        <i class="fa fa-cog"></i></button>
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="card-desc text-muted">
+            <em>{{ publisher.desc|default:"No description" }}</em>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /HEADER -->
+  <!-- STATISTICS -->
+  <div class="row">
+    <div class="col-md-4 col-12">
+      <div class="card bg-gradient-directional-warning">
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-globe-asia white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ publisher.universes.count }}</h3>
+                <span>Universe{{ publisher.universes.count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-12">
+      <div class="card bg-gradient-directional-primary">
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-books white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ publisher.titles.count }}</h3>
+                <span>Title{{ publisher.titles.count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-12">
+      <div class="card bg-gradient-directional-danger">
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-book-open white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ publisher.issue_count }}</h3>
+                <span>Issue{{ publisher.issue_count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /STATISTICS -->
+{% endblock %}
+
+{% block modals %}
+  <div class="modal fade" id="publisher-modal" tabindex="-1" role="dialog" aria-labelledby="publisher-modal"
+       aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form class="form" method="post" action enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-body">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit publisher info</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <fieldset class="form-group">
+                <div class="custom-file">
+                  <input type="file"
+                         class="custom-file-input form-control {% if form.errors.logo %}is-invalid{% endif %}"
+                         id="publisher-logo" name="logo">
+                  <label class="custom-file-label" for="publisher-logo">Publisher logo</label>
+                  <div class="invalid-feedback">
+                    {{ form.errors.logo }}
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset class="form-group">
+                <div class="custom-file">
+                  <input type="file"
+                         class="custom-file-input form-control {% if form.errors.poster %}is-invalid{% endif %}"
+                         id="publisher-poster" name="poster">
+                  <label class="custom-file-label" for="publisher-poster">Publisher poster</label>
+                  <div class="invalid-feedback">
+                    {{ form.errors.poster }}
+                  </div>
+                </div>
+
+              </fieldset>
+              <fieldset class="form-group">
+                <label for="publisher-description">Publisher description</label>
+                <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
+                          id="publisher-description"
+                          rows="3">{{ publisher.desc }}</textarea>
+                <div class="invalid-feedback">
+                  {{ form.errors.desc }}
+                </div>
+              </fieldset>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <input type="submit" class="btn btn-primary" value="Save">
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block vendor_js %}
+{% endblock %}
+
+{% block page_js %}
+  <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
+  {% if form.errors %}
+    <script>
+    $('#publisher-modal').modal('show');
+    </script>
+  {% endif %}
+{% endblock %}
