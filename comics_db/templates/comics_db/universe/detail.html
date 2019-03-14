@@ -121,8 +121,8 @@
                 <div class="custom-file">
                   <input type="file"
                          class="custom-file-input form-control {% if form.errors.poster %}is-invalid{% endif %}"
-                         id="publisher-poster" name="poster">
-                  <label class="custom-file-label" for="publisher-poster">Universe poster</label>
+                         id="universe-poster" name="poster">
+                  <label class="custom-file-label" for="universe-poster">Universe poster</label>
                   <div class="invalid-feedback">
                     {{ form.errors.poster }}
                   </div>
@@ -130,9 +130,9 @@
 
               </fieldset>
               <fieldset class="form-group">
-                <label for="publisher-description">Universe description</label>
+                <label for="universe-description">Universe description</label>
                 <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
-                          id="publisher-description"
+                          id="universe-description"
                           rows="3">{{ universe.desc }}</textarea>
                 <div class="invalid-feedback">
                   {{ form.errors.desc }}
