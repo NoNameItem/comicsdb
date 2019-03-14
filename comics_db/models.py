@@ -135,8 +135,8 @@ MARVEL_API_STATUS_CHOICES = (
 
 class Publisher(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    logo = ThumbnailImageField(null=True, upload_to='publisher_logo', thumb_width=100, thumb_height=100)
-    poster = ThumbnailImageField(null=True, upload_to='publisher_poster', thumb_width=520, thumb_height=200)
+    logo = ThumbnailImageField(null=True, upload_to='publisher_logo', thumb_width=100)
+    poster = ThumbnailImageField(null=True, upload_to='publisher_poster', thumb_width=520)
     desc = models.TextField(blank=True)
     slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
 
@@ -235,7 +235,7 @@ class Title(models.Model):
     name = models.CharField(max_length=500)
     path_key = models.CharField(max_length=500, unique=True)
     desc = models.TextField(blank=True)
-    image = ThumbnailImageField(null=True, upload_to='title_image', thumb_height=200, thumb_width=380)
+    image = ThumbnailImageField(null=True, upload_to='title_image', thumb_width=380)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
 
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="titles")
