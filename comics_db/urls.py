@@ -56,6 +56,10 @@ urlpatterns = [
     path('universes', views.UniverseListView.as_view(), name="site-universe-list"),
     path('universe/<slug:slug>', views.UniverseDetailView.as_view(), name="site-universe-detail"),
 
+    # Titles
+    path('titles', views.TitleListView.as_view(), name="site-title-list"),
+    path('title/<slug:slug>', views.TitleDetailView.as_view(), name="site-title-detail"),
+
     # Parser log
     path('parser_log', TemplateView.as_view(template_name="comics_db/admin/parser_log.html",
                                             extra_context={'parser_choices': models.ParserRun.PARSER_CHOICES}),

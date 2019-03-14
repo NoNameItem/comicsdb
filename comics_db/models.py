@@ -258,6 +258,10 @@ class Title(models.Model):
     def __str__(self):
         return "[{0.publisher.name}, {0.universe.name}, {0.title_type.name}] {0.name}".format(self)
 
+    @property
+    def logo(self):
+        return self.publisher.logo
+
     class Meta:
         unique_together = (("name", "publisher", "universe", "title_type"),)
         ordering = ["publisher", "universe", "name"]

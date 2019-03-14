@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'registration',
     'knox',
     'django_celery_beat',
+    'el_pagination',
     'comics_db',
 ]
 
@@ -71,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',  # For EL-pagination
             ],
         },
     },
@@ -177,7 +179,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-            'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_THROTTLE_CLASSES': (
         'comics_db.throttling.AllowAdminThrottle',
@@ -209,3 +211,7 @@ CELERY_TASK_SERIALIZER = 'json'
 # Marvel API settings
 MARVEL_PUBLIC_KEY = '4a0de5eae9ac92d01242ffdfe69b3d61'
 MARVEL_PRIVATE_KEY = '41ffa67b7888b3468fd61101dc9a038d3a7a9610'
+
+# Endless Pagination Settings
+EL_PAGINATION_PER_PAGE = 20
+EL_PAGINATION_ORPHANS = 3

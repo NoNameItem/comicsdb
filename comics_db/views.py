@@ -20,6 +20,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from knox.settings import CONSTANTS, knox_settings
+from el_pagination.views import AjaxListView
 
 from comics_db import models, serializers, filtersets, tasks, forms
 
@@ -82,6 +83,32 @@ class UniverseDetailView(DetailView):
             self.object.poster = form.cleaned_data['poster'] or self.object.poster
             self.object.desc = form.cleaned_data['desc']
             self.object.save()
+        context = self.get_context_data(object=self.object, form=form)
+        return self.render_to_response(context)
+
+
+class TitleListView(AjaxListView):
+    template_name = "comics_db/title/list.html"
+    queryset = models.Title.objects.all()
+    context_object_name = "titles"
+    page_template = "comics_db/title/list_block.html"
+
+
+class TitleDetailView(DetailView):
+    template_name = "comics_db/title/detail.html"
+    model = models.Title
+    context_object_name = "title"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title_types'] = models.TitleType.objects.all()
+        return context
+
+    def post(self, request, slug):
+        self.object = self.get_object()
+        form = forms.TitleForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            form.save()
         context = self.get_context_data(object=self.object, form=form)
         return self.render_to_response(context)
 

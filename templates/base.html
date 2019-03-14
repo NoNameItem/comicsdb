@@ -88,9 +88,9 @@
 <div class="main-menu menu-fixed menu-light menu-accordion menu-border" data-scroll-to-active="true"
      style="touch-action: none; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
   <!-- main menu header-->
-  <div class="main-menu-header">
-    <input class="menu-search form-control round" type="text" placeholder="Search"/>
-  </div>
+{#  <div class="main-menu-header">#}
+{#    <input class="menu-search form-control round" type="text" placeholder="Search"/>#}
+{#  </div>#}
   <!-- / main menu header-->
   <!-- main menu content-->
   <div class="main-menu-content ps">
@@ -100,9 +100,14 @@
           <i class="fal fa-building"></i><span class="menu-title">Publishers</span>
         </a>
       </li>
-    <li class="{% if request.resolver_match.url_name|startswith:"site-universe" %}active{% else %}nav-item{% endif %}">
+      <li class="{% if request.resolver_match.url_name|startswith:"site-universe" %}active{% else %}nav-item{% endif %}">
         <a href="{% url 'site-universe-list' %}">
           <i class="fal fa-globe-asia"></i><span class="menu-title">Universes</span>
+        </a>
+      </li>
+      <li class="{% if request.resolver_match.url_name|startswith:"site-title" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-title-list' %}">
+          <i class="fal fa-books"></i><span class="menu-title">Titles</span>
         </a>
       </li>
       {% if user.is_staff %}

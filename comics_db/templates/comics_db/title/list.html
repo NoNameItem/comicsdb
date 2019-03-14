@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Titles{% endblock %}
+
+{% block page_title %}Titles{% endblock %}
+
+{% block breadcrumb_items %}
+  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
+  <li class="breadcrumb-item active"><a href="{% url "site-title-list" %}">Titles</a></li>
+{% endblock %}
+
+{% block vendor_css %}
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "comics_db/css/card-list.css" %}">
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    {% include "comics_db/title/list_block.html" %}
+  </div>
+{% endblock %}
+
+{% block vendor_js %}
+{% endblock %}
+
+{% block page_js %}
+  <script src="{% static "el-pagination/js/el-pagination.js" %}"></script>
+  <script>
+    $.endlessPaginate({
+      paginateOnScroll : true,
+    });
+  </script>
+{% endblock %}

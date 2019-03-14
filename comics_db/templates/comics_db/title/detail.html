@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Title: {{ title.name }}{% endblock %}
+
+{% block page_title %}{% endblock %}
+
+{% block breadcrumb_items %}
+  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-title-list" %}">Titles</a></li>
+  <li class="breadcrumb-item active"><a href="{% url "site-title-detail" title.slug %}">{{ title.name }}</a>
+  </li>
+{% endblock %}
+
+{% block vendor_css %}
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "comics_db/css/detail_pages.css" %}">
+{% endblock %}
+
+{% block content %}
+  <!-- HEADER -->
+  <div id="detail-card-head">
+    <div class="row">
+      <div class="col-12">
+        <div class="card detail-card-with-cover">
+          <div class="card-img-top img-fluid bg-cover height-300"
+               style="background:
+                   url('{% if title.image %}{{ title.image.url }}{% else %}{% static "images/defaults/default_title_image.png" %}{% endif %}') 30%;"></div>
+          <div class="media detail-card-cover-details w-100">
+            <div class="media-left pl-2 pt-2">
+              <a href="{% url "site-publisher-detail" title.publisher.slug %}" class="detail-card-image">
+                <img src="{% if title.logo %}
+                {{ title.logo.thumb_url }}
+                {% else %}
+                {% static "images/defaults/default_logo_small.png" %}
+                {% endif %}" class="rounded-circle img-border height-100 width-100" alt="Card image">
+              </a>
+            </div>
+            <div class="media-body pt-3 px-2">
+              <div class="row">
+                <div class="col">
+                  <h3 class="card-title">{{ title.name }} ({{ title.title_type.name }})</h3>
+                </div>
+                <div class="col text-right">
+                  {% if title.image %}
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#full-image-modal">
+                      Title image
+                    </button>
+                  {% endif %}
+                  {% if user.is_staff %}
+                    <div class="btn-group d-none d-md-block float-right ml-2" role="group" aria-label="Basic example">
+                      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#title-modal">
+                        <i class="fa fa-cog"></i></button>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-desc text-muted">
+            <em>{{ title.desc|default:"No description" }}</em>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /HEADER -->
+  <!-- STATISTICS -->
+  <div class="row">
+    <div class="col-md-12 col-12">
+      <div class="card bg-gradient-directional-danger">
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-book-open white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ title.issues.count }}</h3>
+                <span>Issue{{ title.issues.count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /STATISTICS -->
+{% endblock %}
+
+{% block modals %}
+  <div class="modal fade" id="title-modal" tabindex="-1" role="dialog" aria-labelledby="title-modal"
+       aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form class="form" method="post" action enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-body">
+
+            <div class="modal-body">
+              <div class="modal-header mb-1">
+                <h5 class="modal-title">Edit title info</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="form-group">
+                <label for="title-name">Title name</label>
+                <input type="text"
+                       class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name" id="title-name"
+                       aria-describedby="helpId" value="{{ title.name }}">
+                <div class="invalid-feedback">
+                  {{ form.errors.name }}
+                </div>
+              </div>
+              <fieldset class="form-group">
+                <label for="title-description">Title description</label>
+                <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
+                          id="title-description"
+                          rows="3">{{ title.desc }}</textarea>
+                <div class="invalid-feedback">
+                  {{ form.errors.desc }}
+                </div>
+              </fieldset>
+              <div class="form-group">
+                <label for="title-type">Title type</label>
+                <select class="form-control {% if form.errors.title_type %}is-invalid{% endif %}" name="title_type"
+                        id="title-type">
+                  {% for title_type in title_types %}
+                    <option value="{{ title_type.id }}"
+                            {% if title_type.id == title.title_type.id %}selected{% endif %}>
+                      {{ title_type.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <div class="invalid-feedback">
+                  {{ form.errors.title_type }}
+                </div>
+              </div>
+              <fieldset class="form-group">
+                <div class="custom-file">
+                  <input type="file"
+                         class="custom-file-input form-control {% if form.errors.image %}is-invalid{% endif %}"
+                         id="title-poster" name="image">
+                  <label class="custom-file-label" for="title-poster">Title image</label>
+                  <div class="invalid-feedback">
+                    {{ form.errors.image }}
+                  </div>
+                </div>
+
+              </fieldset>
+
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <input type="submit" class="btn btn-primary" value="Save">
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#full-image-modal">
+    Launch
+  </button>
+
+  <!-- Modal -->
+  {% if title.image %}
+    <div class="modal fade" id="full-image-modal" tabindex="-1" role="dialog" aria-labelledby="full-image-modal"
+         aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Title image</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <img src="{{ title.image.url }}" class="img-fluid rounded-top" alt="Title image">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block vendor_js %}
+{% endblock %}
+
+{% block page_js %}
+  <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
+  {% if form.errors %}
+    <script>
+      $('#publisher-modal').modal('show');
+    </script>
+  {% endif %}
+{% endblock %}
