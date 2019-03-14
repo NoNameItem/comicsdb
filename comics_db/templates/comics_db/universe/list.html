@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Publishers{% endblock %}
+{% block title %}Universes{% endblock %}
 
-{% block page_title %}Publishers{% endblock %}
+{% block page_title %}Universes{% endblock %}
 
 {% block breadcrumb_items %}
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-publisher-list" %}">Publishers</a></li>
+  <li class="breadcrumb-item active"><a href="{% url "site-universe-list" %}">Universes</a></li>
 {% endblock %}
 
 {% block vendor_css %}
@@ -19,7 +19,7 @@
 
 {% block content %}
   <div class="row">
-    {% include "comics_db/publisher/publisher_list_block.html" %}
+    {% include "comics_db/universe/list_block.html" %}
   </div>
 {% endblock %}
 

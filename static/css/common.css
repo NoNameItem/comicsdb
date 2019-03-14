@@ -1,6 +1,6 @@
 html body .content .content-wrapper .content-header-title,
 .breadcrumb,
-.card .card-title {
+.card .card-title, .navigation .navigation-header {
   text-transform: none;
 }
 

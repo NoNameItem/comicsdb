@@ -42,13 +42,13 @@ class MainPageView(TemplateView):
 
 
 class PublisherListView(ListView):
-    template_name = "comics_db/publisher/publisher_list.html"
+    template_name = "comics_db/publisher/list.html"
     queryset = models.Publisher.objects.all()
     context_object_name = "publishers"
 
 
 class PublisherDetailView(DetailView):
-    template_name = "comics_db/publisher/publisher_detail.html"
+    template_name = "comics_db/publisher/detail.html"
     model = models.Publisher
     context_object_name = "publisher"
 
@@ -57,6 +57,28 @@ class PublisherDetailView(DetailView):
         form = forms.PublisherForm(request.POST, request.FILES)
         if form.is_valid():
             self.object.logo = form.cleaned_data['logo'] or self.object.logo
+            self.object.poster = form.cleaned_data['poster'] or self.object.poster
+            self.object.desc = form.cleaned_data['desc']
+            self.object.save()
+        context = self.get_context_data(object=self.object, form=form)
+        return self.render_to_response(context)
+
+
+class UniverseListView(ListView):
+    template_name = "comics_db/universe/list.html"
+    queryset = models.Universe.objects.all()
+    context_object_name = "universes"
+
+
+class UniverseDetailView(DetailView):
+    template_name = "comics_db/universe/detail.html"
+    model = models.Universe
+    context_object_name = "universe"
+
+    def post(self, request, slug):
+        self.object = self.get_object()
+        form = forms.UniverseForm(request.POST, request.FILES)
+        if form.is_valid():
             self.object.poster = form.cleaned_data['poster'] or self.object.poster
             self.object.desc = form.cleaned_data['desc']
             self.object.save()

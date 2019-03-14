@@ -45,19 +45,31 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     # Pages
+    # Main page
     path('', views.MainPageView.as_view(), name="site-main"),
+
+    # Publisher
     path('publishers', views.PublisherListView.as_view(), name="site-publisher-list"),
     path('publisher/<slug:slug>', views.PublisherDetailView.as_view(), name="site-publisher-detail"),
+
+    # Universe
+    path('universes', views.UniverseListView.as_view(), name="site-universe-list"),
+    path('universe/<slug:slug>', views.UniverseDetailView.as_view(), name="site-universe-detail"),
+
+    # Parser log
     path('parser_log', TemplateView.as_view(template_name="comics_db/admin/parser_log.html",
                                             extra_context={'parser_choices': models.ParserRun.PARSER_CHOICES}),
          name="site-parser-log"),
     path('parser_log/<int:pk>', views.ParserRunDetail.as_view(), name="parser-log-detail"),
     path('run_parser', views.RunParser.as_view(), name="run-parser"),
+
+    # Parser schedule
     path('parser_schedule', TemplateView.as_view(template_name="comics_db/admin/parser_schedule.html",
                                                  extra_context={
                                                      'parser_choices': models.ParserRun.PARSER_CHOICES,
                                                      'period_choices': IntervalSchedule.PERIOD_CHOICES,
                                                  }),
+
          name="parser-schedule"),
 
     # API

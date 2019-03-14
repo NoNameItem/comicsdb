@@ -27,14 +27,14 @@
         <div class="card detail-card-with-cover">
           <div class="card-img-top img-fluid bg-cover height-600"
                style="background:
-                   url('{% if publisher.poster %}{{ publisher.poster.url }}{% else %}{% static "images/defaults/default_publisher_poster.png" %}{% endif %}') 50%;"></div>
+                   url('{% if publisher.poster %}{{ publisher.poster.url }}{% else %}{% static "images/defaults/default_poster.png" %}{% endif %}') 50%;"></div>
           <div class="media detail-card-cover-details w-100">
             <div class="media-left pl-2 pt-2">
               <a href="#" class="detail-card-image">
                 <img src="{% if publisher.logo %}
                 {{ publisher.logo.url }}
                 {% else %}
-                {% static "images/defaults/default_publisher_logo.png" %}
+                {% static "images/defaults/default_logo.png" %}
                 {% endif %}" class="rounded-circle img-border height-100 width-100" alt="Card image">
               </a>
             </div>

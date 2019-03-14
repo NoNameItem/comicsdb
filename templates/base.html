@@ -32,7 +32,7 @@
   <link rel="stylesheet" type="text/css"
         href="{% static "app-assets/css/core/menu/menu-types/vertical-menu.min.css" %}">
   <link rel="stylesheet" href="{% static "app-assets/css/core/colors/palette-gradient.min.css" %}">
-    <link rel="stylesheet" type="text/css" href="{% static "css/common.css" %}">
+  <link rel="stylesheet" type="text/css" href="{% static "css/common.css" %}">
   <link rel="stylesheet" type="text/css" href="{% static "app-assets/css/plugins/extensions/toastr.min.css" %}">
   {% block page_css %}{% endblock %}
 
@@ -62,17 +62,13 @@
           <li class="nav-item d-none d-md-block"><a class="nav-link nav-menu-main menu-toggle hidden-xs" href="#"><i
               class="ft-menu"></i></a></li>
         </ul>
-
-
         <ul class="nav navbar-nav float-right">
-
           {% if user.is_authenticated %}
             <li class="dropdown dropdown-user nav-item">
               <a class="dropdown-toggle nav-link" href="#" data-toggle="dropdown">
                 <span class="user-name">{{ user.username }}</span>
               </a>
               <div class="dropdown-menu dropdown-menu-right">
-
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="/accounts/logout"> Sign Out</a>
               </div>
@@ -87,34 +83,7 @@
     </div>
   </div>
 </nav>
-
 <!-- ////////////////////////////////////////////////////////////////////////////-->
-{#<!-- BEGIN: Main Menu-->#}
-{#    <!-- main menu-->#}
-{#    <div class="main-menu menu-fixed menu-light menu-accordion menu-border" data-scroll-to-active="true">#}
-{#        <!-- main menu header-->#}
-{#        <!-- / main menu header-->#}
-{#        <!-- main menu content-->#}
-{#        <div class="main-menu-content">#}
-{#            <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">#}
-{#                <li class=" nav-item">#}
-{#                  <a href="{% url 'site-publisher-list' %}">#}
-{#                    <i class="ft-file"></i><span class="menu-title" data-i18n="">Changelog</span>#}
-{#                  </a>#}
-{#                </li>#}
-{#                <li class=" nav-item"><a href="https://pixinvent.ticksy.com/"><i class="ft-life-buoy"></i><span class="menu-title" data-i18n="">Raise Support</span></a>#}
-{#                </li>#}
-{#                <li class=" nav-item"><a href="https://pixinvent.com/stack-bootstrap-admin-template/documentation"><i class="ft-folder"></i><span class="menu-title" data-i18n="">Documentation</span></a>#}
-{#                </li>#}
-{#            </ul>#}
-{#        </div>#}
-{#        <!-- /main menu content-->#}
-{#        <!-- main menu footer-->#}
-{#        <!-- main menu footer-->#}
-{#    </div>#}
-{#    <!-- / main menu-->#}
-{#    <!-- END: Main Menu-->#}
-
 <!-- main menu-->
 <div class="main-menu menu-fixed menu-light menu-accordion menu-border" data-scroll-to-active="true"
      style="touch-action: none; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
@@ -131,17 +100,28 @@
           <i class="fal fa-building"></i><span class="menu-title">Publishers</span>
         </a>
       </li>
-      <!-- admin menu items-->
-      <li class="{% if request.resolver_match.url_name|startswith:"parser-log" %}active{% else %}nav-item{% endif %}">
-        <a href="{% url 'site-parser-log' %}">
-          <i class="ft-refresh-cw"></i><span class="menu-title">Parsers log</span>
+    <li class="{% if request.resolver_match.url_name|startswith:"site-universe" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-universe-list' %}">
+          <i class="fal fa-globe-asia"></i><span class="menu-title">Universes</span>
         </a>
       </li>
-      <li class="{% if request.resolver_match.url_name == "parser-schedule" %}active{% else %}nav-item{% endif %}">
-        <a href="{% url 'parser-schedule' %}">
-          <i class="far fa-calendar-alt"></i><span class="menu-title">Parser schedule</span>
-        </a>
-      </li>
+      {% if user.is_staff %}
+        <!-- admin menu items-->
+        <li class="navigation-header"><span>Administration</span><i class=" ft-minus" data-toggle="tooltip"
+                                                                    data-placement="right"
+                                                                    data-original-title="Apps"></i>
+        </li>
+        <li class="{% if request.resolver_match.url_name|startswith:"parser-log" %}active{% else %}nav-item{% endif %}">
+          <a href="{% url 'site-parser-log' %}">
+            <i class="ft-refresh-cw"></i><span class="menu-title">Parsers log</span>
+          </a>
+        </li>
+        <li class="{% if request.resolver_match.url_name == "parser-schedule" %}active{% else %}nav-item{% endif %}">
+          <a href="{% url 'parser-schedule' %}">
+            <i class="far fa-calendar-alt"></i><span class="menu-title">Parser schedule</span>
+          </a>
+        </li>
+      {% endif %}
     </ul>
   </div>
   <!-- /main menu content-->

@@ -6,3 +6,8 @@ class PublisherForm(forms.Form):
     poster = forms.ImageField(required=False)
     desc = forms.CharField(required=False)
 
+
+class UniverseForm(forms.Form):
+    poster = forms.ImageField(required=False)
+    desc = forms.CharField(required=False)
+

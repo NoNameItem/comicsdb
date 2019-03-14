@@ -198,6 +198,10 @@ class Universe(models.Model):
     def logo(self):
         return self.publisher.logo
 
+    @property
+    def issue_count(self):
+        return self.titles.aggregate(models.Count('issues'))['issues__count']
+
     def __str__(self):
         return "[{0.publisher.name}] {0.name}".format(self)
 
