@@ -46,7 +46,7 @@
                 <div class="col text-right">
                   {% if title.image %}
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#full-image-modal">
-                      Title image
+                      View image
                     </button>
                   {% endif %}
                   {% if user.is_staff %}
@@ -163,16 +163,11 @@
     </div>
   </div>
 
-  <!-- Button trigger modal -->
-  <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#full-image-modal">
-    Launch
-  </button>
-
   <!-- Modal -->
   {% if title.image %}
     <div class="modal fade" id="full-image-modal" tabindex="-1" role="dialog" aria-labelledby="full-image-modal"
          aria-hidden="true">
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Title image</h5>
@@ -181,7 +176,7 @@
             </button>
           </div>
           <div class="modal-body">
-            <img src="{{ title.image.url }}" class="img-fluid rounded-top" alt="Title image">
+            <img src="{{ title.image.url }}" class="img-fluid mx-auto d-block" alt="Title image">
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
