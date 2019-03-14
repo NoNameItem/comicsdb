@@ -5,12 +5,12 @@
     <div class="card card-with-cover card-link">
       <a class='default-link' href='{% url "site-publisher-detail" publisher.slug %}'></a>
       <div class="card-img-top img-fluid bg-cover height-200"
-           style="background: url('{% if publisher.poster %}{{ publisher.poster.url }}{% else %}{% static "images/defaults/default_poster.png" %}{% endif %}') 50%"></div>
+           style="background: url('{% if publisher.poster %}{{ publisher.poster.thumb_url }}{% else %}{% static "images/defaults/default_poster_small.png" %}{% endif %}') 50%"></div>
       <div class="card-profile-image">
         <img src="{% if publisher.logo %}
                   {{ publisher.logo.url }}
                 {% else %}
-                  {% static "images/defaults/default_logo.png" %}
+                  {% static "images/defaults/default_logo_small.png" %}
                 {% endif %}"
              class="rounded-circle img-border box-shadow-1 width-100 height-100" alt="Card image" >
       </div>

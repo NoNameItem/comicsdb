@@ -32,9 +32,9 @@
             <div class="media-left pl-2 pt-2">
               <a href="#" class="detail-card-image">
                 <img src="{% if publisher.logo %}
-                {{ publisher.logo.url }}
+                {{ publisher.logo.thumb_url }}
                 {% else %}
-                {% static "images/defaults/default_logo.png" %}
+                {% static "images/defaults/default_logo_small.png" %}
                 {% endif %}" class="rounded-circle img-border height-100 width-100" alt="Card image">
               </a>
             </div>

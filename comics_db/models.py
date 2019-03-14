@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from knox.models import AuthToken
 
 from comicsdb import settings
+from comics_db.fields import ThumbnailImageField
 
 
 # Create your models here.
@@ -134,8 +135,8 @@ MARVEL_API_STATUS_CHOICES = (
 
 class Publisher(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    logo = models.ImageField(null=True, upload_to='publisher_logo')
-    poster = models.ImageField(null=True, upload_to='publisher_poster')
+    logo = ThumbnailImageField(null=True, upload_to='publisher_logo', thumb_width=100, thumb_height=100)
+    poster = ThumbnailImageField(null=True, upload_to='publisher_poster', thumb_width=520, thumb_height=200)
     desc = models.TextField(blank=True)
     slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
 
@@ -182,7 +183,7 @@ class Universe(models.Model):
     name = models.CharField(max_length=100)
     desc = models.TextField(blank=True)
     slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
-    poster = models.ImageField(null=True, upload_to='universe_poster')
+    poster = ThumbnailImageField(null=True, upload_to='universe_poster', thumb_width=520, thumb_height=200)
 
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="universes")
 
@@ -234,7 +235,7 @@ class Title(models.Model):
     name = models.CharField(max_length=500)
     path_key = models.CharField(max_length=500, unique=True)
     desc = models.TextField(blank=True)
-    image = models.ImageField(null=True, upload_to='title_image')
+    image = ThumbnailImageField(null=True, upload_to='title_image', thumb_height=200, thumb_width=380)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
 
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="titles")
@@ -274,7 +275,7 @@ class Issue(models.Model):
     desc = models.TextField(blank=True)
     publish_date = models.DateField()
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
-    main_cover = models.ImageField(null=True, upload_to='issue_cover')
+    main_cover = ThumbnailImageField(null=True, upload_to='issue_cover', thumb_width=380, thumb_height=200)
     link = models.URLField(max_length=1000, unique=True)
 
     title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="issues")

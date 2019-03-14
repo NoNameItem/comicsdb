@@ -32,9 +32,9 @@
             <div class="media-left pl-2 pt-2">
               <a href="{% url "site-publisher-detail" universe.publisher.slug %}" class="detail-card-image">
                 <img src="{% if universe.logo %}
-                {{ universe.logo.url }}
+                {{ universe.logo.thumb_url }}
                 {% else %}
-                {% static "images/defaults/default_logo.png" %}
+                {% static "images/defaults/default_logo_small.png" %}
                 {% endif %}" class="rounded-circle img-border height-100 width-100" alt="Card image">
               </a>
             </div>
@@ -133,7 +133,7 @@
                 <label for="publisher-description">Universe description</label>
                 <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
                           id="publisher-description"
-                          rows="3">{{ publisher.desc }}</textarea>
+                          rows="3">{{ universe.desc }}</textarea>
                 <div class="invalid-feedback">
                   {{ form.errors.desc }}
                 </div>
