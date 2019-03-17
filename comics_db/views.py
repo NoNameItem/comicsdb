@@ -124,6 +124,21 @@ class IssueListView(AjaxListView):
     page_template = "comics_db/issue/list_block.html"
 
 
+class TitleIssueListView(IssueListView):
+    template_name = "comics_db/title/issue_list.html"
+    page_template = "comics_db/title/issue_list_block"
+
+    def get_queryset(self):
+        self.title = models.Title.objects.get(slug=self.kwargs['slug'])
+        return models.Issue.objects.filter(title=self.title)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = self.title
+        return context
+
+
+
 class IssueDetailView(DetailView):
     template_name = "comics_db/issue/detail.html"
     model = models.Issue

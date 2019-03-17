@@ -59,6 +59,7 @@ urlpatterns = [
     # Titles
     path('titles', views.TitleListView.as_view(), name="site-title-list"),
     path('title/<slug:slug>', views.TitleDetailView.as_view(), name="site-title-detail"),
+    path('title/<slug:slug>/issues', views.TitleIssueListView.as_view(), name="site-title-issues"),
 
     # Issues
     path('issues', views.IssueListView.as_view(), name="site-issue-list"),
