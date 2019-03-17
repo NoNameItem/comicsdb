@@ -60,9 +60,14 @@ urlpatterns = [
     path('titles', views.TitleListView.as_view(), name="site-title-list"),
     path('title/<slug:slug>', views.TitleDetailView.as_view(), name="site-title-detail"),
 
+    # Issues
+    path('issues', views.IssueListView.as_view(), name="site-issue-list"),
+    path('issue/<slug:slug>/', views.IssueDetailView.as_view(), name="site-issue-detail"),
+    path('issue/<slug:slug>/mark-read', views.ReadIssue.as_view(), name="site-issue-mark-read"),
+
     # Parser log
-    path('parser_log', TemplateView.as_view(template_name="comics_db/admin/parser_log.html",
-                                            extra_context={'parser_choices': models.ParserRun.PARSER_CHOICES}),
+    path('parser_log', views.ParserLogView.as_view(template_name="comics_db/admin/parser_log.html",
+                                                   extra_context={'parser_choices': models.ParserRun.PARSER_CHOICES}),
          name="site-parser-log"),
     path('parser_log/<int:pk>', views.ParserRunDetail.as_view(), name="parser-log-detail"),
     path('run_parser', views.RunParser.as_view(), name="run-parser"),

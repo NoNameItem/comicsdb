@@ -31,12 +31,10 @@
   margin-left: 130px
 }
 
-.card .card-title {
-  font-size: 2.5rem;
+.detail-card-with-cover .card-title {
+  font-size: 2rem;
 }
 
 #detail-card-head .card-desc {
-  padding-left: 130px;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding: 20px 20px 20px 130px;
 }

@@ -26,8 +26,15 @@
       <div class="col-12">
         <div class="card detail-card-with-cover">
           <div class="card-img-top img-fluid bg-cover height-300"
+               {% if publisher.poster %}
+               data-toggle="modal" data-target="#full-image-modal"
+               {% endif %}
                style="background:
-                   url('{% if publisher.poster %}{{ publisher.poster.url }}{% else %}{% static "images/defaults/default_poster.png" %}{% endif %}') 50%;"></div>
+                   url('{% if publisher.poster %}{{ publisher.poster.url }}{% else %}{% static "images/defaults/default_poster.png" %}{% endif %}') 50%;
+               {% if publisher.poster %}
+               cursor: pointer;
+               {% endif %}
+                   "></div>
           <div class="media detail-card-cover-details w-100">
             <div class="media-left pl-2 pt-2">
               <a href="#" class="detail-card-image">
@@ -44,11 +51,7 @@
                   <h3 class="card-title">{{ publisher.name }}</h3>
                 </div>
                 <div class="col text-right">
-                  {% if publisher.poster %}
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#full-image-modal">
-                      View poster
-                    </button>
-                  {% endif %}
+
                   {% if user.is_staff %}
                     <div class="btn-group d-none d-md-block float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#universe-modal">

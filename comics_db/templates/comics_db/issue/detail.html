@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% load static %}
+{% load l10n %}
+
+{% block title %}Issue: {{ issue.name }}{% endblock %}
+
+{% block page_title %}{% endblock %}
+
+{% block breadcrumb_items %}
+  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-issue-list" %}">Issues</a></li>
+  <li class="breadcrumb-item active"><a href="{% url "site-issue-detail" issue.slug %}">{{ issue.name }}</a>
+  </li>
+{% endblock %}
+
+{% block vendor_css %}
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "comics_db/css/detail_pages.css" %}">
+{% endblock %}
+
+{% block content %}
+  <!-- HEADER -->
+  <div id="detail-card-head">
+    <div class="row">
+      <div class="col-12">
+        <div class="card detail-card-with-cover">
+          <div class="card-img-top img-fluid bg-cover height-300"
+               {% if issue.main_cover %}
+               data-toggle="modal" data-target="#full-image-modal"
+               {% endif %}
+               style="background:
+                   url('{% if issue.main_cover %}{{ issue.main_cover.url }}{% else %}{% static "images/defaults/default_issue_cover.png" %}{% endif %}') 50%;
+               {% if issue.main_cover %}
+               cursor: pointer;
+               {% endif %}
+                   "></div>
+          <div class="media detail-card-cover-details w-100">
+            <div class="media-left pl-2 pt-2">
+              <a href="{% url "site-publisher-detail" issue.title.publisher.slug %}" class="detail-card-image">
+                <img src="{% if issue.logo %}
+                {{ issue.logo.thumb_url }}
+                {% else %}
+                {% static "images/defaults/default_logo_small.png" %}
+                {% endif %}" class="rounded-circle img-border height-100 width-100" alt="Card image">
+              </a>
+            </div>
+            <div class="media-body pt-3 px-2">
+              <div class="row">
+                <div class="col-9">
+                  <h3 class="card-title">{{ issue.title.name }} {% if issue.number %}#{{ issue.number }}{% endif %}
+                    <i class="fas fa-check-circle success" id="read-mark" style="display: none"></i></h3>
+                </div>
+                <div class="col text-right">
+                  <div class="btn-group white" role="group">
+                    {% if issue.previous_link %}
+                      <a role="button" class="btn btn-secondary" href="{{ issue.previous_link }}" data-toggle="tooltip"
+                         data-placement="bottom" title="Previous issue in title"><i
+                          class="fal fa-backward"></i></a>
+                    {% endif %}
+                    <a role="button" class="btn btn-secondary" href="{{ issue.download_link }}" data-toggle="tooltip"
+                       data-placement="bottom" title="Download issue"><i class="fal fa-download"></i></a>
+                    {% if issue.next_link %}
+                      <a role="button" class="btn btn-secondary" href="{{ issue.next_link }}" data-toggle="tooltip"
+                         data-placement="bottom" title="Next issue in title"><i
+                          class="fal fa-forward"></i></a>
+                    {% endif %}
+                  </div>
+                  {% if user.is_staff %}
+                    <div class="btn-group d-none d-md-block float-right ml-2" role="group" aria-label="Basic example">
+                      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#issue-modal">
+                        <i class="fa fa-cog"></i></button>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="card-desc text-muted">
+                <h3>{{ issue.name }}</h3>
+                <em>{{ issue.desc|default:"No description" }}</em>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-3 col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Issue info</h4>
+        </div>
+        <div class="card-content collapse show">
+          <div class="card-body border-top-blue-grey border-top-lighten-5 ">
+            <div class="row">
+              <div class="col-md-4 col-12 text-right">
+                <strong>Publisher: </strong>
+              </div>
+              <div class="col-md-8 col-12">
+                <a href="{% url "site-publisher-detail" issue.title.publisher.slug %}">{{ issue.title.publisher.name }}</a>
+              </div>
+            </div>
+            {% if issue.title.universe %}
+              <div class="row">
+                <div class="col-md-4 col-12 text-right">
+                  <strong>Universe: </strong>
+                </div>
+                <div class="col-md-8 col-12">
+                  <a href="{% url "site-universe-detail" issue.title.universe.slug %}">{{ issue.title.universe.name }}</a>
+                </div>
+              </div>
+            {% endif %}
+            <div class="row">
+              <div class="col-md-4 col-12 text-right">
+                <strong>Title: </strong>
+              </div>
+              <div class="col-md-8 col-12">
+                <a href="{% url "site-title-detail" issue.title.slug %}">{{ issue.title.name }}</a>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4 col-12 text-right">
+                <strong>Title type: </strong>
+              </div>
+              <div class="col-md-8 col-12">
+                {{ issue.title.title_type.name }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4 col-12 text-right">
+                <strong>Publish date: </strong>
+              </div>
+              <div class="col-md-8 col-12">
+                {{ issue.publish_date|localize }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4 col-12 text-right">
+                <strong>Pages count: </strong>
+              </div>
+              <div class="col-md-8 col-12">
+                {{ issue.page_count|default_if_none:"Unknown" }}
+              </div>
+            </div>
+
+            {% if request.user.is_authenticated %}<div class="row" id="read-date-row" {% if not read_date %}style="display: none" {% endif %}>
+              <div class="col-md-4 col-12 text-right">
+                <strong>Read date: </strong>
+              </div>
+              <div class="col-md-8 col-12" id="read-date">
+                {{ read_date|localize }}
+              </div>
+            </div>
+
+            {% if not read_date %}
+              <div class="row mt-1">
+                <div class="col-12 text-center">
+                  <button type="button" class="btn btn-success btn-block" id="mark-read-btn">Mark as read</button>
+                </div>
+              </div>
+            {% endif %}{% endif %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /HEADER -->
+{% endblock %}
+
+{% block modals %}
+  <div class="modal fade" id="issue-modal" tabindex="-1" role="dialog" aria-labelledby="issue-modal"
+       aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form class="form" method="post" action enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-body">
+
+            <div class="modal-body">
+              <div class="modal-header mb-1">
+                <h5 class="modal-title">Edit issue info</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <fieldset class="form-group">
+                <label for="title-name">Issue name</label>
+                <input type="text"
+                       class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name" id="issue-name"
+                       aria-describedby="helpId" value="{{ issue.name }}">
+                <div class="invalid-feedback">
+                  {% for error in form.desc.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </fieldset>
+              <div class="row">
+                <div class="col-md-6 col-12">
+                  <div class="form-group">
+                    <label for="issue-number">Issue number</label>
+                    <input type="number"
+                           class="form-control" name="number" id="issue-number" value="{{ issue.number }}">
+                  </div>
+                </div>
+                <div class="col-md-6 col-12">
+                  <fieldset class="form-group">
+                    <label for="issue-publish-date">Issue publish date</label>
+                    <div class="input-group date" id="issue-date-container">
+                      <input type="text" class="form-control" id="issue-publish-date" name="publish_date">
+                      <div class="input-group-append">
+										<span class="input-group-text">
+											<i class="fal fa-calendar-alt"></i>
+										</span>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+
+              <fieldset class="form-group">
+                <label for="issue-description">Issue description</label>
+                <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
+                          id="issue-description"
+                          rows="3">{{ issue.desc }}</textarea>
+                <div class="invalid-feedback">
+                  {% for error in form.desc.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </fieldset>
+
+              <fieldset class="form-group">
+                <div class="custom-file">
+                  <input type="file"
+                         class="custom-file-input form-control {% if form.errors.main_cover %}is-invalid{% endif %}"
+                         id="issue-main-cover" name="main_cover">
+                  <label class="custom-file-label" for="issue-main-cover">Issue cover</label>
+                  <div class="invalid-feedback">
+                    {% for error in form.main_cover.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                  </div>
+                </div>
+              </fieldset>
+
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <input type="submit" class="btn btn-primary" value="Save">
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  {% if issue.main_cover %}
+    <div class="modal fade" id="full-image-modal" tabindex="-1" role="dialog" aria-labelledby="full-image-modal"
+         aria-hidden="true">
+      <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Issue cover</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <img src="{{ issue.main_cover.url }}" class="img-fluid mx-auto d-block" alt="Issue cover">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block vendor_js %}
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}" type="text/javascript"></script>
+{% endblock %}
+
+{% block page_js %}
+  <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}" type="text/javascript"></script>
+  <script src="{% static "comics_db/js/issue_detail.js" %}" type="text/javascript"></script>
+  <script>
+  $('#issue-date-container').datetimepicker({format: 'DD.MM.YYYY', date : new Date('{{ issue.publish_date }}')});
+  {% if form.errors %}
+      $('#issue-modal').modal('show');
+  {% endif %}
+  </script>
+{% endblock %}

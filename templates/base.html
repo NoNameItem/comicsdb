@@ -110,6 +110,11 @@
           <i class="fal fa-books"></i><span class="menu-title">Titles</span>
         </a>
       </li>
+    <li class="{% if request.resolver_match.url_name|startswith:"site-issue" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-issue-list' %}">
+          <i class="fal fa-book-open"></i><span class="menu-title">Issues</span>
+        </a>
+      </li>
       {% if user.is_staff %}
         <!-- admin menu items-->
         <li class="navigation-header"><span>Administration</span><i class=" ft-minus" data-toggle="tooltip"

@@ -78,6 +78,7 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'comicsdb.wsgi.application'
 
 # Database

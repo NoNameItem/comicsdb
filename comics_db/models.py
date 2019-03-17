@@ -279,8 +279,9 @@ class Issue(models.Model):
     desc = models.TextField(blank=True)
     publish_date = models.DateField()
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
-    main_cover = ThumbnailImageField(null=True, upload_to='issue_cover', thumb_width=380, thumb_height=200)
+    main_cover = ThumbnailImageField(null=True, upload_to='issue_cover', thumb_width=380)
     link = models.URLField(max_length=1000, unique=True)
+    page_count = models.IntegerField(null=True)
 
     title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="issues")
     creators = models.ManyToManyField(Creator, through=IssueCreator, related_name='issues')
@@ -301,7 +302,7 @@ class Issue(models.Model):
         super(Issue, self).save(force_insert, force_update, using, update_fields)
 
     def get_slug(self):
-        return slugify(self.link.replace('/', '_')[8:], allow_unicode=True)
+        return slugify(self.link.replace('/', '_')[8:-4], allow_unicode=True)
 
     def __str__(self):
         return "[{0.title.publisher.name}, {0.title.universe.name}, {0.publish_date.year}] {0.name}".format(self)
@@ -309,6 +310,30 @@ class Issue(models.Model):
     @property
     def download_link(self):
         return escape_uri_path("{0}/{1.link}".format(settings.DO_PUBLIC_URL, self))
+
+    @property
+    def previous_link(self):
+        next_issues = self.title.issues.filter(number__lt=self.number).order_by('-number')
+        if next_issues:
+            return next_issues[0].site_link
+        else:
+            return None
+
+    @property
+    def next_link(self):
+        next_issues = self.title.issues.filter(number__gt=self.number).order_by('number')
+        if next_issues:
+            return next_issues[0].site_link
+        else:
+            return None
+
+    @property
+    def site_link(self):
+        return reverse('site-issue-detail', args=(self.slug, ))
+
+    @property
+    def logo(self):
+        return self.title.publisher.logo
 
     class Meta:
         unique_together = (("name", "title", "publish_date"),)
@@ -492,9 +517,21 @@ class MarvelAPIImage(models.Model):
 # System
 ########################################################################################################################
 
+
+class ReadIssue(models.Model):
+    profile = models.ForeignKey('Profile', on_delete=models.CASCADE)
+    issue = models.ForeignKey(Issue, on_delete=models.CASCADE)
+    read_date = models.DateField(auto_now=True)
+
+    class Meta:
+        unique_together = (("profile", "issue"), )
+
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
     unlimited_api = models.BooleanField(default=False)
+    read_issues = models.ManyToManyField(Issue, through=ReadIssue, related_name="readers")
 
 
 class AppToken(models.Model):

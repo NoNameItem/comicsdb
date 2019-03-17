@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load crispy_forms_tags %}
 
 {% block title %}Title: {{ title.name }}{% endblock %}
 
@@ -26,8 +27,15 @@
       <div class="col-12">
         <div class="card detail-card-with-cover">
           <div class="card-img-top img-fluid bg-cover height-300"
+               {% if title.image %}
+               data-toggle="modal" data-target="#full-image-modal"
+               {% endif %}
                style="background:
-                   url('{% if title.image %}{{ title.image.url }}{% else %}{% static "images/defaults/default_title_image.png" %}{% endif %}') 30%;"></div>
+                   url('{% if title.image %}{{ title.image.url }}{% else %}{% static "images/defaults/default_title_image.png" %}{% endif %}') 30%;
+               {% if title.image %}
+               cursor: pointer;
+               {% endif %}
+                   "></div>
           <div class="media detail-card-cover-details w-100">
             <div class="media-left pl-2 pt-2">
               <a href="{% url "site-publisher-detail" title.publisher.slug %}" class="detail-card-image">
@@ -40,15 +48,10 @@
             </div>
             <div class="media-body pt-3 px-2">
               <div class="row">
-                <div class="col">
+                <div class="col-10">
                   <h3 class="card-title">{{ title.name }} ({{ title.title_type.name }})</h3>
                 </div>
                 <div class="col text-right">
-                  {% if title.image %}
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#full-image-modal">
-                      View image
-                    </button>
-                  {% endif %}
                   {% if user.is_staff %}
                     <div class="btn-group d-none d-md-block float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#title-modal">
@@ -112,7 +115,9 @@
                        class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name" id="title-name"
                        aria-describedby="helpId" value="{{ title.name }}">
                 <div class="invalid-feedback">
-                  {{ form.errors.name }}
+                  {% for error in form.name.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
                 </div>
               </div>
               <fieldset class="form-group">
@@ -121,7 +126,9 @@
                           id="title-description"
                           rows="3">{{ title.desc }}</textarea>
                 <div class="invalid-feedback">
-                  {{ form.errors.desc }}
+                  {% for error in form.desc.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
                 </div>
               </fieldset>
               <div class="form-group">
@@ -136,7 +143,9 @@
                   {% endfor %}
                 </select>
                 <div class="invalid-feedback">
-                  {{ form.errors.title_type }}
+                  {% for error in form.title_type.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
                 </div>
               </div>
               <fieldset class="form-group">
@@ -146,21 +155,24 @@
                          id="title-poster" name="image">
                   <label class="custom-file-label" for="title-poster">Title image</label>
                   <div class="invalid-feedback">
-                    {{ form.errors.image }}
+                    {% for error in form.image.errors %}
+                      <p>{{ error }}</p>
+                    {% endfor %}
                   </div>
                 </div>
-
               </fieldset>
+            </div>
 
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <input type="submit" class="btn btn-primary" value="Save">
-            </div>
+
           </div>
-        </form>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <input type="submit" class="btn btn-primary" value="Save">
+          </div>
       </div>
+      </form>
     </div>
+  </div>
   </div>
 
   <!-- Modal -->
@@ -194,7 +206,7 @@
   <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
   {% if form.errors %}
     <script>
-      $('#publisher-modal').modal('show');
+      $('#title-modal').modal('show');
     </script>
   {% endif %}
 {% endblock %}

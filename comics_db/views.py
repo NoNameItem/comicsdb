@@ -1,8 +1,11 @@
 import json
 
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils import formats
 from django.views.generic import DetailView, ListView
 from django.views.generic.base import View, TemplateView
 from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
@@ -109,14 +112,71 @@ class TitleDetailView(DetailView):
         form = forms.TitleForm(request.POST, request.FILES, instance=self.object)
         if form.is_valid():
             form.save()
+        context = self.get_context_data(object=self.object)
+        context['form'] = form
+        return self.render_to_response(context)
+
+
+class IssueListView(AjaxListView):
+    template_name = "comics_db/issue/list.html"
+    queryset = models.Issue.objects.all()
+    context_object_name = "issues"
+    page_template = "comics_db/issue/list_block.html"
+
+
+class IssueDetailView(DetailView):
+    template_name = "comics_db/issue/detail.html"
+    model = models.Issue
+    context_object_name = "issue"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            issue = self.get_object()
+            r = models.ReadIssue.objects.get(issue=issue, profile=self.request.user.profile)
+            read_date = r.read_date
+        except (models.ReadIssue.DoesNotExist, AttributeError):
+            read_date = None
+        context['read_date'] = read_date
+        return context
+
+    def post(self, request, slug):
+        self.object = self.get_object()
+        form = forms.IssueForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            form.save()
         context = self.get_context_data(object=self.object, form=form)
         return self.render_to_response(context)
 
 
-class ParserRunDetail(DetailView):
+class ReadIssue(View, LoginRequiredMixin):
+    def post(self, request, slug):
+        try:
+            issue = models.Issue.objects.get(slug=slug)
+            profile = request.user.profile
+            r = models.ReadIssue(profile=profile, issue=issue)
+            r.save()
+            return JsonResponse({'status': "success", 'issue_name': issue.name,
+                                 'date': formats.localize(r.read_date, use_l10n=True)})
+        except IntegrityError:
+            return JsonResponse({'status': 'error', 'message': 'You already marked this issue as read'})
+        except Exception as err:
+            return JsonResponse({'status': 'error', 'message': 'Unknown error, please contact administrator. \n'
+                                                               'Error message: %s' % err.args[0]})
+
+
+class ParserLogView(UserPassesTestMixin, TemplateView):
+    def test_func(self):
+        return self.request.user.is_staff
+
+
+class ParserRunDetail(UserPassesTestMixin, DetailView):
     model = models.ParserRun
     context_object_name = 'parser_run'
     template_name = "comics_db/admin/parser_run.html"
+
+    def test_func(self):
+        return self.request.user.is_staff
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -133,8 +193,11 @@ class ParserRunDetail(DetailView):
         return context
 
 
-class RunParser(View):
+class RunParser(UserPassesTestMixin, View):
     parser_dict = dict(models.ParserRun.PARSER_CHOICES)
+
+    def test_func(self):
+        return self.request.user.is_staff
 
     def post(self, request):
         try:

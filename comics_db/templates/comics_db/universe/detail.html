@@ -26,8 +26,15 @@
       <div class="col-12">
         <div class="card detail-card-with-cover">
           <div class="card-img-top img-fluid bg-cover height-300"
+               {% if universe.poster %}
+               data-toggle="modal" data-target="#full-image-modal"
+               {% endif %}
                style="background:
-                   url('{% if universe.poster %}{{ universe.poster.url }}{% else %}{% static "images/defaults/default_poster.png" %}{% endif %}') 30%;"></div>
+                   url('{% if universe.poster %}{{ universe.poster.url }}{% else %}{% static "images/defaults/default_poster.png" %}{% endif %}') 30%;
+               {% if universe.poster %}
+               cursor: pointer;
+               {% endif %}
+                   "></div>
           <div class="media detail-card-cover-details w-100">
             <div class="media-left pl-2 pt-2">
               <a href="{% url "site-publisher-detail" universe.publisher.slug %}" class="detail-card-image">
@@ -44,11 +51,6 @@
                   <h3 class="card-title">{{ universe.name }}</h3>
                 </div>
                 <div class="col text-right">
-                  {% if universe.poster %}
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#full-image-modal">
-                      View poster
-                    </button>
-                  {% endif %}
                   {% if user.is_staff %}
                     <div class="btn-group d-none d-md-block float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#universe-modal">
@@ -185,7 +187,7 @@
   <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
   {% if form.errors %}
     <script>
-    $('#publisher-modal').modal('show');
+    $('#universe-modal').modal('show');
     </script>
   {% endif %}
 {% endblock %}
