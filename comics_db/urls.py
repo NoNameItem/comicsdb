@@ -51,6 +51,7 @@ urlpatterns = [
     # Publisher
     path('publishers', views.PublisherListView.as_view(), name="site-publisher-list"),
     path('publisher/<slug:slug>', views.PublisherDetailView.as_view(), name="site-publisher-detail"),
+    path('publisher/<slug:slug>/issues', views.PublisherIssueListView.as_view(), name="site-publisher-issues"),
 
     # Universe
     path('universes', views.UniverseListView.as_view(), name="site-universe-list"),

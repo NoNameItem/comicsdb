@@ -68,6 +68,21 @@ class PublisherDetailView(DetailView):
         return self.render_to_response(context)
 
 
+class PublisherIssueListView(AjaxListView):
+    template_name = "comics_db/publisher/issue_list.html"
+    page_template = "comics_db/publisher/issue_list_block.html"
+    context_object_name = "issues"
+
+    def get_queryset(self):
+        self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
+        return models.Issue.objects.filter(title__publisher=self.publisher)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['publisher'] = self.publisher
+        return context
+
+
 class UniverseListView(ListView):
     template_name = "comics_db/universe/list.html"
     queryset = models.Universe.objects.all()
@@ -117,16 +132,10 @@ class TitleDetailView(DetailView):
         return self.render_to_response(context)
 
 
-class IssueListView(AjaxListView):
-    template_name = "comics_db/issue/list.html"
-    queryset = models.Issue.objects.all()
-    context_object_name = "issues"
-    page_template = "comics_db/issue/list_block.html"
-
-
-class TitleIssueListView(IssueListView):
+class TitleIssueListView(AjaxListView):
     template_name = "comics_db/title/issue_list.html"
-    page_template = "comics_db/title/issue_list_block"
+    page_template = "comics_db/title/issue_list_block.html"
+    context_object_name = "issues"
 
     def get_queryset(self):
         self.title = models.Title.objects.get(slug=self.kwargs['slug'])
@@ -137,6 +146,12 @@ class TitleIssueListView(IssueListView):
         context['title'] = self.title
         return context
 
+
+class IssueListView(AjaxListView):
+    template_name = "comics_db/issue/list.html"
+    queryset = models.Issue.objects.all()
+    context_object_name = "issues"
+    page_template = "comics_db/issue/list_block.html"
 
 
 class IssueDetailView(DetailView):
