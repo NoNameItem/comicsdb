@@ -91,6 +91,50 @@
     </div>
   </div>
   <!-- /STATISTICS -->
+  <!-- Info cards -->
+  <div class="row">
+    <!-- Main info -->
+    <div class="col-md-3 col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Title info</h4>
+        </div>
+        <div class="card-content collapse show">
+          <div class="card-body border-top-blue-grey border-top-lighten-5 ">
+            <div class="row">
+              <div class="col-md-4 col-12 text-right">
+                <strong>Publisher: </strong>
+              </div>
+              <div class="col-md-8 col-12">
+                <a href="{% url "site-publisher-detail" title.publisher.slug %}">{{ title.publisher.name }}</a>
+              </div>
+            </div>
+            {% if title.universe %}
+              <div class="row">
+                <div class="col-md-4 col-12 text-right">
+                  <strong>Universe: </strong>
+                </div>
+                <div class="col-md-8 col-12">
+                  <a href="{% url "site-universe-detail" title.universe.slug %}">{{ title.universe.name }}</a>
+                </div>
+              </div>
+            {% endif %}
+            <div class="row">
+              <div class="col-md-4 col-12 text-right">
+                <strong>Title type: </strong>
+              </div>
+              <div class="col-md-8 col-12">
+                {{ title.title_type.name }}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /Main info -->
+  </div>
+  <!-- /Info cards -->
 {% endblock %}
 
 {% block modals %}
