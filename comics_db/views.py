@@ -105,6 +105,21 @@ class UniverseDetailView(DetailView):
         return self.render_to_response(context)
 
 
+class UniverseIssueListView(AjaxListView):
+    template_name = "comics_db/universe/issue_list.html"
+    page_template = "comics_db/universe/issue_list_block.html"
+    context_object_name = "issues"
+
+    def get_queryset(self):
+        self.universe = models.Universe.objects.get(slug=self.kwargs['slug'])
+        return models.Issue.objects.filter(title__universe=self.universe)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['universe'] = self.universe
+        return context
+
+
 class TitleListView(AjaxListView):
     template_name = "comics_db/title/list.html"
     queryset = models.Title.objects.all()

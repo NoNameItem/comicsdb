@@ -56,6 +56,7 @@ urlpatterns = [
     # Universe
     path('universes', views.UniverseListView.as_view(), name="site-universe-list"),
     path('universe/<slug:slug>', views.UniverseDetailView.as_view(), name="site-universe-detail"),
+    path('universe/<slug:slug>/issues', views.UniverseIssueListView.as_view(), name="site-universe-issues"),
 
     # Titles
     path('titles', views.TitleListView.as_view(), name="site-title-list"),
