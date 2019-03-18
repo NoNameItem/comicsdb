@@ -21,6 +21,19 @@
 
 {% block content %}
   <div class="row">
+    <div class="col">
+      <form action method="get">
+        <fieldset class="form-group position-relative">
+          <input type="text" class="form-control form-control-xl input-xl" id="search-field"
+                 placeholder="Search for issue ..." name="search" value="{{ search }}">
+          <div class="form-control-position">
+            <i class="far fa-search"></i>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+  <div class="row">
     {% include "comics_db/publisher/issue_list_block.html" %}
   </div>
 {% endblock %}

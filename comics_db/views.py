@@ -3,7 +3,7 @@ import json
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import formats
@@ -105,14 +105,25 @@ class PublisherIssueListView(AjaxListView):
     page_template = "comics_db/publisher/issue_list_block.html"
     context_object_name = "issues"
 
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
+                     'title__universe__name__icontains')
+
     def get_queryset(self):
         self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
-        return models.Issue.objects.filter(title__publisher=self.publisher).select_related("title__universe",
-                                                                                           "title__title_type")
+        queryset = models.Issue.objects.filter(title__publisher=self.publisher).select_related("title__universe",
+                                                                                               "title__title_type")
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['publisher'] = self.publisher
+        context['search'] = self.request.GET.get('search', "")
         return context
 
 
@@ -159,13 +170,23 @@ class UniverseIssueListView(AjaxListView):
     page_template = "comics_db/universe/issue_list_block.html"
     context_object_name = "issues"
 
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',)
+
     def get_queryset(self):
         self.universe = models.Universe.objects.get(slug=self.kwargs['slug'])
-        return models.Issue.objects.filter(title__universe=self.universe).select_related("title__title_type")
+        queryset = models.Issue.objects.filter(title__universe=self.universe).select_related("title__title_type")
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['universe'] = self.universe
+        context['search'] = self.request.GET.get('search', "")
         return context
 
 
@@ -202,22 +223,51 @@ class TitleIssueListView(AjaxListView):
     page_template = "comics_db/title/issue_list_block.html"
     context_object_name = "issues"
 
+    search_fields = ('name__icontains',)
+
     def get_queryset(self):
         self.title = models.Title.objects.get(slug=self.kwargs['slug'])
-        return models.Issue.objects.filter(title=self.title)
+        queryset = models.Issue.objects.filter(title=self.title)
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = self.title
+        context['search'] = self.request.GET.get('search', "")
         return context
 
 
 class IssueListView(AjaxListView):
     template_name = "comics_db/issue/list.html"
-    queryset = models.Issue.objects.all().select_related("title__publisher", "title__universe",
-                                                         "title__title_type")
     context_object_name = "issues"
     page_template = "comics_db/issue/list_block.html"
+
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
+                     'title__publisher__name__icontains', 'title__universe__name__icontains')
+
+    def get_queryset(self):
+        queryset = models.Issue.objects.all().select_related("title__publisher", "title__universe",
+                                                             "title__title_type")
+        try:
+            search = self.request.GET['search']
+            if search:
+                q = Q()
+                for field in self.search_fields:
+                    q = q | Q(**{field: search})
+                return queryset.filter(q)
+        except KeyError:
+            return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search'] = self.request.GET.get('search', "")
+        return context
 
 
 class IssueDetailView(DetailView):
