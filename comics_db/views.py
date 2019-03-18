@@ -68,6 +68,21 @@ class PublisherDetailView(DetailView):
         return self.render_to_response(context)
 
 
+class PublisherUniverseListView(AjaxListView):
+    template_name = "comics_db/publisher/universe_list.html"
+    context_object_name = "universes"
+    page_template = "comics_db/publisher/universe_list_block.html"
+
+    def get_queryset(self):
+        self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
+        return models.Universe.objects.filter(publisher=self.publisher)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['publisher'] = self.publisher
+        return context
+
+
 class PublisherTitleListView(AjaxListView):
     template_name = "comics_db/publisher/title_list.html"
     context_object_name = "titles"
