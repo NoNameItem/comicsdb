@@ -283,7 +283,7 @@ class Issue(models.Model):
     link = models.URLField(max_length=1000, unique=True)
     page_count = models.IntegerField(null=True)
 
-    title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="issues")
+    title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="issues", db_index=True)
     creators = models.ManyToManyField(Creator, through=IssueCreator, related_name='issues')
     tags = models.ManyToManyField(Tag, related_name="issues")
 
@@ -525,7 +525,6 @@ class ReadIssue(models.Model):
 
     class Meta:
         unique_together = (("profile", "issue"), )
-
 
 
 class Profile(models.Model):

@@ -22,7 +22,7 @@
           <ul class="list-inline list-inline-pipe">
             {% if title.universe %}<li>{{ title.universe.name }}</li>{% endif %}
             <li>{{ title.title_type.name }}</li>
-            <li>{{ title.issues.count }} issue{{ title.issues.count|pluralize }}</li>
+            <li>{{ title.issue_count }} issue{{ title.issue_count|pluralize }}</li>
           </ul>
         </div>
 

@@ -3,6 +3,7 @@ import json
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.db.models import Count
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import formats
@@ -90,7 +91,8 @@ class PublisherTitleListView(AjaxListView):
 
     def get_queryset(self):
         self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
-        return models.Title.objects.filter(publisher=self.publisher)
+        return models.Title.objects.filter(publisher=self.publisher).annotate(issue_count=Count('issues')). \
+            select_related("universe", "title_type")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -105,7 +107,8 @@ class PublisherIssueListView(AjaxListView):
 
     def get_queryset(self):
         self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
-        return models.Issue.objects.filter(title__publisher=self.publisher)
+        return models.Issue.objects.filter(title__publisher=self.publisher).select_related("title__universe",
+                                                                                           "title__title_type")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -142,7 +145,8 @@ class UniverseTitleListView(AjaxListView):
 
     def get_queryset(self):
         self.universe = models.Universe.objects.get(slug=self.kwargs['slug'])
-        return models.Title.objects.filter(universe=self.universe)
+        return models.Title.objects.filter(universe=self.universe).annotate(issue_count=Count('issues')). \
+            select_related("title_type")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -157,7 +161,7 @@ class UniverseIssueListView(AjaxListView):
 
     def get_queryset(self):
         self.universe = models.Universe.objects.get(slug=self.kwargs['slug'])
-        return models.Issue.objects.filter(title__universe=self.universe)
+        return models.Issue.objects.filter(title__universe=self.universe).select_related("title__title_type")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -167,7 +171,8 @@ class UniverseIssueListView(AjaxListView):
 
 class TitleListView(AjaxListView):
     template_name = "comics_db/title/list.html"
-    queryset = models.Title.objects.all()
+    queryset = models.Title.objects.annotate(issue_count=Count('issues')).select_related("publisher", "universe",
+                                                                                         "title_type")
     context_object_name = "titles"
     page_template = "comics_db/title/list_block.html"
 
@@ -209,7 +214,8 @@ class TitleIssueListView(AjaxListView):
 
 class IssueListView(AjaxListView):
     template_name = "comics_db/issue/list.html"
-    queryset = models.Issue.objects.all()
+    queryset = models.Issue.objects.all().select_related("title__publisher", "title__universe",
+                                                         "title__title_type")
     context_object_name = "issues"
     page_template = "comics_db/issue/list_block.html"
 
@@ -350,9 +356,9 @@ class GenerateTokenView(LoginView):
             return Response({'status': 'updated', 'token': token})
 
         return Response({
-                'status': 'created',
-                'token': token
-            })
+            'status': 'created',
+            'token': token
+        })
 
 
 class AppTokenViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, mixins.RetrieveModelMixin, GenericViewSet):
@@ -367,8 +373,8 @@ class AppTokenViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, mixins.Ret
     serializer_class = serializers.AppTokenSerializer
     filter_backends = (OrderingFilter, DjangoFilterBackend)
     filterset_class = filtersets.AppTokenFilter
-    ordering_fields = ("app_name", )
-    ordering = ("app_name", )
+    ordering_fields = ("app_name",)
+    ordering = ("app_name",)
 
     def get_queryset(self):
         return self.request.user.app_tokens.all()
@@ -857,4 +863,3 @@ class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, Gene
             return Response({'status': 'error', 'message': 'Parameter "%s" not found' % err})
         except Exception as err:
             return Response({'status': 'error', 'message': err.args[0]})
-
