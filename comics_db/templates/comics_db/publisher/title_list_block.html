@@ -1,0 +1,33 @@
+{% load static %}
+{% load el_pagination_tags %}
+
+{% lazy_paginate titles %}
+{% for title in titles %}
+  <div class="col-xl-3 col-md-4 col-12">
+    <div class="card card-with-cover card-link">
+      <a class='default-link' href='{% url "site-title-detail" title.slug %}'></a>
+      <div class="card-img-top img-fluid bg-cover height-200"
+           style="background: url('{% if title.image %}{{ title.image.thumb_url }}{% else %}{% static "images/defaults/default_title_image_small.png" %}{% endif %}') 50%"></div>
+      <div class="card-profile-image">
+        <img src="{% if title.publisher.logo %}
+                  {{ title.publisher.logo.thumb_url }}
+                {% else %}
+                  {% static "images/defaults/default_logo_small.png" %}
+                {% endif %}"
+             class="rounded-circle img-border box-shadow-1 width-100 height-100" alt="Card image" >
+      </div>
+      <div class="card-with-cover-content text-center">
+        <div class="card-body">
+          <h4 class="card-title">{{ title.name }}</h4>
+          <ul class="list-inline list-inline-pipe">
+            {% if title.universe %}<li>{{ title.universe.name }}</li>{% endif %}
+            <li>{{ title.title_type.name }}</li>
+            <li>{{ title.issues.count }} issue{{ title.issues.count|pluralize }}</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endfor %}
+{% show_more %}

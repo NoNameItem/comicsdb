@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ universe.name }} issues{% endblock %}
+{% block title %}{{ publisher.name }} titles{% endblock %}
 
-{% block page_title %}{{ universe.name }} issues{% endblock %}
+{% block page_title %}{{ publisher.name }} titles{% endblock %}
 
 {% block breadcrumb_items %}
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-universe-list" %}">Universes</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-universe-detail" universe.slug %}">{{ universe.name }}</a>
-  <li class="breadcrumb-item active"><a href="{% url "site-universe-issues" universe.slug %}">Issues</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-publisher-list" %}">Publishers</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-publisher-detail" publisher.slug %}">{{ publisher.name }}</a>
+  <li class="breadcrumb-item active"><a href="{% url "site-publisher-titles" publisher.slug %}">Titles</a></li>
 {% endblock %}
 
 {% block vendor_css %}
@@ -21,7 +21,7 @@
 
 {% block content %}
   <div class="row">
-    {% include "comics_db/universe/issue_list_block.html" %}
+    {% include "comics_db/publisher/title_list_block.html" %}
   </div>
 {% endblock %}
 
