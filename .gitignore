@@ -8,3 +8,4 @@ comicsdb/custom_settings.py
 ca-certificate.crt
 app-messages/*
 media/*
+static_root/*
