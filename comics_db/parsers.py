@@ -216,9 +216,18 @@ class CloudFilesParser(BaseParser):
 
     def _process(self):
         run_detail = None
+        iter_since_update = 0
+
+        # Dicts for already parsed parent entities
+        publishers = {}
+        universes = {}
+        title_types = {}
+        titles = {}
         try:
             has_errors = False
             for file_key in self._data:
+                iter_since_update += 1
+
                 # Creating run detail log entry
                 run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run,
                                                    file_key=file_key,
@@ -237,42 +246,69 @@ class CloudFilesParser(BaseParser):
                     run_detail.groups = str(info)
                     try:
                         # Getting or creating Publisher
-                        publisher, created = comics_models.Publisher.objects.get_or_create(name=info['publisher'])
-                        if created:
-                            publisher.save()
-                        if self._full:
+                        publisher = publishers.get(info['publisher'], None)  # Trying to get already parsed version
+                        if not publisher:  # Not parsed, looking in DB
+                            publisher, created = comics_models.Publisher.objects.get_or_create(name=info['publisher'])
+                            if created:  # Not found in DB, creating
+                                publisher.save()
+                            publishers[info['publisher']] = publisher  # Saving in parsed dict
+                        if self._full:  # Saving in set for not deleting
                             self._publishers.add(publisher.id)
-                        # Getting or creating Universe
-                        universe, created = comics_models.Universe.objects.get_or_create(name=info['universe'],
-                                                                                         publisher=publisher)
-                        if created:
-                            universe.save()
 
-                        if self._full:
+                        # Getting or creating Universe
+                        universe = universes.get((info['universe'], publisher.id),
+                                                 None)  # Trying to get already parsed version
+                        if not universe:  # Not parsed, looking in DB
+                            universe, created = comics_models.Universe.objects.get_or_create(name=info['universe'],
+                                                                                             publisher=publisher)
+                            if created:  # Not found in DB, creating
+                                universe.save()
+                            universes[(info['universe'], publisher.id)] = universe  # Saving in parsed dict
+                        if self._full:  # Saving in set for not deleting
                             self._universes.add(universe.id)
 
                         # Getting or creating Title type
-                        title_type, created = comics_models.TitleType.objects.get_or_create(name=info['title_type'])
-                        if created:
-                            title_type.save()
+                        title_type = title_types.get(info['title_type'])  # Trying to get already parsed version
+                        if not title_type:  # Not parsed, looking in DB
+                            title_type, created = comics_models.TitleType.objects.get_or_create(name=info['title_type'])
+                            if created:  # Not found in DB, creating
+                                title_type.save()
+                            title_types[info['title_type']] = title_type  # Saving in parsed dict
 
                         # Getting or creating Title
-                        title, created = comics_models.Title.objects.get_or_create(path_key=(info['title']
-                                                                                             or info['issue_name']),
-                                                                                   publisher=publisher,
-                                                                                   universe=universe,
-                                                                                   title_type=title_type,
-                                                                                   defaults={
-                                                                                       'name': (info['title']
-                                                                                                or info['issue_name'])
-                                                                                   })
-                        if created:
-                            title.save()
+                        title = titles.get(((info['title'] or info['issue_name']),
+                                            publisher.id,
+                                            universe.id,
+                                            title_type.id), None)  # Trying to get already parsed version
+                        if not title:  # Not parsed, looking in DB
+                            title, created = comics_models.Title.objects.get_or_create(path_key=(info['title']
+                                                                                                 or info['issue_name']),
+                                                                                       publisher=publisher,
+                                                                                       universe=universe,
+                                                                                       title_type=title_type,
+                                                                                       defaults={
+                                                                                           'name': (info['title']
+                                                                                                    or info[
+                                                                                                        'issue_name'])
+                                                                                       })
+                            if created:  # Not found in DB, creating
+                                title.save()
 
-                        if self._full:
+                            titles[((info['title'] or info['issue_name']),  # Saving in parsed dict
+                                    publisher.id,
+                                    universe.id,
+                                    title_type.id)] = title
+                        if self._full:  # Saving in set for not deleting
                             self._titles.add(title.id)
+
                         # Getting publish date
                         publish_date = datetime.date(int(info['year']), 1, 1)
+
+                        # Getting number
+                        try:
+                            number = int(info['number'])
+                        except ValueError:
+                            number = 0
 
                         # Getting or creating issue
                         issue, created = comics_models.Issue.objects.get_or_create(link=file_key,
@@ -285,7 +321,7 @@ class CloudFilesParser(BaseParser):
                         if created:
                             issue.save()
 
-                        if self._full:
+                        if self._full:  # Saving in set for not deleting
                             self._issues.add(issue.id)
 
                         run_detail.issue = issue
@@ -304,9 +340,11 @@ class CloudFilesParser(BaseParser):
                     except Error as err:
                         run_detail.end_with_error("Database error while processing file", err)
                         has_errors = True
-
                     # Incrementing Run processed counter
-                    self._parser_run.inc_processed()
+                    if iter_since_update == 100:
+                        self._parser_run.inc_processed(iter_since_update)
+                        iter_since_update = 0
+            self._parser_run.inc_processed(iter_since_update)
             return not has_errors
         except Exception as err:
             if run_detail:
