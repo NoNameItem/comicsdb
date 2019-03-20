@@ -314,17 +314,19 @@ class Issue(models.Model):
 
     @property
     def previous_link(self):
-        next_issues = self.title.issues.filter(number__lt=self.number).order_by('-number')
-        if next_issues:
-            return next_issues[0].site_link
+        if self.number:
+            next_issues = self.title.issues.filter(number__lt=self.number).order_by('-number')
+            if next_issues:
+                return next_issues[0].site_link
         else:
             return None
 
     @property
     def next_link(self):
-        next_issues = self.title.issues.filter(number__gt=self.number).order_by('number')
-        if next_issues:
-            return next_issues[0].site_link
+        if self.number:
+            next_issues = self.title.issues.filter(number__gt=self.number).order_by('number')
+            if next_issues:
+                return next_issues[0].site_link
         else:
             return None
 
