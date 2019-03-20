@@ -233,7 +233,7 @@ class TitleCreator(models.Model):
 
 class Title(models.Model):
     name = models.CharField(max_length=500)
-    path_key = models.CharField(max_length=500, unique=True)
+    path_key = models.CharField(max_length=500)
     desc = models.TextField(blank=True)
     image = ThumbnailImageField(null=True, upload_to='title_image', thumb_width=380)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
@@ -263,7 +263,8 @@ class Title(models.Model):
         return self.publisher.logo
 
     class Meta:
-        unique_together = (("name", "publisher", "universe", "title_type"),)
+        unique_together = (("name", "publisher", "universe", "title_type"),
+                           ("path_key", "publisher", "universe", "title_type"))
         ordering = ["publisher", "universe", "name"]
 
 
