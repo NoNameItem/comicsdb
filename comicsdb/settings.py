@@ -167,6 +167,7 @@ AWS_S3_BUCKET_NAME = custom_settings.DO_STORAGE_BUCKET_NAME
 AWS_S3_KEY_PREFIX = "media"
 AWS_S3_PUBLIC_URL = custom_settings.DO_PUBLIC_URL + '/media/'
 AWS_S3_FILE_OVERWRITE = False
+AWS_S3_BUCKET_AUTH = False
 
 # Email
 # https://docs.djangoproject.com/en/2.1/topics/email/
