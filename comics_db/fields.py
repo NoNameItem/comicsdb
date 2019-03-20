@@ -27,7 +27,8 @@ class ThumbnailImageFieldFile(ImageFieldFile):
 
     def save(self, name, content, save=True):
         super().save(name, content, save)
-        img = Image.open(self.path)
+        f = self.open()
+        img = Image.open(f)
         image_format = img.format
 
         if self.field.thumb_width and self.field.thumb_height:
