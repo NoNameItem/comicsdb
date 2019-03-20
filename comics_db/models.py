@@ -40,13 +40,13 @@ class ParserRun(models.Model):
     processed = models.IntegerField(null=True)
     error = models.TextField(blank=True)
     error_detail = models.TextField(blank=True)
-    celery_task_id = models.CharField(max_length=100, blank=True)
+    celery_task_id = models.CharField(max_length=100, null=True)
 
-    def inc_processed(self):
+    def inc_processed(self, processed_count=1):
         if self.processed:
-            self.processed += 1
+            self.processed += processed_count
         else:
-            self.processed = 1
+            self.processed = processed_count
         self.save()
 
     @property
