@@ -1,7 +1,11 @@
 import os
+from io import BytesIO
+
 from PIL import Image
 from django.core import checks
+from django.core.files.base import ContentFile
 from django.db.models.fields.files import ImageField, ImageFieldFile
+from django.core.files.storage import default_storage
 
 __author__ = 'nonameitem'
 
@@ -15,12 +19,12 @@ def _add_thumb(s):
 
 class ThumbnailImageFieldFile(ImageFieldFile):
     @property
-    def thumb_path(self):
-        return _add_thumb(self.path)
+    def thumb_name(self):
+        return _add_thumb(self.name)
 
     @property
     def thumb_url(self):
-        if os.path.exists(_add_thumb(self.path)):
+        if self.storage.exists(_add_thumb(self.name)):
             return _add_thumb(self.url)
         else:
             return self.url
@@ -41,11 +45,15 @@ class ThumbnailImageFieldFile(ImageFieldFile):
             new_height = self.field.thumb_height
             new_width = int(new_height * img.width / img.height)
             img = img.resize((new_width, new_height), Image.ANTIALIAS)
-        img.save(self.thumb_path, image_format)
+
+        buffer = BytesIO()
+        img.save(buffer, image_format)
+        thumb_file = ContentFile(buffer.getvalue())
+        self.storage.save(self.thumb_name, thumb_file)
 
     def delete(self, save=True):
-        if os.path.exists(self.thumb_path):
-            os.remove(self.thumb_path)
+        if self.storage.exists(self.thumb_name):
+            default_storage.delete(self.thumb_name)
         super().delete(save)
 
 
