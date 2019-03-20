@@ -309,12 +309,14 @@ class CloudFilesParser(BaseParser):
                             number = int(info['number'])
                         except ValueError:
                             number = 0
+                        except TypeError:
+                            number = None
 
                         # Getting or creating issue
                         issue, created = comics_models.Issue.objects.get_or_create(link=file_key,
                                                                                    defaults={
                                                                                        'name': info['issue_name'],
-                                                                                       'number': info['number'],
+                                                                                       'number': number,
                                                                                        'title': title,
                                                                                        'publish_date': publish_date
                                                                                    })
