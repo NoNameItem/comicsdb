@@ -48,12 +48,9 @@
             </div>
             <div class="media-body pt-3 px-2">
               <div class="row">
-                <div class="col-10">
-                  <h3 class="card-title">{{ title.name }} ({{ title.title_type.name }})</h3>
-                </div>
                 <div class="col text-right">
                   {% if user.is_staff %}
-                    <div class="btn-group d-none d-md-block float-right ml-2" role="group" aria-label="Basic example">
+                    <div class="btn-group d-md-block float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#title-modal">
                         <i class="fa fa-cog"></i></button>
                     </div>
@@ -63,6 +60,7 @@
             </div>
           </div>
           <div class="card-desc text-muted">
+            <h3><strong>{{ title.name }} ({{ title.title_type.name }})</strong></h3>
             <em>{{ title.desc|default:"No description" }}</em>
           </div>
         </div>
@@ -95,7 +93,7 @@
   <!-- Info cards -->
   <div class="row">
     <!-- Main info -->
-    <div class="col-md-3 col-12">
+    <div class="col-xxl-3 col-sm-6 col-12">
       <div class="card">
         <div class="card-header">
           <h4 class="card-title">Title info</h4>
@@ -103,28 +101,28 @@
         <div class="card-content collapse show">
           <div class="card-body border-top-blue-grey border-top-lighten-5 ">
             <div class="row">
-              <div class="col-md-4 col-12 text-right">
+              <div class="col-4k-2 col-2k-3 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-4 col-12 text-xxs-right">
                 <strong>Publisher: </strong>
               </div>
-              <div class="col-md-8 col-12">
+              <div class="col-4k-10 col-2k-9 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-8 col-12 pl-xxs-0">
                 <a href="{% url "site-publisher-detail" title.publisher.slug %}">{{ title.publisher.name }}</a>
               </div>
             </div>
             {% if title.universe %}
               <div class="row">
-                <div class="col-md-4 col-12 text-right">
+                <div class="col-4k-2 col-2k-3 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-4 col-12 text-xxs-right">
                   <strong>Universe: </strong>
                 </div>
-                <div class="col-md-8 col-12">
+                <div class="col-4k-10 col-2k-9 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-8 col-12 pl-xxs-0">
                   <a href="{% url "site-universe-detail" title.universe.slug %}">{{ title.universe.name }}</a>
                 </div>
               </div>
             {% endif %}
             <div class="row">
-              <div class="col-md-4 col-12 text-right">
+              <div class="col-4k-2 col-2k-3 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-4 col-12 text-xxs-right">
                 <strong>Title type: </strong>
               </div>
-              <div class="col-md-8 col-12">
+              <div class="col-4k-10 col-2k-9 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-8 col-12 pl-xxs-0">
                 {{ title.title_type.name }}
               </div>
             </div>

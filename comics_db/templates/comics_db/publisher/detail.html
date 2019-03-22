@@ -47,13 +47,10 @@
             </div>
             <div class="media-body pt-3 px-2">
               <div class="row">
-                <div class="col">
-                  <h3 class="card-title">{{ publisher.name }}</h3>
-                </div>
                 <div class="col text-right">
 
                   {% if user.is_staff %}
-                    <div class="btn-group d-none d-md-block float-right ml-2" role="group" aria-label="Basic example">
+                    <div class="btn-group d-md-block float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#publisher-modal">
                         <i class="fa fa-cog"></i></button>
                     </div>
@@ -63,6 +60,7 @@
             </div>
           </div>
           <div class="card-desc text-muted">
+            <h3><strong>{{ publisher.name }}</strong></h3>
             <em>{{ publisher.desc|default:"No description" }}</em>
           </div>
         </div>
