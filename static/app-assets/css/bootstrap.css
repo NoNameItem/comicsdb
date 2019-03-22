@@ -33,7 +33,7 @@
   --light : #BABFC7;
   --dark : #1B2942;
   --breakpoint-xxxs : 0;
-  --breakpoint-xxs : 320px;
+  --breakpoint-xxs : 375px;
   --breakpoint-xs : 568px;
   --breakpoint-sm : 667px;
   --breakpoint-md : 768px;
@@ -531,9 +531,9 @@ pre code {
   margin-left : auto;
   max-width : 0;
 }
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .container {
-    max-width : 320px;
+    max-width : 375px;
   }
 }
 @media (min-width: 568px) {
@@ -918,7 +918,7 @@ pre code {
   margin-left : 91.66667%;
 }
 
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .col-xxs {
     -webkit-flex-basis : 0;
     -ms-flex-preferred-size : 0;
@@ -3985,7 +3985,7 @@ pre code {
   background-color : rgba(255, 255, 255, 0.075);
 }
 
-@media (max-width: 319.98px) {
+@media (max-width: 374.98px) {
   .table-responsive-xxs {
     display : block;
     width : 100%;
@@ -5343,7 +5343,7 @@ input[type='submit'].btn-block, input[type='reset'].btn-block, input[type='butto
   left : auto;
 }
 
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .dropdown-menu-xxs-left {
     right : auto;
     left : 0;
@@ -6580,14 +6580,14 @@ input[type='submit'].btn-block, input[type='reset'].btn-block, input[type='butto
           background-size : 100% 100%;
 }
 
-@media (max-width: 319.98px) {
+@media (max-width: 374.98px) {
   .navbar-expand-xxs > .container, .navbar-expand-xxs > .container-fluid {
     padding-right : 0;
     padding-left : 0;
   }
 }
 
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .navbar-expand-xxs {
     -webkit-box-orient : horizontal;
     -webkit-box-direction : normal;
@@ -8291,7 +8291,7 @@ a.badge-dark:focus, a.badge-dark.focus {
   border-bottom-left-radius : 0;
 }
 
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .list-group-horizontal-xxs {
     -webkit-box-orient : horizontal;
     -webkit-box-direction : normal;
@@ -9952,7 +9952,7 @@ a.bg-dark:hover, a.bg-dark:focus, button.bg-dark:hover, button.bg-dark:focus {
   display :         inline-flex !important;
 }
 
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .d-xxs-none {
     display : none !important;
   }
@@ -10705,7 +10705,7 @@ a.bg-dark:hover, a.bg-dark:focus, button.bg-dark:hover, button.bg-dark:focus {
           align-self : stretch !important;
 }
 
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .flex-xxs-row {
     -webkit-box-orient : horizontal !important;
     -webkit-box-direction : normal !important;
@@ -13060,7 +13060,7 @@ a.bg-dark:hover, a.bg-dark:focus, button.bg-dark:hover, button.bg-dark:focus {
   float : none !important;
 }
 
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .float-xxs-left {
     float : left !important;
   }
@@ -13722,7 +13722,7 @@ a.bg-dark:hover, a.bg-dark:focus, button.bg-dark:hover, button.bg-dark:focus {
   margin-left : auto !important;
 }
 
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .m-xxs-0 {
     margin : 0 !important;
   }
@@ -16759,7 +16759,7 @@ a.bg-dark:hover, a.bg-dark:focus, button.bg-dark:hover, button.bg-dark:focus {
   text-align : center !important;
 }
 
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .text-xxs-left {
     text-align : left !important;
   }

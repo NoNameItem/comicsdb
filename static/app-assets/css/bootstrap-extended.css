@@ -1298,12 +1298,12 @@ button, html [type='button'], [type='reset'], [type='submit'] {
   margin : 0 -moz-calc((100% - 0)/2);
   margin : 0 calc((100% - 0)/2);
 }
-@media (min-width: 320px) {
+@media (min-width: 375px) {
   .container .mega-dropdown-menu {
-    max-width : 320px;
-    margin : 0 -webkit-calc((100% - 320px)/2);
-    margin : 0 -moz-calc((100% - 320px)/2);
-    margin : 0 calc((100% - 320px)/2);
+    max-width : 375px;
+    margin : 0 -webkit-calc((100% - 375px)/2);
+    margin : 0 -moz-calc((100% - 375px)/2);
+    margin : 0 calc((100% - 375px)/2);
   }
 }
 @media (min-width: 568px) {

@@ -65,47 +65,47 @@
 }
 
 .line-scale-party > div:nth-child(1) {
-  -webkit-animation-delay : 0.15s;
-     -moz-animation-delay : 0.15s;
-       -o-animation-delay : 0.15s;
-          animation-delay : 0.15s;
-  -webkit-animation-duration : 0.64s;
-     -moz-animation-duration : 0.64s;
-       -o-animation-duration : 0.64s;
-          animation-duration : 0.64s;
+  -webkit-animation-delay : 0.53s;
+     -moz-animation-delay : 0.53s;
+       -o-animation-delay : 0.53s;
+          animation-delay : 0.53s;
+  -webkit-animation-duration : 1.29s;
+     -moz-animation-duration : 1.29s;
+       -o-animation-duration : 1.29s;
+          animation-duration : 1.29s;
 }
 
 .line-scale-party > div:nth-child(2) {
-  -webkit-animation-delay : -0.07s;
-     -moz-animation-delay : -0.07s;
-       -o-animation-delay : -0.07s;
-          animation-delay : -0.07s;
-  -webkit-animation-duration : 1.23s;
-     -moz-animation-duration : 1.23s;
-       -o-animation-duration : 1.23s;
-          animation-duration : 1.23s;
+  -webkit-animation-delay : 0.26s;
+     -moz-animation-delay : 0.26s;
+       -o-animation-delay : 0.26s;
+          animation-delay : 0.26s;
+  -webkit-animation-duration : 1.29s;
+     -moz-animation-duration : 1.29s;
+       -o-animation-duration : 1.29s;
+          animation-duration : 1.29s;
 }
 
 .line-scale-party > div:nth-child(3) {
-  -webkit-animation-delay : 0.48s;
-     -moz-animation-delay : 0.48s;
-       -o-animation-delay : 0.48s;
-          animation-delay : 0.48s;
-  -webkit-animation-duration : 1.21s;
-     -moz-animation-duration : 1.21s;
-       -o-animation-duration : 1.21s;
-          animation-duration : 1.21s;
+  -webkit-animation-delay : 0.74s;
+     -moz-animation-delay : 0.74s;
+       -o-animation-delay : 0.74s;
+          animation-delay : 0.74s;
+  -webkit-animation-duration : 0.75s;
+     -moz-animation-duration : 0.75s;
+       -o-animation-duration : 0.75s;
+          animation-duration : 0.75s;
 }
 
 .line-scale-party > div:nth-child(4) {
-  -webkit-animation-delay : 0.77s;
-     -moz-animation-delay : 0.77s;
-       -o-animation-delay : 0.77s;
-          animation-delay : 0.77s;
-  -webkit-animation-duration : 0.45s;
-     -moz-animation-duration : 0.45s;
-       -o-animation-duration : 0.45s;
-          animation-duration : 0.45s;
+  -webkit-animation-delay : 0.51s;
+     -moz-animation-delay : 0.51s;
+       -o-animation-delay : 0.51s;
+          animation-delay : 0.51s;
+  -webkit-animation-duration : 1.08s;
+     -moz-animation-duration : 1.08s;
+       -o-animation-duration : 1.08s;
+          animation-duration : 1.08s;
 }
 
 .line-scale-party > div {
