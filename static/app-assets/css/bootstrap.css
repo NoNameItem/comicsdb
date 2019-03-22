@@ -578,12 +578,12 @@ pre code {
 }
 @media (min-width: 2048) {
   .container {
-    max-width : 2048;
+    max-width : 2048px;
   }
 }
 @media (min-width: 3840) {
   .container {
-    max-width : 3840;
+    max-width : 3840px;
   }
 }
 

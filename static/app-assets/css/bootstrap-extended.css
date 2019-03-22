@@ -1372,18 +1372,18 @@ button, html [type='button'], [type='reset'], [type='submit'] {
 }
 @media (min-width: 2048) {
   .container .mega-dropdown-menu {
-    max-width : 2048;
-    margin : 0 -webkit-calc((100% - 2048)/2);
-    margin : 0 -moz-calc((100% - 2048)/2);
-    margin : 0 calc((100% - 2048)/2);
+    max-width : 2048px;
+    margin : 0 -webkit-calc((100% - 2048px)/2);
+    margin : 0 -moz-calc((100% - 2048px)/2);
+    margin : 0 calc((100% - 2048px)/2);
   }
 }
 @media (min-width: 3840) {
   .container .mega-dropdown-menu {
-    max-width : 3840;
-    margin : 0 -webkit-calc((100% - 3840)/2);
-    margin : 0 -moz-calc((100% - 3840)/2);
-    margin : 0 calc((100% - 3840)/2);
+    max-width : 3840px;
+    margin : 0 -webkit-calc((100% - 3840px)/2);
+    margin : 0 -moz-calc((100% - 3840px)/2);
+    margin : 0 calc((100% - 3840px)/2);
   }
 }
 
