@@ -48,10 +48,6 @@
             </div>
             <div class="media-body pt-3 px-2">
               <div class="row">
-                <div class="col-9">
-                  <h3 class="card-title">{{ issue.title.name }} {% if issue.number %}#{{ issue.number }}{% endif %}
-                    <i class="fas fa-check-circle success" id="read-mark" style="display: none"></i></h3>
-                </div>
                 <div class="col text-right">
                   <div class="btn-group white" role="group">
                     {% if issue.previous_link %}
@@ -68,7 +64,7 @@
                     {% endif %}
                   </div>
                   {% if user.is_staff %}
-                    <div class="btn-group d-none d-md-block float-right ml-2" role="group" aria-label="Basic example">
+                    <div class="btn-group d-none d-xxs-block float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#issue-modal">
                         <i class="fa fa-cog"></i></button>
                     </div>
@@ -80,7 +76,7 @@
           <div class="row">
             <div class="col-12">
               <div class="card-desc text-muted">
-                <h3>{{ issue.name }}</h3>
+                <h3><strong>{{ issue.name }}</strong></h3>
                 <em>{{ issue.desc|default:"No description" }}</em>
               </div>
             </div>
@@ -94,7 +90,7 @@
   <!-- Info cards -->
   <div class="row">
     <!-- Main info -->
-    <div class="col-md-3 col-12">
+    <div class="col-xxl-3 col-sm-6 col-12">
       <div class="card">
         <div class="card-header">
           <h4 class="card-title">Issue info</h4>
@@ -102,61 +98,61 @@
         <div class="card-content collapse show">
           <div class="card-body border-top-blue-grey border-top-lighten-5 ">
             <div class="row">
-              <div class="col-md-4 col-12 text-right">
+              <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
                 <strong>Publisher: </strong>
               </div>
-              <div class="col-md-8 col-12">
+              <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
                 <a href="{% url "site-publisher-detail" issue.title.publisher.slug %}">{{ issue.title.publisher.name }}</a>
               </div>
             </div>
             {% if issue.title.universe %}
               <div class="row">
-                <div class="col-md-4 col-12 text-right">
+                <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
                   <strong>Universe: </strong>
                 </div>
-                <div class="col-md-8 col-12">
+                <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
                   <a href="{% url "site-universe-detail" issue.title.universe.slug %}">{{ issue.title.universe.name }}</a>
                 </div>
               </div>
             {% endif %}
             <div class="row">
-              <div class="col-md-4 col-12 text-right">
+              <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
                 <strong>Title: </strong>
               </div>
-              <div class="col-md-8 col-12">
+              <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
                 <a href="{% url "site-title-detail" issue.title.slug %}">{{ issue.title.name }}</a>
               </div>
             </div>
             <div class="row">
-              <div class="col-md-4 col-12 text-right">
+              <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
                 <strong>Title type: </strong>
               </div>
-              <div class="col-md-8 col-12">
+              <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
                 {{ issue.title.title_type.name }}
               </div>
             </div>
             <div class="row">
-              <div class="col-md-4 col-12 text-right">
+              <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
                 <strong>Publish date: </strong>
               </div>
-              <div class="col-md-8 col-12">
+              <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
                 {{ issue.publish_date|localize }}
               </div>
             </div>
             <div class="row">
-              <div class="col-md-4 col-12 text-right">
+              <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
                 <strong>Pages count: </strong>
               </div>
-              <div class="col-md-8 col-12">
+              <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
                 {{ issue.page_count|default_if_none:"Unknown" }}
               </div>
             </div>
 
             {% if request.user.is_authenticated %}<div class="row" id="read-date-row" {% if not read_date %}style="display: none" {% endif %}>
-              <div class="col-md-4 col-12 text-right">
+              <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
                 <strong>Read date: </strong>
               </div>
-              <div class="col-md-8 col-12" id="read-date">
+              <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0" id="read-date">
                 {{ read_date|localize }}
               </div>
             </div>

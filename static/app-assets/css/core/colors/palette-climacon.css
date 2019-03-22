@@ -1,665 +1,887 @@
 .climacon-white .climacon_component-stroke {
-  fill: #FFFFFF; }
+  fill : #FFFFFF;
+}
 
 .climacon-black .climacon_component-stroke {
-  fill: #000000; }
+  fill : #000000;
+}
 
 .climacon-primary.climacon-lighten-5 .climacon_component-stroke {
-  fill: #39fcff; }
+  fill : #39FCFF;
+}
 
 .climacon-primary.climacon-lighten-4 .climacon_component-stroke {
-  fill: #1ffbff; }
+  fill : #1FFBFF;
+}
 
 .climacon-primary.climacon-lighten-3 .climacon_component-stroke {
-  fill: #06fbff; }
+  fill : #06FBFF;
+}
 
 .climacon-primary.climacon-lighten-2 .climacon_component-stroke {
-  fill: #00e7eb; }
+  fill : #00E7EB;
+}
 
 .climacon-primary.climacon-lighten-1 .climacon_component-stroke {
-  fill: #00ced2; }
+  fill : #00CED2;
+}
 
 .climacon-primary .climacon_component-stroke {
-  fill: #00b5b8; }
+  fill : #00B5B8;
+}
 
 .climacon-primary .climacon_component-fill {
-  fill: #1ffbff; }
+  fill : #1FFBFF;
+}
 
 .climacon-primary.climacon-darken-1 .climacon_component-stroke {
-  fill: #009c9f; }
+  fill : #009C9F;
+}
 
 .climacon-primary.climacon-darken-2 .climacon_component-stroke {
-  fill: #008385; }
+  fill : #008385;
+}
 
 .climacon-primary.climacon-darken-3 .climacon_component-stroke {
-  fill: #006a6c; }
+  fill : #006A6C;
+}
 
 .climacon-primary.climacon-darken-4 .climacon_component-stroke {
-  fill: #005152; }
+  fill : #005152;
+}
 
 .climacon-primary.climacon-accent-1 .climacon_component-stroke {
-  fill: #BDFDFF; }
+  fill : #BDFDFF;
+}
 
 .climacon-primary.climacon-accent-2 .climacon_component-stroke {
-  fill: #8AFBFF; }
+  fill : #8AFBFF;
+}
 
 .climacon-primary.climacon-accent-3 .climacon_component-stroke {
-  fill: #57FAFF; }
+  fill : #57FAFF;
+}
 
 .climacon-primary.climacon-accent-4 .climacon_component-stroke {
-  fill: #3DF9FF; }
+  fill : #3DF9FF;
+}
 
 .climacon-success.climacon-lighten-5 .climacon_component-stroke {
-  fill: #78f1cc; }
+  fill : #78F1CC;
+}
 
 .climacon-success.climacon-lighten-4 .climacon_component-stroke {
-  fill: #61eec4; }
+  fill : #61EEC4;
+}
 
 .climacon-success.climacon-lighten-3 .climacon_component-stroke {
-  fill: #49ecbb; }
+  fill : #49ECBB;
+}
 
 .climacon-success.climacon-lighten-2 .climacon_component-stroke {
-  fill: #32eab2; }
+  fill : #32EAB2;
+}
 
 .climacon-success.climacon-lighten-1 .climacon_component-stroke {
-  fill: #1be7aa; }
+  fill : #1BE7AA;
+}
 
 .climacon-success .climacon_component-stroke {
-  fill: #16d39a; }
+  fill : #16D39A;
+}
 
 .climacon-success .climacon_component-fill {
-  fill: #61eec4; }
+  fill : #61EEC4;
+}
 
 .climacon-success.climacon-darken-1 .climacon_component-stroke {
-  fill: #14bc89; }
+  fill : #14BC89;
+}
 
 .climacon-success.climacon-darken-2 .climacon_component-stroke {
-  fill: #11a578; }
+  fill : #11A578;
+}
 
 .climacon-success.climacon-darken-3 .climacon_component-stroke {
-  fill: #0f8e67; }
+  fill : #0F8E67;
+}
 
 .climacon-success.climacon-darken-4 .climacon_component-stroke {
-  fill: #0c7757; }
+  fill : #0C7757;
+}
 
 .climacon-success.climacon-accent-1 .climacon_component-stroke {
-  fill: #E1FFF1; }
+  fill : #E1FFF1;
+}
 
 .climacon-success.climacon-accent-2 .climacon_component-stroke {
-  fill: #AEFFD9; }
+  fill : #AEFFD9;
+}
 
 .climacon-success.climacon-accent-3 .climacon_component-stroke {
-  fill: #7BFFC1; }
+  fill : #7BFFC1;
+}
 
 .climacon-success.climacon-accent-4 .climacon_component-stroke {
-  fill: #62FFB5; }
+  fill : #62FFB5;
+}
 
 .climacon-info.climacon-lighten-5 .climacon_component-stroke {
-  fill: #9ee8f2; }
+  fill : #9EE8F2;
+}
 
 .climacon-info.climacon-lighten-4 .climacon_component-stroke {
-  fill: #87e3ef; }
+  fill : #87E3EF;
+}
 
 .climacon-info.climacon-lighten-3 .climacon_component-stroke {
-  fill: #71deec; }
+  fill : #71DEEC;
+}
 
 .climacon-info.climacon-lighten-2 .climacon_component-stroke {
-  fill: #5ad9e9; }
+  fill : #5AD9E9;
+}
 
 .climacon-info.climacon-lighten-1 .climacon_component-stroke {
-  fill: #44d3e6; }
+  fill : #44D3E6;
+}
 
 .climacon-info .climacon_component-stroke {
-  fill: #2dcee3; }
+  fill : #2DCEE3;
+}
 
 .climacon-info .climacon_component-fill {
-  fill: #87e3ef; }
+  fill : #87E3EF;
+}
 
 .climacon-info.climacon-darken-1 .climacon_component-stroke {
-  fill: #1dc4da; }
+  fill : #1DC4DA;
+}
 
 .climacon-info.climacon-darken-2 .climacon_component-stroke {
-  fill: #1ab0c3; }
+  fill : #1AB0C3;
+}
 
 .climacon-info.climacon-darken-3 .climacon_component-stroke {
-  fill: #179bad; }
+  fill : #179BAD;
+}
 
 .climacon-info.climacon-darken-4 .climacon_component-stroke {
-  fill: #148796; }
+  fill : #148796;
+}
 
 .climacon-info.climacon-accent-1 .climacon_component-stroke {
-  fill: #FEFFFF; }
+  fill : #FEFFFF;
+}
 
 .climacon-info.climacon-accent-2 .climacon_component-stroke {
-  fill: #CBF5FF; }
+  fill : #CBF5FF;
+}
 
 .climacon-info.climacon-accent-3 .climacon_component-stroke {
-  fill: #98ECFF; }
+  fill : #98ECFF;
+}
 
 .climacon-info.climacon-accent-4 .climacon_component-stroke {
-  fill: #7FE7FF; }
+  fill : #7FE7FF;
+}
 
 .climacon-warning.climacon-lighten-5 .climacon_component-stroke {
-  fill: #fffdfd; }
+  fill : #FFFDFD;
+}
 
 .climacon-warning.climacon-lighten-4 .climacon_component-stroke {
-  fill: #ffece3; }
+  fill : #FFECE3;
+}
 
 .climacon-warning.climacon-lighten-3 .climacon_component-stroke {
-  fill: #ffdbca; }
+  fill : #FFDBCA;
+}
 
 .climacon-warning.climacon-lighten-2 .climacon_component-stroke {
-  fill: #ffcab0; }
+  fill : #FFCAB0;
+}
 
 .climacon-warning.climacon-lighten-1 .climacon_component-stroke {
-  fill: #ffb997; }
+  fill : #FFB997;
+}
 
 .climacon-warning .climacon_component-stroke {
-  fill: #ffa87d; }
+  fill : #FFA87D;
+}
 
 .climacon-warning .climacon_component-fill {
-  fill: #ffece3; }
+  fill : #FFECE3;
+}
 
 .climacon-warning.climacon-darken-1 .climacon_component-stroke {
-  fill: #ff9764; }
+  fill : #FF9764;
+}
 
 .climacon-warning.climacon-darken-2 .climacon_component-stroke {
-  fill: #ff864a; }
+  fill : #FF864A;
+}
 
 .climacon-warning.climacon-darken-3 .climacon_component-stroke {
-  fill: #ff7531; }
+  fill : #FF7531;
+}
 
 .climacon-warning.climacon-darken-4 .climacon_component-stroke {
-  fill: #ff6417; }
+  fill : #FF6417;
+}
 
 .climacon-warning.climacon-accent-1 .climacon_component-stroke {
-  fill: #FFF5EF; }
+  fill : #FFF5EF;
+}
 
 .climacon-warning.climacon-accent-2 .climacon_component-stroke {
-  fill: #FFE5D8; }
+  fill : #FFE5D8;
+}
 
 .climacon-warning.climacon-accent-3 .climacon_component-stroke {
-  fill: #FFF6F3; }
+  fill : #FFF6F3;
+}
 
 .climacon-warning.climacon-accent-4 .climacon_component-stroke {
-  fill: #FFE3DA; }
+  fill : #FFE3DA;
+}
 
 .climacon-danger.climacon-lighten-5 .climacon_component-stroke {
-  fill: #fff5f6; }
+  fill : #FFF5F6;
+}
 
 .climacon-danger.climacon-lighten-4 .climacon_component-stroke {
-  fill: #ffdbe0; }
+  fill : #FFDBE0;
+}
 
 .climacon-danger.climacon-lighten-3 .climacon_component-stroke {
-  fill: #ffc2ca; }
+  fill : #FFC2CA;
+}
 
 .climacon-danger.climacon-lighten-2 .climacon_component-stroke {
-  fill: #ffa8b4; }
+  fill : #FFA8B4;
+}
 
 .climacon-danger.climacon-lighten-1 .climacon_component-stroke {
-  fill: #ff8f9e; }
+  fill : #FF8F9E;
+}
 
 .climacon-danger .climacon_component-stroke {
-  fill: #ff7588; }
+  fill : #FF7588;
+}
 
 .climacon-danger .climacon_component-fill {
-  fill: #ffdbe0; }
+  fill : #FFDBE0;
+}
 
 .climacon-danger.climacon-darken-1 .climacon_component-stroke {
-  fill: #ff5c72; }
+  fill : #FF5C72;
+}
 
 .climacon-danger.climacon-darken-2 .climacon_component-stroke {
-  fill: #ff425c; }
+  fill : #FF425C;
+}
 
 .climacon-danger.climacon-darken-3 .climacon_component-stroke {
-  fill: #ff2946; }
+  fill : #FF2946;
+}
 
 .climacon-danger.climacon-darken-4 .climacon_component-stroke {
-  fill: #ff0f30; }
+  fill : #FF0F30;
+}
 
 .climacon-danger.climacon-accent-1 .climacon_component-stroke {
-  fill: #FFEEF1; }
+  fill : #FFEEF1;
+}
 
 .climacon-danger.climacon-accent-2 .climacon_component-stroke {
-  fill: #FFD6DB; }
+  fill : #FFD6DB;
+}
 
 .climacon-danger.climacon-accent-3 .climacon_component-stroke {
-  fill: #FFECEE; }
+  fill : #FFECEE;
+}
 
 .climacon-danger.climacon-accent-4 .climacon_component-stroke {
-  fill: #FFD3D7; }
+  fill : #FFD3D7;
+}
 
 .climacon-red.climacon-lighten-5 .climacon_component-stroke {
-  fill: #FFEBEE; }
+  fill : #FFEBEE;
+}
 
 .climacon-red.climacon-lighten-4 .climacon_component-stroke {
-  fill: #FFCDD2; }
+  fill : #FFCDD2;
+}
 
 .climacon-red.climacon-lighten-3 .climacon_component-stroke {
-  fill: #EF9A9A; }
+  fill : #EF9A9A;
+}
 
 .climacon-red.climacon-lighten-2 .climacon_component-stroke {
-  fill: #E57373; }
+  fill : #E57373;
+}
 
 .climacon-red.climacon-lighten-1 .climacon_component-stroke {
-  fill: #EF5350; }
+  fill : #EF5350;
+}
 
 .climacon-red .climacon_component-stroke {
-  fill: #F44336; }
+  fill : #F44336;
+}
 
 .climacon-red .climacon_component-fill {
-  fill: #FFCDD2; }
+  fill : #FFCDD2;
+}
 
 .climacon-red.climacon-darken-1 .climacon_component-stroke {
-  fill: #E53935; }
+  fill : #E53935;
+}
 
 .climacon-red.climacon-darken-2 .climacon_component-stroke {
-  fill: #D32F2F; }
+  fill : #D32F2F;
+}
 
 .climacon-red.climacon-darken-3 .climacon_component-stroke {
-  fill: #C62828; }
+  fill : #C62828;
+}
 
 .climacon-red.climacon-darken-4 .climacon_component-stroke {
-  fill: #B71C1C; }
+  fill : #B71C1C;
+}
 
 .climacon-red.climacon-accent-1 .climacon_component-stroke {
-  fill: #FF8A80; }
+  fill : #FF8A80;
+}
 
 .climacon-red.climacon-accent-2 .climacon_component-stroke {
-  fill: #FF5252; }
+  fill : #FF5252;
+}
 
 .climacon-red.climacon-accent-3 .climacon_component-stroke {
-  fill: #FF1744; }
+  fill : #FF1744;
+}
 
 .climacon-red.climacon-accent-4 .climacon_component-stroke {
-  fill: #D50000; }
+  fill : #D50000;
+}
 
 .climacon-pink.climacon-lighten-5 .climacon_component-stroke {
-  fill: #FCE4EC; }
+  fill : #FCE4EC;
+}
 
 .climacon-pink.climacon-lighten-4 .climacon_component-stroke {
-  fill: #F8BBD0; }
+  fill : #F8BBD0;
+}
 
 .climacon-pink.climacon-lighten-3 .climacon_component-stroke {
-  fill: #F48FB1; }
+  fill : #F48FB1;
+}
 
 .climacon-pink.climacon-lighten-2 .climacon_component-stroke {
-  fill: #F06292; }
+  fill : #F06292;
+}
 
 .climacon-pink.climacon-lighten-1 .climacon_component-stroke {
-  fill: #EC407A; }
+  fill : #EC407A;
+}
 
 .climacon-pink .climacon_component-stroke {
-  fill: #E91E63; }
+  fill : #E91E63;
+}
 
 .climacon-pink .climacon_component-fill {
-  fill: #F8BBD0; }
+  fill : #F8BBD0;
+}
 
 .climacon-pink.climacon-darken-1 .climacon_component-stroke {
-  fill: #D81B60; }
+  fill : #D81B60;
+}
 
 .climacon-pink.climacon-darken-2 .climacon_component-stroke {
-  fill: #C2185B; }
+  fill : #C2185B;
+}
 
 .climacon-pink.climacon-darken-3 .climacon_component-stroke {
-  fill: #AD1457; }
+  fill : #AD1457;
+}
 
 .climacon-pink.climacon-darken-4 .climacon_component-stroke {
-  fill: #880E4F; }
+  fill : #880E4F;
+}
 
 .climacon-pink.climacon-accent-1 .climacon_component-stroke {
-  fill: #FF80AB; }
+  fill : #FF80AB;
+}
 
 .climacon-pink.climacon-accent-2 .climacon_component-stroke {
-  fill: #FF4081; }
+  fill : #FF4081;
+}
 
 .climacon-pink.climacon-accent-3 .climacon_component-stroke {
-  fill: #F50057; }
+  fill : #F50057;
+}
 
 .climacon-pink.climacon-accent-4 .climacon_component-stroke {
-  fill: #C51162; }
+  fill : #C51162;
+}
 
 .climacon-purple.climacon-lighten-5 .climacon_component-stroke {
-  fill: #F3E5F5; }
+  fill : #F3E5F5;
+}
 
 .climacon-purple.climacon-lighten-4 .climacon_component-stroke {
-  fill: #E1BEE7; }
+  fill : #E1BEE7;
+}
 
 .climacon-purple.climacon-lighten-3 .climacon_component-stroke {
-  fill: #CE93D8; }
+  fill : #CE93D8;
+}
 
 .climacon-purple.climacon-lighten-2 .climacon_component-stroke {
-  fill: #BA68C8; }
+  fill : #BA68C8;
+}
 
 .climacon-purple.climacon-lighten-1 .climacon_component-stroke {
-  fill: #AB47BC; }
+  fill : #AB47BC;
+}
 
 .climacon-purple .climacon_component-stroke {
-  fill: #9C27B0; }
+  fill : #9C27B0;
+}
 
 .climacon-purple .climacon_component-fill {
-  fill: #E1BEE7; }
+  fill : #E1BEE7;
+}
 
 .climacon-purple.climacon-darken-1 .climacon_component-stroke {
-  fill: #8E24AA; }
+  fill : #8E24AA;
+}
 
 .climacon-purple.climacon-darken-2 .climacon_component-stroke {
-  fill: #7B1FA2; }
+  fill : #7B1FA2;
+}
 
 .climacon-purple.climacon-darken-3 .climacon_component-stroke {
-  fill: #6A1B9A; }
+  fill : #6A1B9A;
+}
 
 .climacon-purple.climacon-darken-4 .climacon_component-stroke {
-  fill: #4A148C; }
+  fill : #4A148C;
+}
 
 .climacon-purple.climacon-accent-1 .climacon_component-stroke {
-  fill: #EA80FC; }
+  fill : #EA80FC;
+}
 
 .climacon-purple.climacon-accent-2 .climacon_component-stroke {
-  fill: #E040FB; }
+  fill : #E040FB;
+}
 
 .climacon-purple.climacon-accent-3 .climacon_component-stroke {
-  fill: #D500F9; }
+  fill : #D500F9;
+}
 
 .climacon-purple.climacon-accent-4 .climacon_component-stroke {
-  fill: #DD00FF; }
+  fill : #DD00FF;
+}
 
 .climacon-blue.climacon-lighten-5 .climacon_component-stroke {
-  fill: #E3F2FD; }
+  fill : #E3F2FD;
+}
 
 .climacon-blue.climacon-lighten-4 .climacon_component-stroke {
-  fill: #BBDEFB; }
+  fill : #BBDEFB;
+}
 
 .climacon-blue.climacon-lighten-3 .climacon_component-stroke {
-  fill: #90CAF9; }
+  fill : #90CAF9;
+}
 
 .climacon-blue.climacon-lighten-2 .climacon_component-stroke {
-  fill: #64B5F6; }
+  fill : #64B5F6;
+}
 
 .climacon-blue.climacon-lighten-1 .climacon_component-stroke {
-  fill: #42A5F5; }
+  fill : #42A5F5;
+}
 
 .climacon-blue .climacon_component-stroke {
-  fill: #2196F3; }
+  fill : #2196F3;
+}
 
 .climacon-blue .climacon_component-fill {
-  fill: #BBDEFB; }
+  fill : #BBDEFB;
+}
 
 .climacon-blue.climacon-darken-1 .climacon_component-stroke {
-  fill: #1E88E5; }
+  fill : #1E88E5;
+}
 
 .climacon-blue.climacon-darken-2 .climacon_component-stroke {
-  fill: #1976D2; }
+  fill : #1976D2;
+}
 
 .climacon-blue.climacon-darken-3 .climacon_component-stroke {
-  fill: #1565C0; }
+  fill : #1565C0;
+}
 
 .climacon-blue.climacon-darken-4 .climacon_component-stroke {
-  fill: #0D47A1; }
+  fill : #0D47A1;
+}
 
 .climacon-blue.climacon-accent-1 .climacon_component-stroke {
-  fill: #82B1FF; }
+  fill : #82B1FF;
+}
 
 .climacon-blue.climacon-accent-2 .climacon_component-stroke {
-  fill: #448AFF; }
+  fill : #448AFF;
+}
 
 .climacon-blue.climacon-accent-3 .climacon_component-stroke {
-  fill: #2979FF; }
+  fill : #2979FF;
+}
 
 .climacon-blue.climacon-accent-4 .climacon_component-stroke {
-  fill: #2962FF; }
+  fill : #2962FF;
+}
 
 .climacon-cyan.climacon-lighten-5 .climacon_component-stroke {
-  fill: #E0F7FA; }
+  fill : #E0F7FA;
+}
 
 .climacon-cyan.climacon-lighten-4 .climacon_component-stroke {
-  fill: #B2EBF2; }
+  fill : #B2EBF2;
+}
 
 .climacon-cyan.climacon-lighten-3 .climacon_component-stroke {
-  fill: #80DEEA; }
+  fill : #80DEEA;
+}
 
 .climacon-cyan.climacon-lighten-2 .climacon_component-stroke {
-  fill: #4DD0E1; }
+  fill : #4DD0E1;
+}
 
 .climacon-cyan.climacon-lighten-1 .climacon_component-stroke {
-  fill: #26C6DA; }
+  fill : #26C6DA;
+}
 
 .climacon-cyan .climacon_component-stroke {
-  fill: #00BCD4; }
+  fill : #00BCD4;
+}
 
 .climacon-cyan .climacon_component-fill {
-  fill: #B2EBF2; }
+  fill : #B2EBF2;
+}
 
 .climacon-cyan.climacon-darken-1 .climacon_component-stroke {
-  fill: #00ACC1; }
+  fill : #00ACC1;
+}
 
 .climacon-cyan.climacon-darken-2 .climacon_component-stroke {
-  fill: #0097A7; }
+  fill : #0097A7;
+}
 
 .climacon-cyan.climacon-darken-3 .climacon_component-stroke {
-  fill: #00838F; }
+  fill : #00838F;
+}
 
 .climacon-cyan.climacon-darken-4 .climacon_component-stroke {
-  fill: #006064; }
+  fill : #006064;
+}
 
 .climacon-cyan.climacon-accent-1 .climacon_component-stroke {
-  fill: #84FFFF; }
+  fill : #84FFFF;
+}
 
 .climacon-cyan.climacon-accent-2 .climacon_component-stroke {
-  fill: #18FFFF; }
+  fill : #18FFFF;
+}
 
 .climacon-cyan.climacon-accent-3 .climacon_component-stroke {
-  fill: #00E5FF; }
+  fill : #00E5FF;
+}
 
 .climacon-cyan.climacon-accent-4 .climacon_component-stroke {
-  fill: #00B8D4; }
+  fill : #00B8D4;
+}
 
 .climacon-teal.climacon-lighten-5 .climacon_component-stroke {
-  fill: #E0F2F1; }
+  fill : #E0F2F1;
+}
 
 .climacon-teal.climacon-lighten-4 .climacon_component-stroke {
-  fill: #B2DFDB; }
+  fill : #B2DFDB;
+}
 
 .climacon-teal.climacon-lighten-3 .climacon_component-stroke {
-  fill: #80CBC4; }
+  fill : #80CBC4;
+}
 
 .climacon-teal.climacon-lighten-2 .climacon_component-stroke {
-  fill: #4DB6AC; }
+  fill : #4DB6AC;
+}
 
 .climacon-teal.climacon-lighten-1 .climacon_component-stroke {
-  fill: #26A69A; }
+  fill : #26A69A;
+}
 
 .climacon-teal .climacon_component-stroke {
-  fill: #009688; }
+  fill : #009688;
+}
 
 .climacon-teal .climacon_component-fill {
-  fill: #B2DFDB; }
+  fill : #B2DFDB;
+}
 
 .climacon-teal.climacon-darken-1 .climacon_component-stroke {
-  fill: #00897B; }
+  fill : #00897B;
+}
 
 .climacon-teal.climacon-darken-2 .climacon_component-stroke {
-  fill: #00796B; }
+  fill : #00796B;
+}
 
 .climacon-teal.climacon-darken-3 .climacon_component-stroke {
-  fill: #00695C; }
+  fill : #00695C;
+}
 
 .climacon-teal.climacon-darken-4 .climacon_component-stroke {
-  fill: #004D40; }
+  fill : #004D40;
+}
 
 .climacon-teal.climacon-accent-1 .climacon_component-stroke {
-  fill: #A7FFEB; }
+  fill : #A7FFEB;
+}
 
 .climacon-teal.climacon-accent-2 .climacon_component-stroke {
-  fill: #64FFDA; }
+  fill : #64FFDA;
+}
 
 .climacon-teal.climacon-accent-3 .climacon_component-stroke {
-  fill: #1DE9B6; }
+  fill : #1DE9B6;
+}
 
 .climacon-teal.climacon-accent-4 .climacon_component-stroke {
-  fill: #00BFA5; }
+  fill : #00BFA5;
+}
 
 .climacon-yellow.climacon-lighten-5 .climacon_component-stroke {
-  fill: #FFFDE7; }
+  fill : #FFFDE7;
+}
 
 .climacon-yellow.climacon-lighten-4 .climacon_component-stroke {
-  fill: #FFF9C4; }
+  fill : #FFF9C4;
+}
 
 .climacon-yellow.climacon-lighten-3 .climacon_component-stroke {
-  fill: #FFF59D; }
+  fill : #FFF59D;
+}
 
 .climacon-yellow.climacon-lighten-2 .climacon_component-stroke {
-  fill: #FFF176; }
+  fill : #FFF176;
+}
 
 .climacon-yellow.climacon-lighten-1 .climacon_component-stroke {
-  fill: #FFEE58; }
+  fill : #FFEE58;
+}
 
 .climacon-yellow .climacon_component-stroke {
-  fill: #FFEB3B; }
+  fill : #FFEB3B;
+}
 
 .climacon-yellow .climacon_component-fill {
-  fill: #FFF9C4; }
+  fill : #FFF9C4;
+}
 
 .climacon-yellow.climacon-darken-1 .climacon_component-stroke {
-  fill: #FDD835; }
+  fill : #FDD835;
+}
 
 .climacon-yellow.climacon-darken-2 .climacon_component-stroke {
-  fill: #FBC02D; }
+  fill : #FBC02D;
+}
 
 .climacon-yellow.climacon-darken-3 .climacon_component-stroke {
-  fill: #F9A825; }
+  fill : #F9A825;
+}
 
 .climacon-yellow.climacon-darken-4 .climacon_component-stroke {
-  fill: #F57F17; }
+  fill : #F57F17;
+}
 
 .climacon-yellow.climacon-accent-1 .climacon_component-stroke {
-  fill: #FFFF8D; }
+  fill : #FFFF8D;
+}
 
 .climacon-yellow.climacon-accent-2 .climacon_component-stroke {
-  fill: #FFFF00; }
+  fill : #FFFF00;
+}
 
 .climacon-yellow.climacon-accent-3 .climacon_component-stroke {
-  fill: #FFEA00; }
+  fill : #FFEA00;
+}
 
 .climacon-yellow.climacon-accent-4 .climacon_component-stroke {
-  fill: #FFD600; }
+  fill : #FFD600;
+}
 
 .climacon-amber.climacon-lighten-5 .climacon_component-stroke {
-  fill: #FFF8E1; }
+  fill : #FFF8E1;
+}
 
 .climacon-amber.climacon-lighten-4 .climacon_component-stroke {
-  fill: #FFECB3; }
+  fill : #FFECB3;
+}
 
 .climacon-amber.climacon-lighten-3 .climacon_component-stroke {
-  fill: #FFE082; }
+  fill : #FFE082;
+}
 
 .climacon-amber.climacon-lighten-2 .climacon_component-stroke {
-  fill: #FFD54F; }
+  fill : #FFD54F;
+}
 
 .climacon-amber.climacon-lighten-1 .climacon_component-stroke {
-  fill: #FFCA28; }
+  fill : #FFCA28;
+}
 
 .climacon-amber .climacon_component-stroke {
-  fill: #FFC107; }
+  fill : #FFC107;
+}
 
 .climacon-amber .climacon_component-fill {
-  fill: #FFECB3; }
+  fill : #FFECB3;
+}
 
 .climacon-amber.climacon-darken-1 .climacon_component-stroke {
-  fill: #FFB300; }
+  fill : #FFB300;
+}
 
 .climacon-amber.climacon-darken-2 .climacon_component-stroke {
-  fill: #FFA000; }
+  fill : #FFA000;
+}
 
 .climacon-amber.climacon-darken-3 .climacon_component-stroke {
-  fill: #FF8F00; }
+  fill : #FF8F00;
+}
 
 .climacon-amber.climacon-darken-4 .climacon_component-stroke {
-  fill: #FF6F00; }
+  fill : #FF6F00;
+}
 
 .climacon-amber.climacon-accent-1 .climacon_component-stroke {
-  fill: #FFE57F; }
+  fill : #FFE57F;
+}
 
 .climacon-amber.climacon-accent-2 .climacon_component-stroke {
-  fill: #FFD740; }
+  fill : #FFD740;
+}
 
 .climacon-amber.climacon-accent-3 .climacon_component-stroke {
-  fill: #FFC400; }
+  fill : #FFC400;
+}
 
 .climacon-amber.climacon-accent-4 .climacon_component-stroke {
-  fill: #FFAB00; }
+  fill : #FFAB00;
+}
 
 .climacon-blue-grey.climacon-lighten-5 .climacon_component-stroke {
-  fill: #ECEFF1; }
+  fill : #ECEFF1;
+}
 
 .climacon-blue-grey.climacon-lighten-4 .climacon_component-stroke {
-  fill: #CFD8DC; }
+  fill : #CFD8DC;
+}
 
 .climacon-blue-grey.climacon-lighten-3 .climacon_component-stroke {
-  fill: #B0BEC5; }
+  fill : #B0BEC5;
+}
 
 .climacon-blue-grey.climacon-lighten-2 .climacon_component-stroke {
-  fill: #90A4AE; }
+  fill : #90A4AE;
+}
 
 .climacon-blue-grey.climacon-lighten-1 .climacon_component-stroke {
-  fill: #78909C; }
+  fill : #78909C;
+}
 
 .climacon-blue-grey .climacon_component-stroke {
-  fill: #607D8B; }
+  fill : #607D8B;
+}
 
 .climacon-blue-grey .climacon_component-fill {
-  fill: #CFD8DC; }
+  fill : #CFD8DC;
+}
 
 .climacon-blue-grey.climacon-darken-1 .climacon_component-stroke {
-  fill: #546E7A; }
+  fill : #546E7A;
+}
 
 .climacon-blue-grey.climacon-darken-2 .climacon_component-stroke {
-  fill: #455A64; }
+  fill : #455A64;
+}
 
 .climacon-blue-grey.climacon-darken-3 .climacon_component-stroke {
-  fill: #37474F; }
+  fill : #37474F;
+}
 
 .climacon-blue-grey.climacon-darken-4 .climacon_component-stroke {
-  fill: #263238; }
+  fill : #263238;
+}
 
 .climacon-grey-blue.climacon-lighten-5 .climacon_component-stroke {
-  fill: #ECEFF1; }
+  fill : #ECEFF1;
+}
 
 .climacon-grey-blue.climacon-lighten-4 .climacon_component-stroke {
-  fill: #CFD8DC; }
+  fill : #CFD8DC;
+}
 
 .climacon-grey-blue.climacon-lighten-3 .climacon_component-stroke {
-  fill: #B0BEC5; }
+  fill : #B0BEC5;
+}
 
 .climacon-grey-blue.climacon-lighten-2 .climacon_component-stroke {
-  fill: #6F85AD; }
+  fill : #6F85AD;
+}
 
 .climacon-grey-blue.climacon-lighten-1 .climacon_component-stroke {
-  fill: #78909C; }
+  fill : #78909C;
+}
 
 .climacon-grey-blue .climacon_component-stroke {
-  fill: #1B2942; }
+  fill : #1B2942;
+}
 
 .climacon-grey-blue .climacon_component-fill {
-  fill: #CFD8DC; }
+  fill : #CFD8DC;
+}
 
 .climacon-grey-blue.climacon-darken-1 .climacon_component-stroke {
-  fill: #546E7A; }
+  fill : #546E7A;
+}
 
 .climacon-grey-blue.climacon-darken-2 .climacon_component-stroke {
-  fill: #404E67; }
+  fill : #404E67;
+}
 
 .climacon-grey-blue.climacon-darken-3 .climacon_component-stroke {
-  fill: #37474F; }
+  fill : #37474F;
+}
 
 .climacon-grey-blue.climacon-darken-4 .climacon_component-stroke {
-  fill: #263238; }
+  fill : #263238;
+}
 
 .climacon-shades.climacon-black .climacon_component-stroke {
-  fill: #000000; }
+  fill : #000000;
+}
 
 .climacon-shades.climacon-white .climacon_component-stroke {
-  fill: #FFFFFF; }
+  fill : #FFFFFF;
+}
 
 .climacon-shades.climacon-transparent .climacon_component-stroke {
-  fill: transparent; }
+  fill : transparent;
+}
