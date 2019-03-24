@@ -379,5 +379,11 @@ class CloudFilesParser(BaseParser):
                 comics_models.Title.objects.exclude(id__in=self._titles).delete()
                 comics_models.Universe.objects.exclude(id__in=self._universes).delete()
                 comics_models.Publisher.objects.exclude(id__in=self._publishers).delete()
+            if self._params['load_covers']:
+                for t in comics_models.Title.objects.filter(image=''):
+                    i = t.issues.exclude(main_cover='').order_by('number').first()
+                    if i:
+                        t.image.save(i.main_cover.name, i.main_cover.file)
+                        t.save()
         except Error as err:
             raise RuntimeParserError("Error while performing postprocessing", err.args[0])
