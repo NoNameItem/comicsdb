@@ -385,7 +385,7 @@ class Issue(models.Model):
 
     class Meta:
         unique_together = (("name", "title", "publish_date"),)
-        ordering = ["title", "publish_date", "number"]
+        ordering = ["title", "number"]
 
 
 class Character(models.Model):
