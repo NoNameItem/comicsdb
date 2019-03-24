@@ -336,7 +336,7 @@ class CloudFilesParser(BaseParser):
 
                         run_detail.issue = issue
                         run_detail.created = created
-                        if self._params['load_covers']:
+                        if self._params['load_covers'] and not issue.main_cover:
                             try:
                                 with tempfile.NamedTemporaryFile() as comics_file:
                                     self._bucket.download_fileobj(file_key, comics_file)
