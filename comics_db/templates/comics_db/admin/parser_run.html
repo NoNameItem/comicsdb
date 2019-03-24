@@ -20,7 +20,7 @@
 
 {% block content %}
   <div class="row">
-    <div class="col-md-4 col-sm-12">
+    <div class="col-xl-4 col-12">
       <div id="run-card" class="card" style="zoom: 1;">
         <div class="card-header card-head-inverse bg-{{ status_css }}">
           <h2 class="card-title">Run info</h2>
@@ -37,14 +37,14 @@
               <div class="form-body">
                 <h4 class="form-section"><i class="fas fa-info"></i> Main info</h4>
                 <div class="row">
-                  <div class="col-md-6">
+                  <div class="col-xs-6">
                     <div class="form-group">
                       <label for="parser-name" class="text-bold-700">Parser</label>
                       <input type="text" id="parser-name" class="form-control-plaintext"
                              value="{{ parser_run.parser_name }}">
                     </div>
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-xs-6">
                     <div class="form-group">
                       <label for="status" class="text-bold-700">Status</label>
                       <input type="text" id="status" class="form-control-plaintext text-{{ status_css }}"
@@ -53,17 +53,33 @@
                   </div>
                 </div>
 
+                <h4 class="form-section"><i class="fas fa-cogs"></i> Parameters</h4>
+                {% for parameter in parser_run.parameters.all %}
+                    <div class="row">
+                  <div class="col-12">
+                    <div class="form-group">
+                      <label for="parser-name" class="text-bold-700">{{ parameter.name }}</label>
+                      <input type="text" id="parser-name" class="form-control-plaintext"
+                             value="{{ parameter.val }}">
+                    </div>
+                  </div>
+                </div>
+                {% empty %}
+                  <p>No parameters specified</p>
+                {% endfor %}
+
+
                 <h4 class="form-section"><i class="far fa-clock"></i> Execution time</h4>
 
                 <div class="row">
-                  <div class="col-md-6">
+                  <div class="col-xs-6">
                     <div class="form-group">
                       <label for="start" class="text-bold-700">Start</label>
                       <input type="text" id="start" class="form-control-plaintext"
                              value="{{ parser_run.start|date:"d.m.Y H:i:s" }}">
                     </div>
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-xs-6">
                     <div class="form-group">
                       <label for="end" class="text-bold-700">End</label>
                       <input type="text" id="end" class="form-control-plaintext"
@@ -76,18 +92,35 @@
                 <h4 class="form-section"><i class="fa fa-list"></i> Records</h4>
 
                 <div class="row">
-                  <div class="col-md-6">
+                  <div class="col-xs-6">
                     <div class="form-group">
                       <label for="records-total" class="text-bold-700">Total</label>
                       <input type="text" id="records-total" class="form-control-plaintext"
                              value="{{ parser_run.items_count }}">
                     </div>
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-xs-6">
                     <div class="form-group">
                       <label for="records-processed" class="text-bold-700">Processed</label>
                       <input type="text" id="records-processed" class="form-control-plaintext"
                              value="{{ parser_run.processed }}">
+                    </div>
+                  </div>
+
+                </div>
+                <div class="row">
+                  <div class="col-xs-6">
+                    <div class="form-group">
+                      <label for="records-success" class="text-bold-700">Success</label>
+                      <input type="text" id="records-success" class="form-control-plaintext success"
+                             value="{{ parser_run.success_count }}">
+                    </div>
+                  </div>
+                  <div class="col-xs-6">
+                    <div class="form-group">
+                      <label for="records-error" class="text-bold-700">Error</label>
+                      <input type="text" id="records-error" class="form-control-plaintext danger"
+                             value="{{ parser_run.error_count }}">
                     </div>
                   </div>
 
@@ -111,7 +144,7 @@
     </div>
 
     {% if parser_run.parser == 'CLOUD_FILES' %}
-      <div class="col-md-8 col-sm-12">
+      <div class="col-xl-8 col-12">
         <div id="run-detail-card" class="card" style="zoom: 1;">
           <div class="card-header card-head-inverse bg-{{ status_css }}">
             <h2 class="card-title">Parser steps</h2>
@@ -181,7 +214,8 @@
                   <div class="col-md-2">
                     <div class="form-group">
                       <label for="modal-created" class="text-bold-700">Created</label>
-                      <span id="modal-created" class="form-control-plaintext"><i class="far fa-check-circle success fa-2x"></i></span>
+                      <span id="modal-created" class="form-control-plaintext"><i
+                          class="far fa-check-circle success fa-2x"></i></span>
 
                     </div>
                   </div>
@@ -218,7 +252,11 @@
                   </div>
 
                 </div>
-
+                <div id="modal-error-block">
+                  <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
+                  <p id="modal-error"></p>
+                  <p class="text-bold-300" id="modal-error-detail"></p>
+                </div>
               </div>
             </form>
           </div>

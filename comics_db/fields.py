@@ -53,7 +53,7 @@ class ThumbnailImageFieldFile(ImageFieldFile):
 
     def delete(self, save=True):
         if self.storage.exists(self.thumb_name):
-            default_storage.delete(self.thumb_name)
+            self.storage.delete(self.thumb_name)
         super().delete(save)
 
 

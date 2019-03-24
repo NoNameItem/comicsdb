@@ -1,41 +1,57 @@
 .card-with-cover .card-profile-image img.img-border {
-    border: 5px solid #FFF
+  border: 5px solid #FFF
 }
 
 .card-with-stats .btn-float {
-    padding: 8px 14px 4px
+  padding: 8px 14px 4px
 }
 
 .card-with-cover .card-profile-image {
-    position: absolute;
-    top: 130px;
-    width: 100%;
-    text-align: center
+  position: absolute;
+  top: 130px;
+  width: 100%;
+  text-align: center
 }
 
 .card-with-cover .card-with-cover-content {
-    padding-top: 4rem
+  padding-top: 4rem
 }
 
 
 .app-content .sidebar-toggle {
-    position: absolute;
-    cursor: pointer;
-    margin-top: 4px
+  position: absolute;
+  cursor: pointer;
+  margin-top: 4px
 }
 
 .app-content .content-overlay {
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    position: absolute;
-    display: block;
-    z-index: 2;
-    visibility: hidden
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  position: absolute;
+  display: block;
+  z-index: 2;
+  visibility: hidden
 }
 
 .app-content .content-overlay.show {
-    visibility: visible;
-    background-color: rgba(0,0,0,.6)
+  visibility: visible;
+  background-color: rgba(0,0,0,.6)
+}
+
+.read {
+  opacity: 0.4;
+}
+
+.read:hover{
+  opacity: 1;
+}
+
+.reading {
+
+}
+
+.not-read {
+  opacity: 1;
 }

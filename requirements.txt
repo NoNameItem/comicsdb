@@ -14,6 +14,7 @@ coreschema==0.0.4
 cryptography==2.6.1
 Django==2.1.7
 django-celery-beat==1.4.0
+django-cleanup==3.2.0
 django-crispy-forms==1.7.2
 django-el-pagination==3.2.4
 django-filter==2.1.0
@@ -41,6 +42,7 @@ pyOpenSSL==19.0.0
 python-crontab==2.3.6
 python-dateutil==2.8.0
 pytz==2018.9
+rarfile==3.0
 requests==2.21.0
 ruamel.yaml==0.15.89
 s3transfer==0.2.0

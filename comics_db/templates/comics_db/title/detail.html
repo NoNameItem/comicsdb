@@ -60,7 +60,8 @@
             </div>
           </div>
           <div class="card-desc text-muted">
-            <h3><strong>{{ title.name }} ({{ title.title_type.name }})</strong></h3>
+            <h3><strong>{{ title.name }} ({{ title.title_type.name }}) {% if read == total %}
+              <i class="fas fa-check-circle success"></i>{% endif %}</strong></h3>
             <em>{{ title.desc|default:"No description" }}</em>
           </div>
         </div>
@@ -68,6 +69,7 @@
     </div>
   </div>
   <!-- /HEADER -->
+  {% include "comics_db/read_progress_bar.html" %}
   <!-- STATISTICS -->
   <div class="row">
     <div class="col-md-12 col-12">
@@ -126,6 +128,16 @@
                 {{ title.title_type.name }}
               </div>
             </div>
+            {% if read_date %}
+              <div class="row">
+              <div class="col-4k-2 col-2k-3 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-4 col-12 text-xxs-right">
+                <strong>Finish date: </strong>
+              </div>
+              <div class="col-4k-10 col-2k-9 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-8 col-12 pl-xxs-0">
+                {{ read_date }}
+              </div>
+            </div>
+            {% endif %}
 
           </div>
         </div>
