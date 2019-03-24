@@ -37,17 +37,9 @@ class ParserRun(models.Model):
     end = models.DateTimeField(null=True)
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
     items_count = models.IntegerField(null=True)
-    processed = models.IntegerField(null=True)
     error = models.TextField(blank=True)
     error_detail = models.TextField(blank=True)
     celery_task_id = models.CharField(max_length=100, null=True)
-
-    def inc_processed(self, processed_count=1):
-        if self.processed:
-            self.processed += processed_count
-        else:
-            self.processed = processed_count
-        self.save()
 
     @property
     def parser_name(self):
@@ -82,6 +74,14 @@ class ParserRun(models.Model):
         else:
             return 0
         return details.filter(status='ERROR').count()
+
+    @property
+    def processed(self):
+        if self.parser == 'CLOUD_FILES':
+            details = self.cloudfilesparserrundetails
+        else:
+            return 0
+        return details.exclude(status='RUNNING').count()
 
     class Meta:
         ordering = ["-start"]
