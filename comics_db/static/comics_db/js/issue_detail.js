@@ -7,8 +7,9 @@ $(document).ready(function () {
     ).done(function (response) {
       console.log(response);
       if (response.status === 'success') {
-        successNotify("Congratulations!", "You read " + response.issue_name + ".\n Time to read some more");
+        successNotify("Congratulations!", "You have read " + response.issue_name + ".\n Time to read some more");
         $('#read-date-row').show();
+        $('#read-mark').show();
         $('#read-date').text(response.date);
         $('#mark-read-btn').hide();
       } else {

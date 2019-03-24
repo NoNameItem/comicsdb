@@ -147,3 +147,8 @@ html body .content .content-wrapper .content-header-title,
 .custom-file-input{
   cursor: pointer;
 }
+
+.read-progress {
+  height: 1.5rem;
+  font-size: 1rem;
+}

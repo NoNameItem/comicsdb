@@ -3,7 +3,7 @@ import json
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Max
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import formats
@@ -43,6 +43,10 @@ class MainPageView(TemplateView):
         context['issues_count'] = models.Issue.objects.count()
         context['publishers_count'] = models.Publisher.objects.count()
         context['universes_count'] = models.Universe.objects.count()
+        if self.request.user.is_authenticated:
+            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile).count()
+            context['total'] = models.Issue.objects.count()
+            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
         return context
 
 
@@ -56,6 +60,15 @@ class PublisherDetailView(DetailView):
     template_name = "comics_db/publisher/detail.html"
     model = models.Publisher
     context_object_name = "publisher"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                          title__publisher=self.get_object()).count()
+            context['total'] = models.Issue.objects.filter(title__publisher=self.get_object()).count()
+            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+        return context
 
     def post(self, request, slug):
         self.object = self.get_object()
@@ -94,6 +107,9 @@ class PublisherTitleListView(AjaxListView):
         self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
         queryset = models.Title.objects.filter(publisher=self.publisher).annotate(issue_count=Count('issues')). \
             select_related("universe", "title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
         if search:
             q = Q()
@@ -121,6 +137,8 @@ class PublisherIssueListView(AjaxListView):
         self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
         queryset = models.Issue.objects.filter(title__publisher=self.publisher).select_related("title__universe",
                                                                                                "title__title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
         if search:
             q = Q()
@@ -147,6 +165,15 @@ class UniverseDetailView(DetailView):
     model = models.Universe
     context_object_name = "universe"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                          title__universe=self.get_object()).count()
+            context['total'] = models.Issue.objects.filter(title__universe=self.get_object()).count()
+            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+        return context
+
     def post(self, request, slug):
         self.object = self.get_object()
         form = forms.UniverseForm(request.POST, request.FILES)
@@ -168,6 +195,9 @@ class UniverseTitleListView(AjaxListView):
         self.universe = models.Universe.objects.get(slug=self.kwargs['slug'])
         queryset = models.Title.objects.filter(universe=self.universe).annotate(issue_count=Count('issues')). \
             select_related("title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
         if search:
             q = Q()
@@ -193,6 +223,8 @@ class UniverseIssueListView(AjaxListView):
     def get_queryset(self):
         self.universe = models.Universe.objects.get(slug=self.kwargs['slug'])
         queryset = models.Issue.objects.filter(title__universe=self.universe).select_related("title__title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
         if search:
             q = Q()
@@ -219,6 +251,9 @@ class TitleListView(AjaxListView):
     def get_queryset(self):
         queryset = models.Title.objects.annotate(issue_count=Count('issues')).select_related("publisher", "universe",
                                                                                              "title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
         if search:
             q = Q()
@@ -241,6 +276,16 @@ class TitleDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title_types'] = models.TitleType.objects.all()
+        if self.request.user.is_authenticated:
+            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                          title=self.get_object()).count()
+            context['total'] = models.Issue.objects.filter(title=self.get_object()).count()
+            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            if context['read'] == context['total']:
+                issues = self.get_object().issues.all()
+                context['read_date'] = models.ReadIssue.objects.filter(issue__in=issues,
+                                                                       profile=self.request.user.profile)\
+                    .aggregate(Max('read_date'))['read_date__max']
         return context
 
     def post(self, request, slug):
@@ -263,6 +308,8 @@ class TitleIssueListView(AjaxListView):
     def get_queryset(self):
         self.title = models.Title.objects.get(slug=self.kwargs['slug'])
         queryset = models.Issue.objects.filter(title=self.title)
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
         if search:
             q = Q()
@@ -289,6 +336,8 @@ class IssueListView(AjaxListView):
     def get_queryset(self):
         queryset = models.Issue.objects.all().select_related("title__publisher", "title__universe",
                                                              "title__title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
         try:
             search = self.request.GET['search']
             if search:
