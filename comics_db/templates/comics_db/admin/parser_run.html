@@ -92,6 +92,23 @@
                   </div>
 
                 </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="records-success" class="text-bold-700">Success</label>
+                      <input type="text" id="records-success" class="form-control-plaintext success"
+                             value="{{ parser_run.success_count }}">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="records-error" class="text-bold-700">Error</label>
+                      <input type="text" id="records-error" class="form-control-plaintext danger"
+                             value="{{ parser_run.error_count }}">
+                    </div>
+                  </div>
+
+                </div>
 
                 {% if parser_run.error or parser_run.error_detail %}
                   <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>

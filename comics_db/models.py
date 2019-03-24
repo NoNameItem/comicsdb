@@ -67,6 +67,22 @@ class ParserRun(models.Model):
     def page(self):
         return reverse('parser-log-detail', args=(self.id,))
 
+    @property
+    def success_count(self):
+        if self.parser == 'CLOUD_FILES':
+            details = self.cloudfilesparserrundetails
+        else:
+            return 0
+        return details.filter(status='SUCCESS').count()
+
+    @property
+    def error_count(self):
+        if self.parser == 'CLOUD_FILES':
+            details = self.cloudfilesparserrundetails
+        else:
+            return 0
+        return details.filter(status='ERROR').count()
+
     class Meta:
         ordering = ["-start"]
 
