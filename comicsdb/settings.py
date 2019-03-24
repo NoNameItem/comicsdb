@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'el_pagination',
     'comics_db',
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [

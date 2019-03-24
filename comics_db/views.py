@@ -440,7 +440,8 @@ class RunParser(UserPassesTestMixin, View):
                 if not path_root:
                     return JsonResponse({'status': 'error', 'message': 'Path root should be specified'})
                 full = bool(request.POST['cloud-full'])
-                args = (path_root, full)
+                load_covers = bool(request.POST['cloud-load-cover'])
+                args = (path_root, full, load_covers)
             tasks.parser_run_task.delay(parser, args)
             return JsonResponse({'status': 'success', 'message': '%s started' % self.parser_dict[parser]})
         except Exception as err:
@@ -944,7 +945,8 @@ class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, Gene
                 if not path_root:
                     return JsonResponse({'status': 'error', 'message': 'Path root should be specified'})
                 full = bool(request.POST['cloud-full'])
-                init_args = (path_root, full)
+                load_covers = bool(request.POST['cloud-load-cover'])
+                init_args = (path_root, full, load_covers)
                 task_args = json.dumps((parser, init_args))
             else:
                 return Response({'status': 'error', 'message': 'Unknown parser code "%s"' % parser})

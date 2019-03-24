@@ -158,10 +158,18 @@ MARVEL_API_STATUS_CHOICES = (
 )
 
 
+def get_publisher_poster_name(instance, filename):
+    return "publisher_poster/{0}_poster.{1}".format(instance.name, filename.split('.')[-1])
+
+
+def get_publisher_logo_name(instance, filename):
+    return "publisher_logo/{0}_logo.{1}".format(instance.name, filename.split('.')[-1])
+
+
 class Publisher(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    logo = ThumbnailImageField(null=True, upload_to='publisher_logo', thumb_width=100)
-    poster = ThumbnailImageField(null=True, upload_to='publisher_poster', thumb_width=520)
+    logo = ThumbnailImageField(null=True, upload_to=get_publisher_logo_name, thumb_width=100)
+    poster = ThumbnailImageField(null=True, upload_to=get_publisher_poster_name, thumb_width=520)
     desc = models.TextField(blank=True)
     slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
 
@@ -204,11 +212,15 @@ class Creator(models.Model):
         super(Creator, self).save(force_insert, force_update, using, update_fields)
 
 
+def get_universe_poster_name(instance, filename):
+    return "universe_poster/{0}_poster.{1}".format(instance.name, filename.split('.')[-1])
+
+
 class Universe(models.Model):
     name = models.CharField(max_length=100)
     desc = models.TextField(blank=True)
     slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
-    poster = ThumbnailImageField(null=True, upload_to='universe_poster', thumb_width=520, thumb_height=200)
+    poster = ThumbnailImageField(null=True, upload_to=get_universe_poster_name, thumb_width=520, thumb_height=200)
 
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="universes")
 
@@ -256,11 +268,15 @@ class TitleCreator(models.Model):
     role = models.CharField(max_length=100)
 
 
+def get_title_image_name(instance, filename):
+    return "title_image/{0}_image.{1}".format(instance.name, filename.split('.')[-1])
+
+
 class Title(models.Model):
     name = models.CharField(max_length=500)
     path_key = models.CharField(max_length=500)
     desc = models.TextField(blank=True)
-    image = ThumbnailImageField(null=True, upload_to='title_image', thumb_width=380)
+    image = ThumbnailImageField(null=True, upload_to=get_title_image_name, thumb_width=380)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
 
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="titles")
@@ -299,13 +315,17 @@ class IssueCreator(models.Model):
     role = models.CharField(max_length=100)
 
 
+def get_issue_cover_name(instance, filename):
+    return "issue_cover/{0}_cover.{1}".format(instance.name, filename.split('.')[-1])
+
+
 class Issue(models.Model):
     name = models.CharField(max_length=500)
     number = models.IntegerField(null=True)
     desc = models.TextField(blank=True)
     publish_date = models.DateField()
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
-    main_cover = ThumbnailImageField(null=True, upload_to='issue_cover', thumb_width=380)
+    main_cover = ThumbnailImageField(null=True, upload_to=get_issue_cover_name, thumb_width=380)
     link = models.URLField(max_length=1000, unique=True)
     page_count = models.IntegerField(null=True)
 

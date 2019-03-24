@@ -4,6 +4,7 @@ Different parsers for getting comics info
 import datetime
 import inspect
 import re
+import tempfile
 
 import boto3
 import botocore
@@ -14,6 +15,7 @@ from django.utils import timezone
 
 from comics_db import models as comics_models
 from comics_db.models import ParserRun, ParserRunDetail, CloudFilesParserRunDetail
+from comics_db.reader import ComicsReader
 from comicsdb import settings
 
 
@@ -186,26 +188,28 @@ class CloudFilesParser(BaseParser):
                         re.IGNORECASE)
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
-    def __init__(self, path_prefix, full=False):
+    def __init__(self, path_prefix, full=False, load_covers=False):
         super().__init__()
         self._params['path_prefix'] = path_prefix
         self._params['full'] = full
+        self._params['load_covers'] = load_covers
         self._publishers = set()
         self._universes = set()
         self._titles = set()
         self._issues = set()
 
+        # Initialize bucket connection
+        session = boto3.session.Session()
+        s3 = session.resource('s3', region_name=settings.DO_REGION_NAME,
+                              endpoint_url=settings.DO_ENDPOINT_URL,
+                              aws_access_key_id=settings.DO_KEY_ID,
+                              aws_secret_access_key=settings.DO_SECRET_ACCESS_KEY)
+        self._bucket = s3.Bucket(settings.DO_STORAGE_BUCKET_NAME)
+
     def _prepare(self):
         try:
-            session = boto3.session.Session()
-            s3 = session.resource('s3', region_name=settings.DO_REGION_NAME,
-                                  endpoint_url=settings.DO_ENDPOINT_URL,
-                                  aws_access_key_id=settings.DO_KEY_ID,
-                                  aws_secret_access_key=settings.DO_SECRET_ACCESS_KEY)
-            bucket = s3.Bucket(settings.DO_STORAGE_BUCKET_NAME)
-            bucket_comics = bucket.objects.filter(Prefix=self._params['path_prefix'])
+            bucket_comics = self._bucket.objects.filter(Prefix=self._params['path_prefix'])
             self._data = [x.key for x in bucket_comics if self._FILE_REGEX.search(x.key)]
-
         except botocore.exceptions.ConnectionError:
             raise RuntimeParserError("Could not establish connection to DO cloud")
         except botocore.exceptions.ClientError as err:
@@ -332,7 +336,19 @@ class CloudFilesParser(BaseParser):
 
                         run_detail.issue = issue
                         run_detail.created = created
-                        run_detail.end_with_success()
+                        if self._params['load_covers']:
+                            try:
+                                with tempfile.NamedTemporaryFile() as comics_file:
+                                    self._bucket.download_fileobj(file_key, comics_file)
+                                    with ComicsReader(comics_file) as reader:
+                                        with reader.get_page_file(0) as cover:
+                                            issue.main_cover.save(cover.name, cover)
+                                            issue.save()
+                                run_detail.end_with_success()
+                            except Error as err:
+                                run_detail.end_with_error("Could not get issue cover", err.args[0])
+                        else:
+                            run_detail.end_with_success()
 
                     except KeyError as err:
                         run_detail.end_with_error("Match object has no group named \"{0}\"".format(err))
