@@ -87,6 +87,15 @@ class ParserRun(models.Model):
         ordering = ["-start"]
 
 
+class ParserRunParams(models.Model):
+    parser_run = models.ForeignKey(ParserRun, on_delete=models.CASCADE, related_name="parameters")
+    name = models.CharField(max_length=100)
+    val = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["id"]
+
+
 class ParserRunDetail(models.Model):
     STATUS_CHOICES = (
         ("RUNNING", "Running"),
