@@ -7,6 +7,7 @@ import re
 
 import boto3
 import botocore
+import botocore.exceptions
 from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.db import Error
 from django.utils import timezone
@@ -41,6 +42,8 @@ class BaseParser:
 
     Handles creating run log and common parameters for all parsers.
     Specific parsers should implement _process method and override parser_code and run_detail_model fields
+
+    For saving run parameters in log^ put them in _params dictionary
     """
     PARSER_CODE = "BASE"  # Parser code for linking log to specific parser type
     RUN_DETAIL_MODEL = ParserRunDetail  # Model for saving parser detail logs
@@ -48,6 +51,7 @@ class BaseParser:
     def __init__(self):
         self._parser_run = None
         self._data = None
+        self._params = {}
 
     @property
     def _items_count(self):
@@ -133,6 +137,9 @@ class BaseParser:
             self._prepare()
             self._parser_run.items_count = self._items_count
             self._parser_run.save()
+            for k, v in self._params.items():
+                run_param = comics_models.ParserRunParams(parser_run=self._parser_run, name=k, val=str(v))
+                run_param.save()
 
             # Starting processing
             process_result = self._process()
@@ -180,13 +187,13 @@ class CloudFilesParser(BaseParser):
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
     def __init__(self, path_prefix, full=False):
-        self.path_prefix = path_prefix
-        self._full = full
+        super().__init__()
+        self._params['path_prefix'] = path_prefix
+        self._params['full'] = full
         self._publishers = set()
         self._universes = set()
         self._titles = set()
         self._issues = set()
-        super().__init__()
 
     def _prepare(self):
         try:
@@ -196,13 +203,12 @@ class CloudFilesParser(BaseParser):
                                   aws_access_key_id=settings.DO_KEY_ID,
                                   aws_secret_access_key=settings.DO_SECRET_ACCESS_KEY)
             bucket = s3.Bucket(settings.DO_STORAGE_BUCKET_NAME)
-            bucket_comics = bucket.objects.filter(Prefix=self.path_prefix)
+            bucket_comics = bucket.objects.filter(Prefix=self._params['path_prefix'])
             self._data = [x.key for x in bucket_comics if self._FILE_REGEX.search(x.key)]
-            self._parser_run.processed = 0
 
         except botocore.exceptions.ConnectionError:
             raise RuntimeParserError("Could not establish connection to DO cloud")
-        except botocore.exception.ClientError as err:
+        except botocore.exceptions.ClientError as err:
             raise RuntimeParserError("boto3 client error while preparing data", err.msg)
         except Exception as err:
             raise RuntimeParserError("Error while preparing data", err.args[0])
@@ -216,7 +222,6 @@ class CloudFilesParser(BaseParser):
 
     def _process(self):
         run_detail = None
-        iter_since_update = 0
 
         # Dicts for already parsed parent entities
         publishers = {}
@@ -226,7 +231,6 @@ class CloudFilesParser(BaseParser):
         try:
             has_errors = False
             for file_key in self._data:
-                iter_since_update += 1
 
                 # Creating run detail log entry
                 run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run,
@@ -252,7 +256,7 @@ class CloudFilesParser(BaseParser):
                             if created:  # Not found in DB, creating
                                 publisher.save()
                             publishers[info['publisher']] = publisher  # Saving in parsed dict
-                        if self._full:  # Saving in set for not deleting
+                        if self._params['full']:  # Saving in set for not deleting
                             self._publishers.add(publisher.id)
 
                         # Getting or creating Universe
@@ -264,7 +268,7 @@ class CloudFilesParser(BaseParser):
                             if created:  # Not found in DB, creating
                                 universe.save()
                             universes[(info['universe'], publisher.id)] = universe  # Saving in parsed dict
-                        if self._full:  # Saving in set for not deleting
+                        if self._params['full']:  # Saving in set for not deleting
                             self._universes.add(universe.id)
 
                         # Getting or creating Title type
@@ -298,7 +302,7 @@ class CloudFilesParser(BaseParser):
                                     publisher.id,
                                     universe.id,
                                     title_type.id)] = title
-                        if self._full:  # Saving in set for not deleting
+                        if self._params['full']:  # Saving in set for not deleting
                             self._titles.add(title.id)
 
                         # Getting publish date
@@ -323,7 +327,7 @@ class CloudFilesParser(BaseParser):
                         if created:
                             issue.save()
 
-                        if self._full:  # Saving in set for not deleting
+                        if self._params['full']:  # Saving in set for not deleting
                             self._issues.add(issue.id)
 
                         run_detail.issue = issue
@@ -342,11 +346,6 @@ class CloudFilesParser(BaseParser):
                     except Error as err:
                         run_detail.end_with_error("Database error while processing file", err)
                         has_errors = True
-                    # Incrementing Run processed counter
-                    if iter_since_update == 100:
-                        self._parser_run.inc_processed(iter_since_update)
-                        iter_since_update = 0
-            self._parser_run.inc_processed(iter_since_update)
             return not has_errors
         except Exception as err:
             if run_detail:
@@ -359,7 +358,7 @@ class CloudFilesParser(BaseParser):
         :return:
         """
         try:
-            if self._full:
+            if self._params['full']:
                 comics_models.Issue.objects.exclude(id__in=self._issues).delete()
                 comics_models.Title.objects.exclude(id__in=self._titles).delete()
                 comics_models.Universe.objects.exclude(id__in=self._universes).delete()
