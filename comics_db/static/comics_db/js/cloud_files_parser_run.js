@@ -32,6 +32,7 @@ function showStep(obj) {
     url  : obj.item.detail_url,
   })
     .done(function (response) {
+        console.log(response);
         // Set fields
         $("#modal-file-key").text(response.file_key);
         $("#modal-status").text(response.status_name);
@@ -43,7 +44,16 @@ function showStep(obj) {
         }
         $("#modal-regex").text(response.regex);
         $("#modal-groups").text(response.groups);
+        $("#modal-start").val(moment(response.start).format("DD.MM.YYYY hh:mm:ss.SSS"));
+        $("#modal-end").val(moment(response.end).format("DD.MM.YYYY hh:mm:ss.SSS"));
 
+        if (response.status === 'ERROR'){
+          $('#modal-error-block').show();
+          $('#modal-error').text(response.error);
+          $('#modal-error-detail').text(response.error_detail);
+        } else {
+          $('#modal-error-block').hide();
+        }
 
 
         // Change modal coloring
