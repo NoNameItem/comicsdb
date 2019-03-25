@@ -345,7 +345,7 @@ class CloudFilesParser(BaseParser):
                                             issue.main_cover.save(cover.name, cover)
                                             issue.save()
                                 run_detail.end_with_success()
-                            except Error as err:
+                            except Exception as err:
                                 run_detail.end_with_error("Could not get issue cover", err.args[0])
                         else:
                             run_detail.end_with_success()

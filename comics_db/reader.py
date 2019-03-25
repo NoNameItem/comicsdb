@@ -37,7 +37,7 @@ class ComicsReader:
         """
         self._type = file_type(filename)
         self._files = []
-        self._image_re = re.compile(r'\.(jpg|jpeg|png|gif|tif|tiff)\s*$', re.I)
+        self._image_re = re.compile(r'\.(jpg|jpeg|png|gif|tif|tiff|bmp)\s*$', re.I)
 
         if self._type == CBZ:
             self._zip_file = zipfile.ZipFile(filename)
