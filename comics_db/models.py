@@ -303,6 +303,10 @@ class Title(models.Model):
     def logo(self):
         return self.publisher.logo
 
+    @property
+    def site_link(self):
+        return reverse('site-title-detail', args=(self.slug,))
+
     class Meta:
         unique_together = (("name", "publisher", "universe", "title_type"),
                            ("path_key", "publisher", "universe", "title_type"))
