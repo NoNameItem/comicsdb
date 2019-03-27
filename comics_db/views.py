@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from django.db.models import Count, Q, Max
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.utils import formats
 from django.views.generic import DetailView, ListView
 from django.views.generic.base import View, TemplateView
@@ -278,11 +279,11 @@ class TitleDetailView(DetailView):
         context['title_types'] = models.TitleType.objects.all()
         if self.request.user.is_authenticated:
             context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
-                                                          title=self.get_object()).count()
-            context['total'] = models.Issue.objects.filter(title=self.get_object()).count()
+                                                          title=self.object).count()
+            context['total'] = models.Issue.objects.filter(title=self.object).count()
             context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
             if context['read'] == context['total']:
-                issues = self.get_object().issues.all()
+                issues = self.object.issues.all()
                 context['read_date'] = models.ReadIssue.objects.filter(issue__in=issues,
                                                                        profile=self.request.user.profile)\
                     .aggregate(Max('read_date'))['read_date__max']
@@ -292,7 +293,8 @@ class TitleDetailView(DetailView):
         self.object = self.get_object()
         form = forms.TitleForm(request.POST, request.FILES, instance=self.object)
         if form.is_valid():
-            form.save()
+            self.object = form.save()
+            return HttpResponseRedirect(self.object.site_link)
         context = self.get_context_data(object=self.object)
         context['form'] = form
         return self.render_to_response(context)
@@ -362,7 +364,7 @@ class IssueDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            issue = self.get_object()
+            issue = self.object
             r = models.ReadIssue.objects.get(issue=issue, profile=self.request.user.profile)
             read_date = r.read_date
         except (models.ReadIssue.DoesNotExist, AttributeError):
@@ -374,7 +376,8 @@ class IssueDetailView(DetailView):
         self.object = self.get_object()
         form = forms.IssueForm(request.POST, request.FILES, instance=self.object)
         if form.is_valid():
-            form.save()
+            self.object = form.save()
+            return HttpResponseRedirect(self.object.site_link)
         context = self.get_context_data(object=self.object, form=form)
         return self.render_to_response(context)
 
