@@ -293,11 +293,11 @@ class CloudFilesParser(BaseParser):
                                                                                                  or info['issue_name']),
                                                                                        publisher=publisher,
                                                                                        universe=universe,
-                                                                                       title_type=title_type,
                                                                                        defaults={
                                                                                            'name': (info['title']
                                                                                                     or info[
-                                                                                                        'issue_name'])
+                                                                                                        'issue_name']),
+                                                                                           'title_type': title_type
                                                                                        })
                             if created:  # Not found in DB, creating
                                 title.save()
