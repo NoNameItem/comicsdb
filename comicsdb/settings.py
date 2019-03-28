@@ -222,3 +222,4 @@ EL_PAGINATION_ORPHANS = 3
 
 # Anymail settings
 ANYMAIL = custom_settings.ANYMAIL
+DEFAULT_FROM_EMAIL = 'noreply@comicsdb.nonameitem.com'
