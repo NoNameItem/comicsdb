@@ -281,6 +281,7 @@ class TitleDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title_types'] = models.TitleType.objects.all()
+        context['list_link'] = self.request.META.get('HTTP_REFERER', reverse('site-title-list'))
         if self.request.user.is_authenticated:
             context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
                                                           title=self.object).count()
@@ -304,6 +305,17 @@ class TitleDetailView(DetailView):
         context = self.get_context_data(object=self.object)
         context['form'] = form
         return self.render_to_response(context)
+
+
+class DeleteTitle(View, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def post(self, request, slug):
+        redirect_url = request.POST.get('delete-redirect-url')
+        title = models.Title.objects.get(slug=slug)
+        title.delete()
+        return HttpResponseRedirect(redirect_url)
 
 
 class TitleIssueListView(AjaxListView):

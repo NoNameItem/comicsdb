@@ -65,6 +65,7 @@ urlpatterns = [
     path('titles', views.TitleListView.as_view(), name="site-title-list"),
     path('title/<str:slug>', views.TitleDetailView.as_view(), name="site-title-detail"),
     path('title/<str:slug>/issues', views.TitleIssueListView.as_view(), name="site-title-issues"),
+    path('title/<str:slug>/delete', views.DeleteTitle.as_view(), name="site-title-delete"),
 
     # Issues
     path('issues', views.IssueListView.as_view(), name="site-issue-list"),
