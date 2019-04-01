@@ -1,0 +1,5 @@
+{{ parser_name }} started at {{ start_time|date:"d.m.Y H:i:s" }} with parameters:
+
+{% for parameter in parameters %}{{ parameter.0 }}: {{ parameter.1 }}
+{% endfor %}
+You can monitor parser execution on parser run page: {{ run_link }}

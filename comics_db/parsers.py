@@ -5,12 +5,16 @@ import datetime
 import inspect
 import re
 import tempfile
+from typing import NoReturn
 
 import boto3
 import botocore
 import botocore.exceptions
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, MultipleObjectsReturned
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.db import Error
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from comics_db import models as comics_models
@@ -48,6 +52,7 @@ class BaseParser:
     For saving run parameters in log^ put them in _params dictionary
     """
     PARSER_CODE = "BASE"  # Parser code for linking log to specific parser type
+    PARSER_NAME = 'Base parser'
     RUN_DETAIL_MODEL = ParserRunDetail  # Model for saving parser detail logs
 
     def __init__(self):
@@ -56,14 +61,14 @@ class BaseParser:
         self._params = {}
 
     @property
-    def _items_count(self):
+    def _items_count(self) -> int:
         """
         Count items to be processed by parser. Should be overridden in specific parser classes
         :return: items count
         """
-        return None
+        return 0
 
-    def _prepare(self):
+    def _prepare(self) -> NoReturn:
         """
         Prepare data. Should be overridden in specific parser classes
 
@@ -71,7 +76,7 @@ class BaseParser:
         :return: None
         """
 
-    def _process(self):
+    def _process(self) -> bool:
         """
         Method for parser work. Should be overridden in specific parser classes
 
@@ -84,7 +89,7 @@ class BaseParser:
         """
         return True
 
-    def _postprocessing(self):
+    def _postprocessing(self) -> NoReturn:
         """
         Executing podt processing operations. Should be overridden in specific parser classes
 
@@ -93,7 +98,48 @@ class BaseParser:
         :return: None
         """
 
-    def run(self, celery_task_id=None):
+    @staticmethod
+    def _notify_staff(message_html, message_txt, subject):
+        for user in User.objects.filter(is_staff=True):
+            msg = EmailMultiAlternatives(subject=subject,
+                                         from_email="noreply@comicsdb.nonameitem.com",
+                                         to=[user.email],
+                                         body=message_txt)
+            msg.attach_alternative(message_html, "text/html")
+            msg.send()
+
+    def _notify_staff_start(self):
+        data = {
+            'parser_name': self.PARSER_NAME,
+            'parameters': self._params.items(),
+            'run_link': settings.BASE_URL + self._parser_run.page,
+            'start_time': self._parser_run.start
+        }
+
+        subject = "[ComicsDB] %s started" % self.PARSER_NAME
+        message_txt = render_to_string("comics_db/admin/notifications/parser_started.txt", data)
+        message_html = render_to_string("comics_db/admin/notifications/parser_started.html", data)
+        self._notify_staff(message_html, message_txt, subject)
+
+    def _notify_staff_success(self):
+        data = {
+            'parser_name': self.PARSER_NAME,
+            'parameters': self._params.items(),
+            'run_link': settings.BASE_URL + self._parser_run.page,
+            'start_time': self._parser_run.start,
+            'end_time': self._parser_run.end,
+            'status': self._parser_run.get_status_display(),
+            'record_total': self._parser_run.items_count,
+            'record_processed': self._parser_run.processed,
+            'record_success': self._parser_run.success_count,
+            'record_error': self._parser_run.error_count
+        }
+        subject = "[ComicsDB] %s ended" % self.PARSER_NAME
+        message_txt = render_to_string("comics_db/admin/notifications/parser_ended.txt", data)
+        message_html = render_to_string("comics_db/admin/notifications/parser_ended.html", data)
+        self._notify_staff(message_html, message_txt, subject)
+
+    def run(self, celery_task_id: int = None) -> bool:
         """
         Main method for running parser.
 
@@ -134,6 +180,8 @@ class BaseParser:
             if not issubclass(self.RUN_DETAIL_MODEL, BaseParser.RUN_DETAIL_MODEL):
                 raise InvalidParserImplementationError(
                     '{0.__class__} Run Detail Model should be a subclass of BaseParser.RUN_DETAIL_MODEL'.format(self))
+            self._parser_run.save()
+            self._notify_staff_start()
 
             # Preparing data, filling items count and saving Run log record to table
             self._prepare()
@@ -156,7 +204,7 @@ class BaseParser:
 
             self._parser_run.end = timezone.now()
             self._parser_run.save()
-
+            self._notify_staff_success()
             return True
 
         except ParserError as err:
@@ -177,6 +225,7 @@ class BaseParser:
 
 class CloudFilesParser(BaseParser):
     PARSER_CODE = "CLOUD_FILES"
+    PARSER_NAME = "Cloud files parser"
     RUN_DETAIL_MODEL = CloudFilesParserRunDetail
     _REGEX = re.compile(r"^content/"
                         r"(?P<publisher>.+?)/"
