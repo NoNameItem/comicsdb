@@ -14,6 +14,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.db import Error
+from django.db.models import Count
 from django.template.loader import render_to_string
 from django.utils import timezone
 
@@ -419,10 +420,20 @@ class CloudFilesParser(BaseParser):
 
     def _postprocessing(self):
         """
-        Delete elements which does not have corresponding file key
+        Postprocessing task:
+            * Delete empty titles, universes and publishers
+            * Clean up at full reload
+            * Set title covers as first issue cover
         :return:
         """
         try:
+            comics_models.Title.objects.annotate(issue_count=Count('issues', distinct=True))\
+                .filter(issue_count=0).delete()
+            comics_models.Universe.objects.annotate(title_count=Count('titles', distinct=True))\
+                .filter(title_count=0).delete()
+            comics_models.Publisher.objects.annotate(title_count=Count('titles', distinct=True))\
+                .annotate(universe_count=Count('universes', distinct=True)).filter(title_count=0, universe_count=0)\
+                .delete()
             if self._params['full']:
                 comics_models.Issue.objects.exclude(id__in=self._issues).delete()
                 comics_models.Title.objects.exclude(id__in=self._titles).delete()
