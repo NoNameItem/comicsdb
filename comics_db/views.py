@@ -163,6 +163,9 @@ class PublisherIssueListView(AjaxListView):
         if self.request.user.is_authenticated:
             queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
         if search:
             q = Q()
             for field in self.search_fields:
@@ -174,6 +177,7 @@ class PublisherIssueListView(AjaxListView):
         context = super().get_context_data(**kwargs)
         context['publisher'] = self.publisher
         context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
         return context
 
 
@@ -261,6 +265,9 @@ class UniverseIssueListView(AjaxListView):
         if self.request.user.is_authenticated:
             queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
         if search:
             q = Q()
             for field in self.search_fields:
@@ -272,6 +279,7 @@ class UniverseIssueListView(AjaxListView):
         context = super().get_context_data(**kwargs)
         context['universe'] = self.universe
         context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
         return context
 
 
@@ -400,6 +408,9 @@ class TitleIssueListView(AjaxListView):
         if self.request.user.is_authenticated:
             queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
         if search:
             q = Q()
             for field in self.search_fields:
@@ -411,6 +422,7 @@ class TitleIssueListView(AjaxListView):
         context = super().get_context_data(**kwargs)
         context['title'] = self.title
         context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
         return context
 
 
@@ -431,20 +443,26 @@ class IssueListView(AjaxListView):
         queryset = models.Issue.objects.all().select_related("title__publisher", "title__universe",
                                                              "title__title_type")
         if self.request.user.is_authenticated:
-            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+            queryset = queryset.annotate(read=Count('readers', distinct=True,
+                                                    filter=Q(readers=self.request.user.profile)))
         try:
-            search = self.request.GET['search']
+            search = self.request.GET.get('search', None)
+            hide_read = self.request.GET.get('hide-read')
+            if hide_read == 'on':
+                queryset = queryset.exclude(read=1)
             if search:
                 q = Q()
                 for field in self.search_fields:
                     q = q | Q(**{field: search})
                 return queryset.filter(q)
+            return queryset
         except KeyError:
             return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
         return context
 
 
