@@ -3,7 +3,11 @@
 
 {% block title %}Titles{% endblock %}
 
-{% block page_title %}Titles{% endblock %}
+{% block page_title %}Titles
+  {% if user.is_staff %}
+    <button type="button" class="btn btn-sm btn-icon btn-success" data-toggle="modal" data-target="#title-modal"><i
+        class="fal fa-plus"></i></button>{% endif %}
+{% endblock %}
 
 {% block breadcrumb_items %}
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
@@ -46,4 +50,139 @@
       paginateOnScroll : true,
     });
   </script>
+  <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
+  <script>
+    {% if form.errors %}
+      $('#title-modal').modal('show');
+    {% endif %}
+  </script>
+{% endblock %}
+
+{% block modals %}
+  <div class="modal fade" id="title-modal" tabindex="-1" role="dialog" aria-labelledby="title-modal"
+       aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form class="form" method="post" action enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-body">
+
+            <div class="modal-body">
+              <div class="modal-header mb-1">
+                <h5 class="modal-title">Create title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="form-group">
+                <label for="title-name">Title name</label>
+                <input type="text"
+                       class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name" id="title-name"
+                       aria-describedby="helpId" value="{{ form.data.name }}">
+                <div class="invalid-feedback">
+                  {% for error in form.name.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="title-name">Title path key</label>
+                <input type="text"
+                       class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="path_key" id="title-path-key"
+                       aria-describedby="helpId" value="{{ form.data.path_key }}">
+                <div class="invalid-feedback">
+                  {% for error in form.name.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </div>
+              <fieldset class="form-group">
+                <label for="title-description">Title description</label>
+                <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
+                          id="title-description"
+                          rows="3">{{ form.data.desc }}</textarea>
+                <div class="invalid-feedback">
+                  {% for error in form.desc.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </fieldset>
+
+              <div class="form-group">
+                <label for="title-type">Publisher</label>
+                <select class="form-control {% if form.errors.publisher %}is-invalid{% endif %}" name="publisher"
+                        id="title-publisher">
+                  {% for publisher in publishers %}
+                    <option value="{{ publisher.id }}"
+                            {% if publisher.id == form.data.publisher %}selected{% endif %}>
+                      {{ publisher.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <div class="invalid-feedback">
+                  {% for error in form.publisher.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="title-type">Universe</label>
+                <select class="form-control {% if form.errors.universe %}is-invalid{% endif %}" name="universe"
+                        id="title-universe">
+                  {% for universe in universes %}
+                    <option value=""></option>
+                    <option value="{{ universe.id }}"
+                            {% if universe.id == form.data.universe %}selected{% endif %}>
+                      {{ universe.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <div class="invalid-feedback">
+                  {% for error in form.universe.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="title-type">Title type</label>
+                <select class="form-control {% if form.errors.title_type %}is-invalid{% endif %}" name="title_type"
+                        id="title-type">
+                  {% for title_type in title_types %}
+                    <option value="{{ title_type.id }}"
+                            {% if title_type.id == form.data.title_type %}selected{% endif %}>
+                      {{ title_type.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <div class="invalid-feedback">
+                  {% for error in form.title_type.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </div>
+              <fieldset class="form-group">
+                <div class="custom-file">
+                  <input type="file"
+                         class="custom-file-input form-control {% if form.errors.image %}is-invalid{% endif %}"
+                         id="title-poster" name="image">
+                  <label class="custom-file-label" for="title-poster">Title image</label>
+                  <div class="invalid-feedback">
+                    {% for error in form.image.errors %}
+                      <p>{{ error }}</p>
+                    {% endfor %}
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <input type="submit" class="btn btn-primary" value="Save">
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 {% endblock %}

@@ -22,6 +22,14 @@ class TitleForm(forms.ModelForm):
         fields = ["name", "desc", "title_type", "image"]
 
 
+class TitleCreateForm(forms.ModelForm):
+    image = forms.ImageField(required=False)
+
+    class Meta:
+        model = models.Title
+        fields = ["name", "desc", "title_type", "image", "publisher", "universe", "path_key"]
+
+
 class IssueForm(forms.ModelForm):
     number = forms.IntegerField(required=False)
     main_cover = forms.ImageField(required=False)

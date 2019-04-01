@@ -45,9 +45,14 @@ class MainPageView(TemplateView):
         context['publishers_count'] = models.Publisher.objects.count()
         context['universes_count'] = models.Universe.objects.count()
         if self.request.user.is_authenticated:
-            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile).count()
-            context['total'] = models.Issue.objects.count()
-            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile).count()
+                context['total'] = models.Issue.objects.count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
         return context
 
 
@@ -65,10 +70,15 @@ class PublisherDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
-                                                          title__publisher=self.get_object()).count()
-            context['total'] = models.Issue.objects.filter(title__publisher=self.get_object()).count()
-            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                              title__publisher=self.get_object()).count()
+                context['total'] = models.Issue.objects.filter(title__publisher=self.get_object()).count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
         return context
 
     def post(self, request, slug):
@@ -171,10 +181,15 @@ class UniverseDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
-                                                          title__universe=self.get_object()).count()
-            context['total'] = models.Issue.objects.filter(title__universe=self.get_object()).count()
-            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                              title__universe=self.get_object()).count()
+                context['total'] = models.Issue.objects.filter(title__universe=self.get_object()).count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
         return context
 
     def post(self, request, slug):
@@ -270,7 +285,21 @@ class TitleListView(AjaxListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search'] = self.request.GET.get('search', "")
+        context['title_types'] = models.TitleType.objects.all()
+        context['publishers'] = models.Publisher.objects.all()
+        context['universes'] = models.Universe.objects.all()
         return context
+
+    def post(self, request):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        form = forms.TitleCreateForm(request.POST, request.FILES)
+        if form.is_valid():
+            title = form.save()
+        self.object_list = self.get_queryset()
+        context = self.get_context_data(object_list=self.object_list, page_template=self.page_template)
+        context['form'] = form
+        return self.render_to_response(context)
 
 
 class TitleDetailView(DetailView):
@@ -283,15 +312,21 @@ class TitleDetailView(DetailView):
         context['title_types'] = models.TitleType.objects.all()
         context['list_link'] = self.request.META.get('HTTP_REFERER', reverse('site-title-list'))
         if self.request.user.is_authenticated:
-            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
-                                                          title=self.object).count()
-            context['total'] = models.Issue.objects.filter(title=self.object).count()
-            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
-            if context['read'] == context['total']:
-                issues = self.object.issues.all()
-                context['read_date'] = models.ReadIssue.objects.filter(issue__in=issues,
-                                                                       profile=self.request.user.profile)\
-                    .aggregate(Max('read_date'))['read_date__max']
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                              title=self.object).count()
+                context['total'] = models.Issue.objects.filter(title=self.object).count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+                if context['read'] == context['total']:
+                    issues = self.object.issues.all()
+                    context['read_date'] = models.ReadIssue.objects.filter(issue__in=issues,
+                                                                           profile=self.request.user.profile)\
+                        .aggregate(Max('read_date'))['read_date__max']
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
+                context['read_date'] = None
         return context
 
     def post(self, request, slug):

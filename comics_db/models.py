@@ -280,7 +280,7 @@ class Title(models.Model):
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
 
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="titles")
-    universe = models.ForeignKey(Universe, on_delete=models.PROTECT, null=True, related_name="titles")
+    universe = models.ForeignKey(Universe, on_delete=models.PROTECT, null=True, related_name="titles", blank=True)
     title_type = models.ForeignKey(TitleType, on_delete=models.PROTECT, related_name="titles")
     creators = models.ManyToManyField(Creator, through=TitleCreator, related_name='titles')
 
@@ -297,7 +297,10 @@ class Title(models.Model):
         return slugify(str(self), allow_unicode=True)
 
     def __str__(self):
-        return "[{0.publisher.name}, {0.universe.name}, {0.title_type.name}] {0.name}".format(self)
+        if self.universe:
+            return "[{0.publisher.name}, {0.universe.name}, {0.title_type.name}] {0.name}".format(self)
+        else:
+            return "[{0.publisher.name}, {0.title_type.name}] {0.name}".format(self)
 
     @property
     def logo(self):
