@@ -35,6 +35,11 @@ from comics_db import models, serializers, filtersets, tasks, forms
 ########################################################################################################################
 
 
+########################################################################################################################
+# Main Page
+########################################################################################################################
+
+
 class MainPageView(TemplateView):
     template_name = "comics_db/main_page.html"
 
@@ -54,6 +59,11 @@ class MainPageView(TemplateView):
                 context['total'] = 0
                 context['read_total_ratio'] = 0
         return context
+
+
+########################################################################################################################
+# Publisher
+########################################################################################################################
 
 
 class PublisherListView(ListView):
@@ -167,6 +177,11 @@ class PublisherIssueListView(AjaxListView):
         return context
 
 
+########################################################################################################################
+# Universe
+########################################################################################################################
+
+
 class UniverseListView(ListView):
     template_name = "comics_db/universe/list.html"
     queryset = models.Universe.objects.all()
@@ -258,6 +273,11 @@ class UniverseIssueListView(AjaxListView):
         context['universe'] = self.universe
         context['search'] = self.request.GET.get('search', "")
         return context
+
+
+########################################################################################################################
+# Title
+########################################################################################################################
 
 
 class TitleListView(AjaxListView):
@@ -353,6 +373,20 @@ class DeleteTitle(View, UserPassesTestMixin):
         return HttpResponseRedirect(redirect_url)
 
 
+class MoveTitleIssues(View, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def post(self, request, slug):
+        target_title_id = request.POST.get('target-title-id')
+        target_title = get_object_or_404(models.Title, id=target_title_id)
+        source_title = get_object_or_404(models.Title, slug=slug)
+        source_title.issues.update(title=target_title)
+        if target_title != source_title:
+            source_title.delete()
+        return HttpResponseRedirect(target_title.site_link)
+
+
 class TitleIssueListView(AjaxListView):
     template_name = "comics_db/title/issue_list.html"
     page_template = "comics_db/title/issue_list_block.html"
@@ -378,6 +412,11 @@ class TitleIssueListView(AjaxListView):
         context['title'] = self.title
         context['search'] = self.request.GET.get('search', "")
         return context
+
+
+########################################################################################################################
+# Issue
+########################################################################################################################
 
 
 class IssueListView(AjaxListView):
@@ -463,6 +502,11 @@ class ReadIssue(View, LoginRequiredMixin):
         except Exception as err:
             return JsonResponse({'status': 'error', 'message': 'Unknown error, please contact administrator. \n'
                                                                'Error message: %s' % err.args[0]})
+
+
+########################################################################################################################
+# Parser log
+########################################################################################################################
 
 
 class ParserLogView(UserPassesTestMixin, TemplateView):

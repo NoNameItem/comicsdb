@@ -14,6 +14,7 @@
 {% endblock %}
 
 {% block vendor_css %}
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/forms/selects/select2.min.css" %}">
 {% endblock %}
 
 {% block page_css %}
@@ -53,6 +54,10 @@
                     <div class="btn-group d-none d-sm-inline-flex float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#title-modal">
                         <i class="fa fa-cog"></i>
+                      </button>
+                      <button type="button" class="btn btn-warning" data-toggle="tooltip" onclick="$('#move-issue-modal').modal('show')"
+                         data-placement="bottom" title="Move issues to another title">
+                        <i class="fal fa-file-export"></i>
                       </button>
                       <button type="button" class="btn btn-danger btn-outline-primary" id="title-delete-btn">
                         <i class="fal fa-trash-alt"></i>
@@ -257,10 +262,43 @@
       </div>
     </div>
   {% endif %}
+
+  <!-- Modal -->
+  <div class="modal fade" id="move-issue-modal" tabindex="-1" role="dialog" aria-labelledby="move-issue-modal"
+       aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Move issues</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form class="form" method="post" action="{% url "site-title-move-issues" title.slug %}" id="move-form">
+          <div class="modal-body">
+
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="target-title">Title</label><br>
+              <select class="form-control" name="target-title-id" id="target-title">
+                <option value="{{ title.id }}">{{ title }}</option>
+              </select>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="move-issues-btn">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block vendor_js %}
   <script src="{% static "app-assets/vendors/js/extensions/sweetalert.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/forms/select/select2.full.min.js" %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block page_js %}
@@ -270,7 +308,7 @@
     $('#title-delete-btn').click(function () {
       swal({
         title      : "Delete confirmation",
-        text       : "Are you realy want to delete this title? All issues will be deleted too.",
+        text       : "Are you really want to delete this title? All issues will be deleted too.",
         icon       : "error",
         buttons    : true,
         dangerMode : true,
@@ -288,9 +326,56 @@
           }
         });
     });
+
+    $('#move-issues-btn').click(function () {
+      swal({
+        title      : "Move confirmation",
+        text       : "Are you really want to move all issues and delete title? This action can't be undone.",
+        icon       : "error",
+        buttons    : true,
+        dangerMode : true,
+      })
+        .then((willMove) => {
+          if (willMove) {
+            swal("Ok, now we will move all issues and delete this title and all its issues. Hope you know what you are doing!", {
+              icon : "success",
+            });
+            setTimeout(function () {
+              $('#move-form').submit()
+            }, 2000);
+          }
+        });
+    });
+
     {% if form.errors %}
       $('#title-modal').modal('show');
     {% endif %}
+    $(document).ready(function () {
+      $('#target-title').select2({
+        width          : '100%',
+        dropdownParent : $('#move-issue-modal'),
+        ajax           : {
+          url            : "{% url "title-list" %}",
+          data           : function (params) {
+            return {
+              name : params.term,
+              page : params.page || 1
+            };
+          },
+          delay          : 250,
+          processResults : function (data) {
+            console.log(!!data.next);
+            return {
+              results    : $.map(data.results, function (obj) {
+                obj.text = obj.name_long;
+                return obj;
+              }),
+              pagination : {more : !!data.next}
+            };
+          }
+        }
+      })
+    });
   </script>
 
 {% endblock %}

@@ -37,5 +37,5 @@ class IssueForm(forms.ModelForm):
 
     class Meta:
         model = models.Issue
-        fields = ["name", "number", "desc", "publish_date", "main_cover"]
+        fields = ["name", "number", "desc", "publish_date", "main_cover", "title"]
 
