@@ -1,7 +1,7 @@
 import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import IntegrityError
 from django.db.models import Count, Q, Max
 from django.http import Http404, HttpResponseRedirect, JsonResponse
@@ -72,6 +72,8 @@ class PublisherDetailView(DetailView):
         return context
 
     def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
         self.object = self.get_object()
         form = forms.PublisherForm(request.POST, request.FILES)
         if form.is_valid():
@@ -176,6 +178,8 @@ class UniverseDetailView(DetailView):
         return context
 
     def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
         self.object = self.get_object()
         form = forms.UniverseForm(request.POST, request.FILES)
         if form.is_valid():
@@ -290,6 +294,8 @@ class TitleDetailView(DetailView):
         return context
 
     def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
         self.object = self.get_object()
         form = forms.TitleForm(request.POST, request.FILES, instance=self.object)
         if form.is_valid():
@@ -363,6 +369,7 @@ class IssueDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['list_link'] = self.request.META.get('HTTP_REFERER', reverse('site-issue-list'))
         try:
             issue = self.object
             r = models.ReadIssue.objects.get(issue=issue, profile=self.request.user.profile)
@@ -373,6 +380,8 @@ class IssueDetailView(DetailView):
         return context
 
     def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
         self.object = self.get_object()
         form = forms.IssueForm(request.POST, request.FILES, instance=self.object)
         if form.is_valid():
@@ -380,6 +389,17 @@ class IssueDetailView(DetailView):
             return HttpResponseRedirect(self.object.site_link)
         context = self.get_context_data(object=self.object, form=form)
         return self.render_to_response(context)
+
+
+class DeleteIssue(View, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def post(self, request, slug):
+        redirect_url = request.POST.get('delete-redirect-url')
+        issue = models.Issue.objects.get(slug=slug)
+        issue.delete()
+        return HttpResponseRedirect(redirect_url)
 
 
 class ReadIssue(View, LoginRequiredMixin):

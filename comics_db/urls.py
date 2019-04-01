@@ -70,6 +70,7 @@ urlpatterns = [
     path('issues', views.IssueListView.as_view(), name="site-issue-list"),
     path('issue/<str:slug>/', views.IssueDetailView.as_view(), name="site-issue-detail"),
     path('issue/<str:slug>/mark-read', views.ReadIssue.as_view(), name="site-issue-mark-read"),
+    path('issue/<str:slug>/delete', views.DeleteIssue.as_view(), name="site-issue-delete"),
 
     # Parser log
     path('parser_log', views.ParserLogView.as_view(template_name="comics_db/admin/parser_log.html",
