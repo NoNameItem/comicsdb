@@ -1,12 +1,20 @@
 {% load static %}
-{% load el_pagination_tags %}
+{% load el_pagination_tags_customized %}
 
 {% lazy_paginate issues %}
 {% for issue in issues %}
   {% ifchanged issue.title %}
-    <div class="col-12 m-1">
-    <h3>{{ issue.title }}</h3>
-    </div>
+    {% if forloop.first %}
+      {% if not endless.last_object or endless.last_object.title != issue.title %}
+        <div class="col-12 m-1">
+          <h3>{{ issue.title }}</h3>
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="col-12 m-1">
+        <h3>{{ issue.title }}</h3>
+      </div>
+    {% endif %}
   {% endifchanged %}
   <div class="col-4k-2 col-fhd-3 col-xl-4 col-md-6 col-12">
     <div class="card card-with-cover card-link {% if issue.read %}read{% endif %}">
