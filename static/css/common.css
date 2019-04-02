@@ -47,108 +47,115 @@ html body .content .content-wrapper .content-header-title,
 }
 
 .border-top-success {
-    border-top: 1px solid #16D39A!important;
+  border-top: 1px solid #16D39A !important;
 }
 
 .border-bottom-success {
-    border-bottom: 1px solid #16D39A!important;
+  border-bottom: 1px solid #16D39A !important;
 }
 
 .border-left-success {
-    border-left: 1px solid #16D39A!important;
+  border-left: 1px solid #16D39A !important;
 }
 
 .border-right-success {
-    border-right: 1px solid #16D39A!important;
+  border-right: 1px solid #16D39A !important;
 }
 
 .border-top-info {
-    border-top: 1px solid #2DCEE3!important;
+  border-top: 1px solid #2DCEE3 !important;
 }
 
 .border-bottom-info {
-    border-bottom: 1px solid #2DCEE3!important;
+  border-bottom: 1px solid #2DCEE3 !important;
 }
 
 .border-left-info {
-    border-left: 1px solid #2DCEE3!important;
+  border-left: 1px solid #2DCEE3 !important;
 }
 
 .border-right-info {
-    border-right: 1px solid #2DCEE3!important;
+  border-right: 1px solid #2DCEE3 !important;
 }
 
 .border-top-danger {
-    border-top: 1px solid #FF7588!important;
+  border-top: 1px solid #FF7588 !important;
 }
 
 .border-bottom-danger {
-    border-bottom: 1px solid #FF7588!important;
+  border-bottom: 1px solid #FF7588 !important;
 }
 
 .border-left-danger {
-    border-left: 1px solid #FF7588!important;
+  border-left: 1px solid #FF7588 !important;
 }
 
 .border-right-danger {
-    border-right: 1px solid #FF7588!important;
+  border-right: 1px solid #FF7588 !important;
 }
 
 .border-top-warning {
-    border-top: 1px solid #FFA87D!important;
+  border-top: 1px solid #FFA87D !important;
 }
 
 .border-bottom-warning {
-    border-bottom: 1px solid #FFA87D!important;
+  border-bottom: 1px solid #FFA87D !important;
 }
 
 .border-left-warning {
-    border-left: 1px solid #FFA87D!important;
+  border-left: 1px solid #FFA87D !important;
 }
 
 .border-right-warning {
-    border-right: 1px solid #FFA87D!important;
+  border-right: 1px solid #FFA87D !important;
 }
 
-.card-link{
-    /* only required rule to make this work */
-    position: relative;
+.card-link {
+  /* only required rule to make this work */
+  position: relative;
 }
 
-.card-link:hover{
-    border: 1px solid #00B5B8;
-    border-top-left-radius: calc(0.25rem - 1px);
-    border-top-right-radius: calc(0.25rem - 1px);
+.card-link:hover {
+  border: 1px solid #00B5B8;
+  border-top-left-radius: calc(0.25rem - 1px);
+  border-top-right-radius: calc(0.25rem - 1px);
 }
 
 /*.card-link:hover .card-footer{*/
-  /*border: 1px solid #00B5B8!important;*/
+/*border: 1px solid #00B5B8!important;*/
 /*}*/
 
-.default-link{
+.default-link {
   /* all rules required to make the whole div clickable */
-  position:absolute;
-  width:100%;
-  height:100%;
-  top:0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
   left: 0;
   z-index: 1;
   /* this is a fix for IE7-9 */
-  background-color:#ffffff;
-  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  background-color: #ffffff;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
   filter: alpha(opacity=0);
-  opacity:0;
+  opacity: 0;
 }
 
 .heading-elements ul {
   margin-bottom: 0;
 }
 
-.custom-file-input{
+.custom-file-input {
   cursor: pointer;
 }
 
 .read-progress {
   height: 1.5rem;
   font-size: 1rem;
+}
+
+.card-btn-top-right {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
 }

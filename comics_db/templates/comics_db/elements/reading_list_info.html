@@ -1,0 +1,36 @@
+<div class="card card-link" id="list-{{ reading_list.slug }}">
+  <a href="{% url "site-user-reading-list" reading_list.slug %}" class="default-link"></a>
+  <div class="card-header">
+    <h4 class="card-title">{{ reading_list.name }} {% if edit %}
+      <button role="button" class="btn btn-sm btn-icon btn-success" style="position:relative;z-index:100;"
+              data-toggle="modal" data-target="#modal-create"><i
+          class="fal fa-cog"></i></button>{% endif %}</h4>
+
+    <div class="heading-elements">
+      <ul class="list-inline mb-0">
+        <li><a data-action="collapse" style="position:relative;z-index:100;"><i class="ft-plus"></i></a></li>
+        {% if user.is_authenticated and user.profile == reading_list.owner %}<li><a onclick="delete_list('{{ reading_list.slug }}'{% if edit %}, true{% endif %})"
+                       style="position:relative;z-index:100;"><i class="ft-x"></i></a></li>{% endif %}
+      </ul>
+    </div>
+    <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+    {% if user.is_authenticated %}
+      <div class="progress read-progress position-relative mt-1">
+      <div class="progress-bar bg-success text-dark" role="progressbar" id="progress-bar"
+           style="width: {{ reading_list.read_total_ratio }}%;"
+           aria-valuenow="{{ reading_list.read }}"
+           aria-valuemin="0"
+           aria-valuemax="{{ reading_list.total }}">
+      </div>
+      <small
+          class="justify-content-center d-flex position-absolute w-100"
+          id="progress-bar-text">{{ reading_list.read }}/{{ reading_list.total }}</small>
+    </div>
+    {% endif %}
+  </div>
+  <div class="card-content collapse">
+    <div class="card-body">
+      <p>{{ reading_list.desc }}</p>
+    </div>
+  </div>
+</div>

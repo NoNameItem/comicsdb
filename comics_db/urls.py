@@ -63,16 +63,27 @@ urlpatterns = [
 
     # Titles
     path('titles', views.TitleListView.as_view(), name="site-title-list"),
-    path('title/<str:slug>', views.TitleDetailView.as_view(), name="site-title-detail"),
+    path('title/<str:slug>/', views.TitleDetailView.as_view(), name="site-title-detail"),
     path('title/<str:slug>/issues', views.TitleIssueListView.as_view(), name="site-title-issues"),
     path('title/<str:slug>/delete', views.DeleteTitle.as_view(), name="site-title-delete"),
     path('title/<str:slug>/move-issues', views.MoveTitleIssues.as_view(), name="site-title-move-issues"),
+    path('title/<str:slug>/add-to-list', views.AddTitleToReadingList.as_view(), name="site-title-add-to-list"),
 
     # Issues
     path('issues', views.IssueListView.as_view(), name="site-issue-list"),
     path('issue/<str:slug>/', views.IssueDetailView.as_view(), name="site-issue-detail"),
     path('issue/<str:slug>/mark-read', views.ReadIssue.as_view(), name="site-issue-mark-read"),
     path('issue/<str:slug>/delete', views.DeleteIssue.as_view(), name="site-issue-delete"),
+    path('issue/<str:slug>/add-to-list', views.AddToReadingList.as_view(), name="site-issue-add-to-list"),
+
+    # Reading lists
+    path('reading-lists', views.ReadingListListView.as_view(), name="site-user-reading-lists"),
+    path('reading-list/<str:slug>/', views.ReadingListDetailView.as_view(), name="site-user-reading-list"),
+    path('reading-list/<str:slug>/delete', views.DeleteReadingList.as_view(), name="site-reading-list-delete"),
+    path('reading-list/<str:slug>/delete-issue', views.DeleteFromReadingList.as_view(),
+         name="site-reading-list-delete-issue"),
+    path('reading-list/<str:list_slug>/issue/<str:slug>', views.ReadingListIssueDetailView.as_view(),
+         name="site-reading-list-issue"),
 
     # Parser log
     path('parser_log', views.ParserLogView.as_view(template_name="comics_db/admin/parser_log.html",

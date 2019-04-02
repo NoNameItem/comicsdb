@@ -68,6 +68,7 @@
                 <span class="user-name">{{ user.username }}</span>
               </a>
               <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" href="{% url "site-user-reading-lists" %}"> Reading lists</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="/accounts/logout"> Sign Out</a>
               </div>

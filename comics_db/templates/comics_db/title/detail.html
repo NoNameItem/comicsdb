@@ -50,6 +50,12 @@
             <div class="media-body pt-3 px-2">
               <div class="row">
                 <div class="col text-right">
+                {% if user.is_authenticated and reading_lists %}
+                      <button type="button" class="btn btn-secondary" data-toggle="tooltip"
+                              data-placement="bottom" title="Add to read list"
+                              onclick="$('#add-to-list').modal('show')">
+                        <i class="fal fa-clipboard-list-check"></i></button>
+                    {% endif %}
                   {% if user.is_staff %}
                     <div class="btn-group d-none d-sm-inline-flex float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#title-modal">
@@ -294,6 +300,52 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="add-to-list" tabindex="-1" role="dialog" aria-labelledby="add-to-list"
+       aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add to reading list</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="target-reading-list">Reading list</label>
+            <select class="form-control" name="target-reading-list" id="target-reading-list">
+              {% for reading_list in reading_lists %}
+                <option value="{{ reading_list.id }}">{{ reading_list.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="from-number">From #</label>
+                <input type="number"
+                       class="form-control" name="from-number" id="from-number" placeholder="Add numbers from">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="from-number">To #</label>
+                <input type="number"
+                       class="form-control" name="to-number" id="to-number" placeholder="Add numbers to">
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="add-to-list-btn">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block vendor_js %}
@@ -303,79 +355,11 @@
 
 {% block page_js %}
   <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
-
   <script>
-    $('#title-delete-btn').click(function () {
-      swal({
-        title      : "Delete confirmation",
-        text       : "Are you really want to delete this title? All issues will be deleted too.",
-        icon       : "error",
-        buttons    : true,
-        dangerMode : true,
-      })
-        .then((willDelete) => {
-          if (willDelete) {
-            swal("Ok, now we will delete this title and all its issues. Hope you glad!", {
-              icon : "success",
-            });
-            setTimeout(function () {
-              $('#delete-form').submit()
-            }, 2000);
-          } else {
-            swal("Glad you changed your mind :)");
-          }
-        });
-    });
-
-    $('#move-issues-btn').click(function () {
-      swal({
-        title      : "Move confirmation",
-        text       : "Are you really want to move all issues and delete title? This action can't be undone.",
-        icon       : "error",
-        buttons    : true,
-        dangerMode : true,
-      })
-        .then((willMove) => {
-          if (willMove) {
-            swal("Ok, now we will move all issues and delete this title and all its issues. Hope you know what you are doing!", {
-              icon : "success",
-            });
-            setTimeout(function () {
-              $('#move-form').submit()
-            }, 2000);
-          }
-        });
-    });
-
+    let titles_url = "{% url "title-list" %}";
     {% if form.errors %}
       $('#title-modal').modal('show');
     {% endif %}
-    $(document).ready(function () {
-      $('#target-title').select2({
-        width          : '100%',
-        dropdownParent : $('#move-issue-modal'),
-        ajax           : {
-          url            : "{% url "title-list" %}",
-          data           : function (params) {
-            return {
-              name : params.term,
-              page : params.page || 1
-            };
-          },
-          delay          : 250,
-          processResults : function (data) {
-            console.log(!!data.next);
-            return {
-              results    : $.map(data.results, function (obj) {
-                obj.text = obj.name_long;
-                return obj;
-              }),
-              pagination : {more : !!data.next}
-            };
-          }
-        }
-      })
-    });
   </script>
-
+  <script src="{% static "comics_db/js/title_detail.js" %}"></script>
 {% endblock %}

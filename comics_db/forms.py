@@ -39,3 +39,9 @@ class IssueForm(forms.ModelForm):
         model = models.Issue
         fields = ["name", "number", "desc", "publish_date", "main_cover", "title"]
 
+
+class ReadingListForm(forms.ModelForm):
+    class Meta:
+        model = models.ReadingList
+        fields = ["name", "desc", "owner"]
+

@@ -294,7 +294,11 @@ class Title(models.Model):
         super(Title, self).save(force_insert, force_update, using, update_fields)
 
     def get_slug(self):
-        return slugify(str(self), allow_unicode=True)
+        if self.universe:
+            name = "[{0.publisher.name}, {0.universe.name}, {0.title_type.name}] {0.path_key}".format(self)
+        else:
+            name = "[{0.publisher.name}, {0.title_type.name}] {0.path_key}".format(self)
+        return slugify(name, allow_unicode=True)
 
     def __str__(self):
         if self.universe:
@@ -569,7 +573,7 @@ class MarvelAPIImage(models.Model):
 
 
 ########################################################################################################################
-# System
+# System & Profiles
 ########################################################################################################################
 
 
@@ -580,6 +584,32 @@ class ReadIssue(models.Model):
 
     class Meta:
         unique_together = (("profile", "issue"), )
+
+
+class ReadingList(models.Model):
+    owner = models.ForeignKey('Profile', on_delete=models.CASCADE, related_name='reading_lists')
+    name = models.CharField(max_length=100)
+    desc = models.TextField(blank=True)
+    issues = models.ManyToManyField(Issue, related_name='reading_lists')
+    slug = models.SlugField(allow_unicode=True, max_length=500, unique=True)
+
+    @property
+    def site_link(self):
+        return reverse('site-user-reading-list', args=(self.slug,))
+
+    def __str__(self):
+        return "[{0.owner.user.username}] {0.name}".format(self)
+
+    def get_slug(self):
+        return slugify(str(self), allow_unicode=True)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.slug = self.get_slug()
+        super(ReadingList, self).save(force_insert, force_update, using, update_fields)
+
+    class Meta:
+        unique_together = (('owner', 'name'),)
 
 
 class Profile(models.Model):

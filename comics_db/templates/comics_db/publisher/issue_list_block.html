@@ -3,6 +3,11 @@
 
 {% lazy_paginate issues %}
 {% for issue in issues %}
+  {% ifchanged issue.title %}
+    <div class="col-12 m-1">
+    <h3>{{ issue.title }}</h3>
+    </div>
+  {% endifchanged %}
   <div class="col-4k-2 col-fhd-3 col-xl-4 col-md-6 col-12 {% if issue.read %}read{% endif %}">
     <div class="card card-with-cover card-link">
       <a class='default-link' href='{% url "site-issue-detail" issue.slug %}'></a>
