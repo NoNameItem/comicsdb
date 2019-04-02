@@ -17,6 +17,8 @@ from comicsdb import custom_settings
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+BASE_URL = custom_settings.BASE_URL
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
@@ -45,6 +47,7 @@ INSTALLED_APPS = [
     'knox',
     'django_celery_beat',
     'el_pagination',
+    'anymail',
     'comics_db',
     'django_cleanup.apps.CleanupConfig',
 ]
@@ -172,8 +175,7 @@ AWS_S3_BUCKET_AUTH = False
 
 # Email
 # https://docs.djangoproject.com/en/2.1/topics/email/
-EMAIL_BACKEND = custom_settings.EMAIL_BACKEND
-EMAIL_FILE_PATH = custom_settings.EMAIL_FILE_PATH
+EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
 
 # DRF Global Settings
 REST_FRAMEWORK = {
@@ -219,3 +221,7 @@ MARVEL_PRIVATE_KEY = '41ffa67b7888b3468fd61101dc9a038d3a7a9610'
 # Endless Pagination Settings
 EL_PAGINATION_PER_PAGE = 20
 EL_PAGINATION_ORPHANS = 3
+
+# Anymail settings
+ANYMAIL = custom_settings.ANYMAIL
+DEFAULT_FROM_EMAIL = 'noreply@comicsdb.nonameitem.com'

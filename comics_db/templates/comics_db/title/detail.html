@@ -14,6 +14,7 @@
 {% endblock %}
 
 {% block vendor_css %}
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/forms/selects/select2.min.css" %}">
 {% endblock %}
 
 {% block page_css %}
@@ -49,10 +50,24 @@
             <div class="media-body pt-3 px-2">
               <div class="row">
                 <div class="col text-right">
+                {% if user.is_authenticated and reading_lists %}
+                      <button type="button" class="btn btn-secondary" data-toggle="tooltip"
+                              data-placement="bottom" title="Add to read list"
+                              onclick="$('#add-to-list').modal('show')">
+                        <i class="fal fa-clipboard-list-check"></i></button>
+                    {% endif %}
                   {% if user.is_staff %}
-                    <div class="btn-group d-md-block float-right ml-2" role="group" aria-label="Basic example">
+                    <div class="btn-group d-none d-sm-inline-flex float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#title-modal">
-                        <i class="fa fa-cog"></i></button>
+                        <i class="fa fa-cog"></i>
+                      </button>
+                      <button type="button" class="btn btn-warning" data-toggle="tooltip" onclick="$('#move-issue-modal').modal('show')"
+                         data-placement="bottom" title="Move issues to another title">
+                        <i class="fal fa-file-export"></i>
+                      </button>
+                      <button type="button" class="btn btn-danger btn-outline-primary" id="title-delete-btn">
+                        <i class="fal fa-trash-alt"></i>
+                      </button>
                     </div>
                   {% endif %}
                 </div>
@@ -69,7 +84,7 @@
     </div>
   </div>
   <!-- /HEADER -->
-  {% include "comics_db/read_progress_bar.html" %}
+  {% include "comics_db/elements/read_progress_bar.html" %}
   <!-- STATISTICS -->
   <div class="row">
     <div class="col-md-12 col-12">
@@ -146,6 +161,10 @@
     <!-- /Main info -->
   </div>
   <!-- /Info cards -->
+  <form action="{% url "site-title-delete" title.slug %}" method="post" id="delete-form" class="d-none">
+    {% csrf_token %}
+    <input type="hidden" name="delete-redirect-url" value="{{ list_link }}">
+  </form>
 {% endblock %}
 
 {% block modals %}
@@ -217,17 +236,14 @@
                 </div>
               </fieldset>
             </div>
-
-
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <input type="submit" class="btn btn-primary" value="Save">
           </div>
+        </form>
       </div>
-      </form>
     </div>
-  </div>
   </div>
 
   <!-- Modal -->
@@ -252,16 +268,98 @@
       </div>
     </div>
   {% endif %}
+
+  <!-- Modal -->
+  <div class="modal fade" id="move-issue-modal" tabindex="-1" role="dialog" aria-labelledby="move-issue-modal"
+       aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Move issues</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form class="form" method="post" action="{% url "site-title-move-issues" title.slug %}" id="move-form">
+          <div class="modal-body">
+
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="target-title">Title</label><br>
+              <select class="form-control" name="target-title-id" id="target-title">
+                <option value="{{ title.id }}">{{ title }}</option>
+              </select>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="move-issues-btn">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="add-to-list" tabindex="-1" role="dialog" aria-labelledby="add-to-list"
+       aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add to reading list</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="target-reading-list">Reading list</label>
+            <select class="form-control" name="target-reading-list" id="target-reading-list">
+              {% for reading_list in reading_lists %}
+                <option value="{{ reading_list.id }}">{{ reading_list.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="from-number">From #</label>
+                <input type="number"
+                       class="form-control" name="from-number" id="from-number" placeholder="Add numbers from">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="from-number">To #</label>
+                <input type="number"
+                       class="form-control" name="to-number" id="to-number" placeholder="Add numbers to">
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="add-to-list-btn">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block vendor_js %}
+  <script src="{% static "app-assets/vendors/js/extensions/sweetalert.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/forms/select/select2.full.min.js" %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block page_js %}
   <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
-  {% if form.errors %}
-    <script>
+  <script>
+    let titles_url = "{% url "title-list" %}";
+    {% if form.errors %}
       $('#title-modal').modal('show');
-    </script>
-  {% endif %}
+    {% endif %}
+  </script>
+  <script src="{% static "comics_db/js/title_detail.js" %}"></script>
 {% endblock %}

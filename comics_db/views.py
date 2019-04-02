@@ -1,9 +1,10 @@
 import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import IntegrityError
-from django.db.models import Count, Q, Max
+from django.db.models import Count, Q, Max, Case, When, F, Window
+from django.db.models.functions import RowNumber
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -35,6 +36,11 @@ from comics_db import models, serializers, filtersets, tasks, forms
 ########################################################################################################################
 
 
+########################################################################################################################
+# Main Page
+########################################################################################################################
+
+
 class MainPageView(TemplateView):
     template_name = "comics_db/main_page.html"
 
@@ -45,10 +51,20 @@ class MainPageView(TemplateView):
         context['publishers_count'] = models.Publisher.objects.count()
         context['universes_count'] = models.Universe.objects.count()
         if self.request.user.is_authenticated:
-            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile).count()
-            context['total'] = models.Issue.objects.count()
-            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile).count()
+                context['total'] = models.Issue.objects.count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
         return context
+
+
+########################################################################################################################
+# Publisher
+########################################################################################################################
 
 
 class PublisherListView(ListView):
@@ -65,13 +81,20 @@ class PublisherDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
-                                                          title__publisher=self.get_object()).count()
-            context['total'] = models.Issue.objects.filter(title__publisher=self.get_object()).count()
-            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                              title__publisher=self.get_object()).count()
+                context['total'] = models.Issue.objects.filter(title__publisher=self.get_object()).count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
         return context
 
     def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
         self.object = self.get_object()
         form = forms.PublisherForm(request.POST, request.FILES)
         if form.is_valid():
@@ -141,6 +164,9 @@ class PublisherIssueListView(AjaxListView):
         if self.request.user.is_authenticated:
             queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
         if search:
             q = Q()
             for field in self.search_fields:
@@ -152,7 +178,13 @@ class PublisherIssueListView(AjaxListView):
         context = super().get_context_data(**kwargs)
         context['publisher'] = self.publisher
         context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
         return context
+
+
+########################################################################################################################
+# Universe
+########################################################################################################################
 
 
 class UniverseListView(ListView):
@@ -169,13 +201,20 @@ class UniverseDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
-                                                          title__universe=self.get_object()).count()
-            context['total'] = models.Issue.objects.filter(title__universe=self.get_object()).count()
-            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                              title__universe=self.get_object()).count()
+                context['total'] = models.Issue.objects.filter(title__universe=self.get_object()).count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
         return context
 
     def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
         self.object = self.get_object()
         form = forms.UniverseForm(request.POST, request.FILES)
         if form.is_valid():
@@ -227,6 +266,9 @@ class UniverseIssueListView(AjaxListView):
         if self.request.user.is_authenticated:
             queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
         if search:
             q = Q()
             for field in self.search_fields:
@@ -238,7 +280,13 @@ class UniverseIssueListView(AjaxListView):
         context = super().get_context_data(**kwargs)
         context['universe'] = self.universe
         context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
         return context
+
+
+########################################################################################################################
+# Title
+########################################################################################################################
 
 
 class TitleListView(AjaxListView):
@@ -266,7 +314,22 @@ class TitleListView(AjaxListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search'] = self.request.GET.get('search', "")
+        context['title_types'] = models.TitleType.objects.all()
+        context['publishers'] = models.Publisher.objects.all()
+        context['universes'] = models.Universe.objects.all()
         return context
+
+    def post(self, request):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        self.object_list = self.get_queryset()
+        context = self.get_context_data(object_list=self.object_list, page_template=self.page_template)
+        form = forms.TitleCreateForm(request.POST, request.FILES)
+        if form.is_valid():
+            title = form.save()
+        else:
+            context['form'] = form
+        return self.render_to_response(context)
 
 
 class TitleDetailView(DetailView):
@@ -277,19 +340,29 @@ class TitleDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title_types'] = models.TitleType.objects.all()
+        context['list_link'] = self.request.META.get('HTTP_REFERER', reverse('site-title-list'))
         if self.request.user.is_authenticated:
-            context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
-                                                          title=self.object).count()
-            context['total'] = models.Issue.objects.filter(title=self.object).count()
-            context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
-            if context['read'] == context['total']:
-                issues = self.object.issues.all()
-                context['read_date'] = models.ReadIssue.objects.filter(issue__in=issues,
-                                                                       profile=self.request.user.profile)\
-                    .aggregate(Max('read_date'))['read_date__max']
+            context['reading_lists'] = self.request.user.profile.reading_lists.order_by('name')
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                              title=self.object).count()
+                context['total'] = models.Issue.objects.filter(title=self.object).count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+                if context['read'] == context['total']:
+                    issues = self.object.issues.all()
+                    context['read_date'] = models.ReadIssue.objects.filter(issue__in=issues,
+                                                                           profile=self.request.user.profile) \
+                        .aggregate(Max('read_date'))['read_date__max']
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
+                context['read_date'] = None
         return context
 
     def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
         self.object = self.get_object()
         form = forms.TitleForm(request.POST, request.FILES, instance=self.object)
         if form.is_valid():
@@ -298,6 +371,31 @@ class TitleDetailView(DetailView):
         context = self.get_context_data(object=self.object)
         context['form'] = form
         return self.render_to_response(context)
+
+
+class DeleteTitle(View, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def post(self, request, slug):
+        redirect_url = request.POST.get('delete-redirect-url')
+        title = models.Title.objects.get(slug=slug)
+        title.delete()
+        return HttpResponseRedirect(redirect_url)
+
+
+class MoveTitleIssues(View, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def post(self, request, slug):
+        target_title_id = request.POST.get('target-title-id')
+        target_title = get_object_or_404(models.Title, id=target_title_id)
+        source_title = get_object_or_404(models.Title, slug=slug)
+        source_title.issues.update(title=target_title)
+        if target_title != source_title:
+            source_title.delete()
+        return HttpResponseRedirect(target_title.site_link)
 
 
 class TitleIssueListView(AjaxListView):
@@ -313,6 +411,9 @@ class TitleIssueListView(AjaxListView):
         if self.request.user.is_authenticated:
             queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
         search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
         if search:
             q = Q()
             for field in self.search_fields:
@@ -324,7 +425,38 @@ class TitleIssueListView(AjaxListView):
         context = super().get_context_data(**kwargs)
         context['title'] = self.title
         context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
         return context
+
+
+class AddTitleToReadingList(View, LoginRequiredMixin):
+    def post(self, request, slug):
+        try:
+            title = models.Title.objects.get(slug=slug)
+            reading_list = self.request.user.profile.reading_lists.get(pk=request.POST.get('list_id'))
+            issues = title.issues.all()
+            number_from = request.POST.get('number_from')
+            number_to = request.POST.get('number_to')
+            if number_from:
+                issues = issues.filter(number__gte=number_from)
+            if number_to:
+                issues = issues.filter(number__lte=number_to)
+            reading_list.issues.add(*issues)
+            reading_list.save()
+            return JsonResponse({'status': "success", 'issue_count': issues.count(),
+                                 'list_name': reading_list.name})
+        except models.Title.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': "Title not found."})
+        except models.ReadingList.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': "Reading list not found. Please refresh page."})
+        except Exception as err:
+            return JsonResponse({'status': 'error', 'message': 'Unknown error, please contact administrator. \n'
+                                                               'Error message: %s' % err.args[0]})
+
+
+########################################################################################################################
+# Issue
+########################################################################################################################
 
 
 class IssueListView(AjaxListView):
@@ -339,20 +471,26 @@ class IssueListView(AjaxListView):
         queryset = models.Issue.objects.all().select_related("title__publisher", "title__universe",
                                                              "title__title_type")
         if self.request.user.is_authenticated:
-            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+            queryset = queryset.annotate(read=Count('readers', distinct=True,
+                                                    filter=Q(readers=self.request.user.profile)))
         try:
-            search = self.request.GET['search']
+            search = self.request.GET.get('search', None)
+            hide_read = self.request.GET.get('hide-read')
+            if hide_read == 'on':
+                queryset = queryset.exclude(read=1)
             if search:
                 q = Q()
                 for field in self.search_fields:
                     q = q | Q(**{field: search})
                 return queryset.filter(q)
+            return queryset
         except KeyError:
             return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
         return context
 
 
@@ -363,6 +501,9 @@ class IssueDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['list_link'] = self.request.META.get('HTTP_REFERER', reverse('site-issue-list'))
+        if self.request.user.is_authenticated:
+            context['reading_lists'] = self.request.user.profile.reading_lists.order_by('name')
         try:
             issue = self.object
             r = models.ReadIssue.objects.get(issue=issue, profile=self.request.user.profile)
@@ -373,6 +514,8 @@ class IssueDetailView(DetailView):
         return context
 
     def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
         self.object = self.get_object()
         form = forms.IssueForm(request.POST, request.FILES, instance=self.object)
         if form.is_valid():
@@ -380,6 +523,17 @@ class IssueDetailView(DetailView):
             return HttpResponseRedirect(self.object.site_link)
         context = self.get_context_data(object=self.object, form=form)
         return self.render_to_response(context)
+
+
+class DeleteIssue(View, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def post(self, request, slug):
+        redirect_url = request.POST.get('delete-redirect-url')
+        issue = models.Issue.objects.get(slug=slug)
+        issue.delete()
+        return HttpResponseRedirect(redirect_url)
 
 
 class ReadIssue(View, LoginRequiredMixin):
@@ -396,6 +550,202 @@ class ReadIssue(View, LoginRequiredMixin):
         except Exception as err:
             return JsonResponse({'status': 'error', 'message': 'Unknown error, please contact administrator. \n'
                                                                'Error message: %s' % err.args[0]})
+
+
+class AddToReadingList(View, LoginRequiredMixin):
+    def post(self, request, slug):
+        try:
+            issue = models.Issue.objects.get(slug=slug)
+            reading_list = self.request.user.profile.reading_lists.get(pk=request.POST.get('list_id'))
+            reading_list.issues.add(issue)
+            reading_list.save()
+            return JsonResponse({'status': "success", 'issue_name': issue.name,
+                                 'list_name': reading_list.name})
+        except models.Issue.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': "Issue not found."})
+        except models.ReadingList.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': "Reading list not found. Please refresh page."})
+        except Exception as err:
+            return JsonResponse({'status': 'error', 'message': 'Unknown error, please contact administrator. \n'
+                                                               'Error message: %s' % err.args[0]})
+
+
+########################################################################################################################
+# Reading lists
+########################################################################################################################
+
+
+class ReadingListListView(ListView, LoginRequiredMixin):
+    template_name = "comics_db/profile/list.html"
+    context_object_name = "reading_lists"
+
+    def get_queryset(self):
+        return self.request.user.profile.reading_lists.all().annotate(total=Count('issues', distinct=True)) \
+            .annotate(read=Count('issues', distinct=True, filter=Q(issues__readers=self.request.user.profile))) \
+            .annotate(read_total_ratio=Case(When(total=0, then=0),
+                                            default=F('read') / F('total')))
+
+    def post(self, request):
+        form = forms.ReadingListForm(request.POST)
+        self.object_list = self.get_queryset()
+        context = self.get_context_data(object_list=self.object_list)
+        if form.is_valid():
+            form.save()
+        else:
+            context['form'] = form
+        return self.render_to_response(context)
+
+
+class ReadingListDetailView(AjaxListView):
+    template_name = "comics_db/profile/issue_list.html"
+    context_object_name = "issues"
+    page_template = "comics_db/profile/issue_list_block.html"
+
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
+                     'title__publisher__name__icontains', 'title__universe__name__icontains')
+
+    def get_queryset(self):
+        self.reading_list = models.ReadingList.objects.all()
+
+        if self.request.user.is_authenticated:
+            self.reading_list = self.reading_list.annotate(total=Count('issues', distinct=True)) \
+                .annotate(read=Count('issues', distinct=True, filter=Q(issues__readers=self.request.user.profile))) \
+                .annotate(read_total_ratio=Case(When(total=0, then=0),
+                                                default=F('read') * 100 / F('total')))
+
+        self.reading_list = self.reading_list.get(slug=self.kwargs['slug'])
+
+        queryset = self.reading_list.issues.select_related("title__publisher", "title__universe",
+                                                           "title__title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', distinct=True,
+                                                    filter=Q(readers=self.request.user.profile)))
+        try:
+            search = self.request.GET.get('search', None)
+            hide_read = self.request.GET.get('hide-read')
+            if hide_read == 'on':
+                queryset = queryset.exclude(read=1)
+            if search:
+                q = Q()
+                for field in self.search_fields:
+                    q = q | Q(**{field: search})
+                return queryset.filter(q)
+            return queryset
+        except KeyError:
+            return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
+        context['reading_list'] = self.reading_list
+        context['edit'] = self.request.user.is_authenticated and self.reading_list.owner == self.request.user.profile
+        return context
+
+    def post(self, request, slug):
+        if not self.request.user.is_authenticated:
+            raise PermissionDenied
+        self.object = self.request.user.profile.reading_lists.get(slug=slug)
+        if not self.reading_list.owner == self.request.user.profile:
+            raise PermissionDenied
+        form = forms.ReadingListForm(request.POST, instance=self.object)
+        if form.is_valid():
+            self.object = form.save()
+            return HttpResponseRedirect(self.object.site_link)
+        context = self.get_context_data(object=self.object, form=form)
+        return self.render_to_response(context)
+
+
+class DeleteReadingList(View, LoginRequiredMixin):
+    def post(self, request, slug):
+        if not request.user.is_authenticated:
+            raise PermissionError
+        reading_list = self.request.user.profile.reading_lists.get(slug=slug)
+        reading_list.delete()
+        return JsonResponse({'status': 'success'})
+
+
+class DeleteFromReadingList(View, LoginRequiredMixin):
+    def post(self, request, slug):
+        try:
+            reading_list = request.user.profile.reading_lists.get(slug=slug)
+            issue = reading_list.issues.get(pk=request.POST.get('issue_id'))
+            reading_list.issues.remove(issue)
+            reading_list.save()
+            reading_list = request.user.profile.reading_lists.annotate(
+                total=Count('issues', distinct=True)) \
+                .annotate(read=Count('issues', distinct=True, filter=Q(issues__readers=self.request.user.profile))) \
+                .annotate(read_total_ratio=Case(When(total=0, then=0),
+                                                default=F('read') * 100 / F('total'))).get(slug=slug)
+            return JsonResponse({'status': "success", 'issue_name': issue.name, 'list_name': reading_list.name,
+                                 'read': reading_list.read, 'total': reading_list.total,
+                                 'read_total_ratio': reading_list.read_total_ratio})
+        except models.ReadingList.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': "Reading list not found."})
+        except models.Issue.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': "Issue not found. Please refresh page"})
+        except Exception as err:
+            return JsonResponse({'status': 'error', 'message': 'Unknown error, please contact administrator. \n'
+                                                               'Error message: %s' % err.args[0]})
+
+
+class ReadingListIssueDetailView(DetailView):
+    template_name = "comics_db/profile/reading_list_issue.html"
+    context_object_name = "issue"
+
+    def get_queryset(self):
+        self.reading_list = models.ReadingList.objects.all()
+
+        if self.request.user.is_authenticated:
+            self.reading_list = self.reading_list.annotate(total=Count('issues', distinct=True)) \
+                .annotate(read=Count('issues', distinct=True, filter=Q(issues__readers=self.request.user.profile))) \
+                .annotate(read_total_ratio=Case(When(total=0, then=0),
+                                                default=F('read') * 100 / F('total')))
+
+        self.reading_list = self.reading_list.get(slug=self.kwargs['list_slug'])
+
+        queryset = self.reading_list.issues.all()
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['list_link'] = self.request.META.get('HTTP_REFERER', reverse('site-issue-list'))
+        if self.request.user.is_authenticated:
+            context['reading_lists'] = self.request.user.profile.reading_lists.order_by('name')
+        issue = self.object
+        try:
+            r = models.ReadIssue.objects.get(issue=issue, profile=self.request.user.profile)
+            read_date = r.read_date
+        except (models.ReadIssue.DoesNotExist, AttributeError):
+            read_date = None
+        context['read_date'] = read_date
+        context['reading_list'] = self.reading_list
+        context['edit'] = self.request.user.is_authenticated and self.reading_list.owner == self.request.user.profile
+
+        issues = list(self.reading_list.issues.all())
+        current_number = issues.index(issue)
+        if current_number > 0:
+            context['previous_issue'] = issues[current_number - 1]
+        if current_number < len(issues) - 1:
+            context['next_issue'] = issues[current_number + 1]
+
+        return context
+
+    def post(self, request, slug, list_slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        self.object = self.get_object()
+        form = forms.IssueForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            self.object = form.save()
+            return HttpResponseRedirect(self.object.site_link)
+        context = self.get_context_data(object=self.object, form=form)
+        return self.render_to_response(context)
+
+
+########################################################################################################################
+# Parser log
+########################################################################################################################
 
 
 class ParserLogView(UserPassesTestMixin, TemplateView):

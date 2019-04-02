@@ -1,0 +1,22 @@
+<h3>{{ parser_name }} {{ status|lower }} with parameters:</h3>
+<ul>
+  {% for parameter in parameters %}
+    <li>
+      <pre><b>{{ parameter.0 }}:</b> {{ parameter.1 }}</pre>
+    </li>
+  {% endfor %}
+</ul>
+<h3>
+  Run statistics:
+</h3>
+<ul>
+  <li><pre><b>Start:</b> {{ start_time|date:"d.m.Y H:i:s" }}</pre></li>
+  <li><pre><b>End:</b>   {{ end_time|date:"d.m.Y H:i:s" }}</pre></li>
+  <br>
+  <li><pre><b>Items count:</b> {{ record_total }}</pre></li>
+  <li><pre><b>Processed:</b>   {{ record_processed }}</pre></li>
+  <li><pre><b>Success:</b>     {{ record_success }}</pre></li>
+  <li><pre><b>Error:</b>       {{ record_error }}</pre></li>
+</ul>
+<br>
+<p>You can see parser execution details on <a href="{{ run_link }}">parser run page</a></p>

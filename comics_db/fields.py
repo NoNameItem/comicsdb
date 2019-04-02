@@ -24,10 +24,7 @@ class ThumbnailImageFieldFile(ImageFieldFile):
 
     @property
     def thumb_url(self):
-        if self.storage.exists(_add_thumb(self.name)):
-            return _add_thumb(self.url)
-        else:
-            return self.url
+        return _add_thumb(self.url)
 
     def save(self, name, content, save=True):
         super().save(name, content, save)

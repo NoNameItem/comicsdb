@@ -5,12 +5,18 @@
 {% for issue in issues %}
   {% ifchanged issue.title %}
     <div class="col-12 m-1">
-    <h3>{{ issue.title }}</h3>
+      <h3>{{ issue.title }}</h3>
     </div>
   {% endifchanged %}
-  <div class="col-4k-2 col-fhd-3 col-xl-4 col-md-6 col-12">
-    <div class="card card-with-cover card-link {% if issue.read %}read{% endif %}">
-      <a class='default-link' href='{% url "site-issue-detail" issue.slug %}'></a>
+  <div class="col-4k-2 col-fhd-3 col-xl-4 col-md-6 col-12 {% if issue.read %}read{% endif %}" id="issue-{{ issue.id }}">
+    <div class="card card-with-cover card-link">
+      {% if edit %}
+        <button type="button" class="btn btn-sm btn-danger card-btn-top-right" data-toggle="tooltip"
+                data-placement="bottom" title="Delete from reading list" onclick="delete_from_list({{ issue.id }})">
+          <i class="fal fa-times"></i>
+        </button>
+      {% endif %}
+      <a class='default-link' href='{% url "site-reading-list-issue" reading_list.slug issue.slug %}'></a>
       <div class="card-img-top img-fluid bg-cover height-200"
            style="background: url('{% if issue.main_cover %}{{ issue.main_cover.thumb_url }}{% else %}{% static "images/defaults/default_issue_cover_small.png" %}{% endif %}') 50%"></div>
       <div class="card-profile-image">
@@ -19,17 +25,20 @@
                 {% else %}
                   {% static "images/defaults/default_logo_small.png" %}
                 {% endif %}"
-             class="rounded-circle img-border box-shadow-1 width-100 height-100" alt="Card image" >
+             class="rounded-circle img-border box-shadow-1 width-100 height-100" alt="Card image">
       </div>
       <div class="card-with-cover-content text-center">
         <div class="card-body">
-          <h4 class="card-title">{{ issue.name }} {% if issue.read %}<i class="fas fa-check-circle success"></i>{% endif %}</h4>
+          <h4 class="card-title">{{ issue.name }} {% if issue.read %}
+            <i class="fas fa-check-circle success"></i>{% endif %}</h4>
           <ul class="list-inline list-inline-pipe">
             <li>{{ issue.title.publisher.name }}</li>
-            {% if issue.title.universe %}<li>{{ issue.title.universe.name }}</li>{% endif %}
+            {% if issue.title.universe %}
+              <li>{{ issue.title.universe.name }}</li>{% endif %}
             <li>{{ issue.title.title_type.name }}</li>
             <li>{{ issue.publish_date }}</li>
           </ul>
+
         </div>
 
       </div>

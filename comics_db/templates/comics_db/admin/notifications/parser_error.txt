@@ -1,0 +1,22 @@
+{{ parser_name }} ended with error.
+
+Error type:    {{ status }}
+Error:         {{ error }}
+Error details: {{ error_details }}
+
+Run parameters:
+
+{% for parameter in parameters %}{{ parameter.0 }}: {{ parameter.1 }}
+{% endfor %}
+
+Run statistics:
+
+Start: {{ start_time|date:"d.m.Y H:i:s" }}
+End:   {{ end_time|date:"d.m.Y H:i:s" }}
+
+Items count: {{ record_total }}
+Processed:   {{ record_processed }}
+Success:     {{ record_success }}
+Error:       {{ record_error }}
+
+You can see parser execution details on parser run page: {{ run_link }}
