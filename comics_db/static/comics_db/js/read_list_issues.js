@@ -6,7 +6,7 @@ function delete_from_list(issue_id) {
   }).done(function (response) {
     console.log(response);
     if (response.status === 'success') {
-      successNotify("Congratulations!", "You have removed " + response.issue_name + "from reading list "
+      successNotify("Congratulations!", "You have removed " + response.issue_name + " from reading list "
         + response.list_name + ".");
       $('#issue-' + issue_id).remove();
       $('#progress-bar').css('width', response.read_total_ratio + '%');
