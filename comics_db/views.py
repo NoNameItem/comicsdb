@@ -583,7 +583,7 @@ class ReadingListListView(ListView, LoginRequiredMixin):
         return self.request.user.profile.reading_lists.all().annotate(total=Count('issues', distinct=True)) \
             .annotate(read=Count('issues', distinct=True, filter=Q(issues__readers=self.request.user.profile))) \
             .annotate(read_total_ratio=Case(When(total=0, then=0),
-                                            default=F('read') / F('total')))
+                                            default=F('read') * 100 / F('total')))
 
     def post(self, request):
         form = forms.ReadingListForm(request.POST)
