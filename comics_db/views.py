@@ -646,7 +646,7 @@ class ReadingListDetailView(AjaxListView):
         if not self.request.user.is_authenticated:
             raise PermissionDenied
         self.object = self.request.user.profile.reading_lists.get(slug=slug)
-        if not self.reading_list.owner == self.request.user.profile:
+        if not self.object.owner == self.request.user.profile:
             raise PermissionDenied
         form = forms.ReadingListForm(request.POST, instance=self.object)
         if form.is_valid():
@@ -738,7 +738,7 @@ class ReadingListIssueDetailView(DetailView):
         form = forms.IssueForm(request.POST, request.FILES, instance=self.object)
         if form.is_valid():
             self.object = form.save()
-            return HttpResponseRedirect(self.object.site_link)
+            return HttpResponseRedirect(reverse('site-reading-list-issue', args=(list_slug, slug)))
         context = self.get_context_data(object=self.object, form=form)
         return self.render_to_response(context)
 
