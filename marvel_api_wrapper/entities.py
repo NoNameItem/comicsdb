@@ -1,4 +1,5 @@
 import datetime
+import json
 import re
 from typing import List
 
@@ -11,7 +12,25 @@ class ActionNotSupportedError(Exception):
     pass
 
 
-class Url:
+class MarvelAPIData:
+    def __bool__(self):
+        return True
+
+    def to_dict(self):
+        return {}
+
+
+class MarvelAPIJSONEncoder(json.JSONEncoder):
+    def default(self, z):
+        if isinstance(z, MarvelAPIData):
+            return z.to_dict()
+        elif isinstance(z, datetime.datetime):
+            return z.isoformat()
+        else:
+            super().default(z)
+
+
+class Url(MarvelAPIData):
     __slots__ = ['_url', '_type']
 
     # noinspection PyShadowingBuiltins
@@ -30,8 +49,14 @@ class Url:
     def __str__(self) -> str:
         return "[URL] type: {0._type}; url: {0._url}".format(self)
 
+    def to_dict(self):
+        return {
+            'url': self._url,
+            'type': self._type
+        }
 
-class Text:
+
+class Text(MarvelAPIData):
     __slots__ = ['_type', '_language', '_text']
 
     # noinspection PyShadowingBuiltins
@@ -55,8 +80,15 @@ class Text:
     def __str__(self) -> str:
         return "[Text] type: {0._type}; language: {0._language}; text: {0._text}".format(self)
 
+    def to_dict(self):
+        return {
+            'text': self._text,
+            'language': self._language,
+            'type': self._type
+        }
 
-class Image:
+
+class Image(MarvelAPIData):
     __slots__ = ['_path', '_extension']
 
     def __init__(self, path: str, extension: str):
@@ -79,8 +111,14 @@ class Image:
     def __str__(self):
         return "[Image] path: {0._path}; extension: {0._extension}".format(self)
 
+    def to_dict(self):
+        return {
+            'path': self._path,
+            'extension': self._extension
+        }
 
-class ComicsDate:
+
+class ComicsDate(MarvelAPIData):
     __slots__ = ['_type', '_date']
 
     # noinspection PyShadowingBuiltins
@@ -99,8 +137,14 @@ class ComicsDate:
     def __str__(self):
         return "[ComicsDate] type: {0._type}; date: {0._date}".format(self)
 
+    def to_dict(self):
+        return {
+            'type': self._type,
+            'date': self._date
+        }
 
-class ComicsPrice:
+
+class ComicsPrice(MarvelAPIData):
     __slots__ = ['_type', '_price']
 
     # noinspection PyShadowingBuiltins
@@ -119,8 +163,14 @@ class ComicsPrice:
     def __str__(self):
         return "[ComicsPrice] type: {0._type}; date: {0._price}".format(self)
 
+    def to_dict(self):
+        return {
+            'type': self._type,
+            'date': self._price
+        }
 
-class ResourceList:
+
+class ResourceList(MarvelAPIData):
     __slots__ = ['_available', '_collection_uri', '_entities', '_entities_endpoint']
 
     # noinspection PyPep8Naming
@@ -133,6 +183,12 @@ class ResourceList:
             self._entities = []
         else:
             self._entities = None
+
+    def to_dict(self):
+        return {
+            'available': self._available,
+            'collectionURI': self._collection_uri
+        }
 
     @property
     def entities(self):
@@ -149,7 +205,10 @@ class ResourceList:
         return self._available
 
 
-class NotSupportedResourceList:
+class NotSupportedResourceList(MarvelAPIData):
+
+    def __bool__(self):
+        return False
 
     @property
     def entities(self):
@@ -167,7 +226,7 @@ class NotSupportedResourceList:
 # Summary Entities
 
 
-class BaseSummary:
+class BaseSummary(MarvelAPIData):
     __slots__ = ['_name', '_resource_uri', '_id', '_entity', '_entity_endpoint']
 
     # noinspection PyPep8Naming
@@ -178,6 +237,12 @@ class BaseSummary:
         self._entity = None
         f = EndpointFabric.get_instance()
         self._entity_endpoint = f.get_endpoint(self.get_endpoint_class(), endpoint_url=self._resource_uri)
+
+    def to_dict(self):
+        return {
+            'name': self._name,
+            'resourceURI': self._resource_uri
+        }
 
     @staticmethod
     def get_endpoint_class():
@@ -229,7 +294,7 @@ class EventSummary(BaseSummary):
 # Full Entities
 
 
-class BaseEntity:
+class BaseEntity(MarvelAPIData):
     __slots__ = ['_id', '_modified', '_resource_uri', '_urls', '_thumbnail', '_comics', '_events', '_series',
                  '_creators', '_characters']
 
@@ -273,6 +338,28 @@ class BaseEntity:
             self._characters = ResourceList(endpoints.CharactersListEndpoint, **characters)
         else:
             self._characters = NotSupportedResourceList()
+
+    def to_dict(self):
+        d = {
+            'id': self._id,
+            'resourceURI': self._resource_uri,
+            'modified': self._modified,
+            'urls': [x.to_dict() for x in self._urls],
+            'thumbnail': self._thumbnail.to_dict()
+        }
+
+        if self._comics:
+            d['comics'] = self._comics.to_dict()
+        if self._events:
+            d['events'] = self._events.to_dict()
+        if self._series:
+            d['series'] = self._series.to_dict()
+        if self._creators:
+            d['creators'] = self._creators.to_dict()
+        if self._characters:
+            d['characters'] = self._characters.to_dict()
+
+        return d
 
     @classmethod
     def convert_dict(cls, d):
@@ -362,7 +449,7 @@ class Comic(BaseEntity):
                  issn: str = None,
                  format: str = None,
                  pageCount: int = None,
-                 textObjects: List[str] = None,
+                 textObjects: List[Text] = None,
                  series: SeriesSummary = None,
                  variants: List[ComicSummary] = None,
                  collections: List[ComicSummary] = None,
@@ -393,9 +480,41 @@ class Comic(BaseEntity):
         self._prices = prices
         self._images = images
 
+    def to_dict(self):
+        super_d = super(Comic, self).to_dict()
+        d = {
+            'digitalId': self._digital_id,
+            'title': self._title,
+            'issueNumber': self._issue_number,
+            'variantDescriptor': self._variant_descriptor,
+            'description': self._description,
+            'isbn': self._isbn,
+            'upc': self._upc,
+            'diamondCode': self._diamond_code,
+            'ean': self._ean,
+            'issn': self._issn,
+            'format': self._format,
+            'pageCount': self._page_count,
+            'textObjects': [x.to_dict for x in self._text_objects],
+            'series': self._series.to_dict(),
+            'variants': [x.to_dict() for x in self._variants],
+            'collections': [x.to_dict() for x in self._collections],
+            'collectedIssues': [x.to_dict() for x in self._collected_issues],
+            'dates': [x.to_dict() for x in self._dates],
+            'prices': [x.to_dict() for x in self._prices],
+            'images': [x.to_dict() for x in self._images],
+        }
+
+        super_d.update(d)
+        return super_d
+
     @classmethod
     def convert_dict(cls, d):
         res = super().convert_dict(d)
+
+        text_objects = d.get('textObjects')
+        if text_objects:
+            res['textObjects'] = [Text(**x) for x in text_objects]
 
         series = d.get('series')
         if series:
@@ -479,7 +598,7 @@ class Comic(BaseEntity):
         return self._page_count
 
     @property
-    def text_objects(self) -> List[str]:
+    def text_objects(self) -> List[Text]:
         return self._text_objects
 
     @property
@@ -532,6 +651,16 @@ class Character(BaseEntity):
     def __str__(self):
         return "[{0.__class__] id: {0._id}; name: {0._name}".format(self)
 
+    def to_dict(self):
+        super_d = super(Character, self).to_dict()
+        d = {
+            'name': self._name,
+            'description': self._description,
+        }
+
+        super_d.update(d)
+        return super_d
+
     @property
     def name(self) -> str:
         return self._name
@@ -567,6 +696,19 @@ class Creator(BaseEntity):
 
     def __str__(self):
         return "[{0.__class__] id: {0._id}; full name: {0._full_name}".format(self)
+
+    def to_dict(self):
+        super_d = super(Creator, self).to_dict()
+        d = {
+            'firstName': self._first_name,
+            'middleName': self._middle_name,
+            'lastName': self._last_name,
+            'suffix': self._suffix,
+            'fullName': self._full_name
+        }
+
+        super_d.update(d)
+        return super_d
 
     @property
     def first_name(self) -> str:
@@ -617,6 +759,20 @@ class Event(BaseEntity):
 
     def __str__(self):
         return "[{0.__class__] id: {0._id}; title: {0._title}".format(self)
+
+    def to_dict(self):
+        super_d = super(Event, self).to_dict()
+        d = {
+            'title': self._title,
+            'description': self._description,
+            'start': self._start,
+            'end': self._end,
+            'next': self._next,
+            'previous': self._previous
+        }
+
+        super_d.update(d)
+        return super_d
 
     @classmethod
     def convert_dict(cls, d):
@@ -695,6 +851,21 @@ class Series(BaseEntity):
 
     def __str__(self):
         return "[{0.__class__] id: {0._id}; title: {0._title}".format(self)
+
+    def to_dict(self):
+        super_d = super(Series, self).to_dict()
+        d = {
+            'rating': self._title,
+            'title': self._title,
+            'description': self._description,
+            'startYear': self._start_year,
+            'endYear': self._end_year,
+            'next': self._next,
+            'previous': self._previous
+        }
+
+        super_d.update(d)
+        return super_d
 
     @classmethod
     def convert_dict(cls, d):
