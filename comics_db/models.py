@@ -21,6 +21,7 @@ class ParserRun(models.Model):
     PARSER_CHOICES = (
         ("BASE", "Base parser"),
         ("CLOUD_FILES", "Cloud files parser"),
+        ("MARVEL_API", "Marvel API parser"),
     )
 
     STATUS_CHOICES = (
@@ -60,28 +61,34 @@ class ParserRun(models.Model):
         return reverse('parser-log-detail', args=(self.id,))
 
     @property
-    def success_count(self):
+    def details(self):
         if self.parser == 'CLOUD_FILES':
-            details = self.cloudfilesparserrundetails
+            return self.cloudfilesparserrundetails
+        elif self.parser == 'MARVEL_API':
+            return self.marvelapiparserrundetails
+        else:
+            return None
+
+    @property
+    def success_count(self):
+        if self.details is not None:
+            return self.details.filter(status='SUCCESS').count()
         else:
             return 0
-        return details.filter(status='SUCCESS').count()
 
     @property
     def error_count(self):
-        if self.parser == 'CLOUD_FILES':
-            details = self.cloudfilesparserrundetails
+        if self.details is not None:
+            return self.details.filter(status='ERROR').count()
         else:
             return 0
-        return details.filter(status='ERROR').count()
 
     @property
     def processed(self):
-        if self.parser == 'CLOUD_FILES':
-            details = self.cloudfilesparserrundetails
+        if self.details is not None:
+            return self.details.exclude(status='RUNNING').count()
         else:
             return 0
-        return details.exclude(status='RUNNING').count()
 
     class Meta:
         ordering = ["-start"]
@@ -143,6 +150,20 @@ class CloudFilesParserRunDetail(ParserRunDetail):
             return self.issue.name
         else:
             return None
+
+
+class MarvelAPIParserRunDetail(ParserRunDetail):
+    ENTITY_TYPE_CHOICES = (
+        ("COMICS", "Comics"),
+        ("CHARACTER", "Character"),
+        ("CREATOR", "Creator"),
+        ("EVENT", "Event"),
+        ("Series", "Series")
+    )
+
+    entity_type = models.CharField(max_length=10, choices=ENTITY_TYPE_CHOICES)
+    entity_id = models.IntegerField(null=True)
+    data = models.TextField(blank=True)
 
 
 ########################################################################################################################

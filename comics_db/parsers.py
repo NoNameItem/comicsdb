@@ -3,6 +3,7 @@ Different parsers for getting comics info
 """
 import datetime
 import inspect
+import json
 import re
 import tempfile
 from typing import NoReturn
@@ -301,7 +302,7 @@ class CloudFilesParser(BaseParser):
                 else:
                     # Matched. Saving regex match groups and starting filling issue info in DB
                     info = match.groupdict()
-                    run_detail.groups = str(info)
+                    run_detail.groups = json.dumps(info, indent=2)
                     try:
                         # Getting or creating Publisher
                         publisher = publishers.get(info['publisher'], None)  # Trying to get already parsed version
