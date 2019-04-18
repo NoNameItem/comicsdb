@@ -562,7 +562,7 @@ class MarvelAPIParser(BaseParser):
     def _prepare(self) -> NoReturn:
         self._dump_api('COMICS', self._comics_endpoint, self._comics, formatType='comic', noVariants='true',
                        orderBy='modified')
-        self._dump_api('CHARACTER', self._characters_endpoint, self._characters, orderBy='id')
+        self._dump_api('CHARACTER', self._characters_endpoint, self._characters, orderBy='modified')
         self._dump_api('CREATOR', self._creators_endpoint, self._creators, orderBy='modified')
         self._dump_api('EVENT', self._events_endpoint, self._events, orderBy='modified')
         self._dump_api('SERIES', self._series_endpoint, self._series, orderBy='modified')
