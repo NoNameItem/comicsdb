@@ -59,7 +59,7 @@ function successNotify(title, message) {
   toastr.success(message, title, {
     closeButton : true,
     newestOnTop : true,
-    timeOut     : 0,
+    timeOut     : 5000,
     showMethod  : "slideDown",
     hideMethod  : "slideUp"
   });

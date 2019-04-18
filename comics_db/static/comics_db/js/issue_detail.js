@@ -54,7 +54,7 @@ $(document).ready(function () {
     }).done(function (response) {
       console.log(response);
       if (response.status === 'success') {
-        successNotify("Congratulations!", "You have added " + response.issue_name + "to reading list "
+        successNotify("Congratulations!", "You have added " + response.issue_name + " to reading list "
           + response.list_name + ". Don't forget to actually read it)");
       } else {
         errorNotify("Oops! Can't add issue to reading list", response.message);

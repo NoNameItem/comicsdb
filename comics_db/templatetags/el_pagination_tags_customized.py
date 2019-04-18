@@ -318,7 +318,9 @@ class PaginateNode(template.Node):
         # CUSTOMIZATION: Add last object on previous page
         if page_number > 1:
             try:
-                previous_page = paginator.page(page_number - 1)
+                paginator_prev = self.paginator(
+                    objects, per_page, first_page=first_page, orphans=settings.ORPHANS)
+                previous_page = paginator_prev.page(page_number - 1)
                 last_object = previous_page.object_list[-1]
             except EmptyPage:
                 last_object = None
