@@ -553,7 +553,7 @@ class Comic(BaseEntity):
             'issn': self._issn,
             'format': self._format,
             'pageCount': self._page_count,
-            'textObjects': [x.to_dict for x in self._text_objects],
+            'textObjects': [x.to_dict() for x in self._text_objects],
             'series': self._series.to_dict(),
             'variants': [x.to_dict() for x in self._variants],
             'collections': [x.to_dict() for x in self._collections],
@@ -583,11 +583,11 @@ class Comic(BaseEntity):
             res['variants'] = [ComicSummary(**x) for x in variants]
 
         collections = d.get('collections')
-        if variants:
+        if collections:
             res['collections'] = [ComicSummary(**x) for x in collections]
 
         collected_issues = d.get('collectedIssues')
-        if variants:
+        if collected_issues:
             res['collectedIssues'] = [ComicSummary(**x) for x in collected_issues]
 
         dates = d.get('dates')
