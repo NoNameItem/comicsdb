@@ -10,18 +10,21 @@ const STATUS_COLORS = {
   API_THROTTLE      : 'bg-warning',
   CRITICAL_ERROR    : 'bg-danger',
   INVALID_PARSER    : 'bg-danger',
-  RUNNING           : 'bg-info'
+  RUNNING           : 'bg-info',
+  COLLECTING        : 'bg-info'
 };
 
 const PARSER_LOV = [
   {name : "", id : ""},
   {name : "Base parser", id : "BASE"},
   {name : "Cloud files parser", id : "CLOUD_FILES"},
+  {name : "Marvel API parser", id : "MARVEL_API"}
 ];
 
 const STATUS_LOV = [
   {name : "", id : ""},
   {name : "Running", id : "RUNNING"},
+  {name : "Collecting data", id : "COLLECTING"},
   {name : "Successfully ended", id : "SUCCESS"},
   {name : "Ended with errors", id : "ENDED_WITH_ERRORS"},
   {name : "Critical Error", id : "CRITICAL_ERROR"},
@@ -95,7 +98,7 @@ $('#grid').jsGrid({
       type         : "control",
       width        : 25,
       itemTemplate : function (value, item) {
-        return "<a href='"+item.page+"'><i class='fa fa-list'></i></a>";
+        return "<a href='" + item.page + "'><i class='fa fa-list'></i></a>";
       }
     },
     {
@@ -136,26 +139,26 @@ $('#grid').jsGrid({
     },
   ],
 
-  onDataLoaded  : getSetPager(pagerContainer, pagerParams),
+  onDataLoaded        : getSetPager(pagerContainer, pagerParams),
   loadIndicationDelay : 0,
-  loadIndicator : {
+  loadIndicator       : {
     show : function () {
       var block_ele = $('#grid-card');
 
-            // Block Element
-            block_ele.block({
-                message: '<div class="ft-refresh-cw icon-spin font-medium-2"></div>',
-                //timeout: 2000, //unblock after 2 seconds
-                overlayCSS: {
-                    backgroundColor: '#FFF',
-                    cursor: 'wait',
-                },
-                css: {
-                    border: 0,
-                    padding: 0,
-                    backgroundColor: 'none'
-                }
-            });
+      // Block Element
+      block_ele.block({
+        message    : '<div class="ft-refresh-cw icon-spin font-medium-2"></div>',
+        //timeout: 2000, //unblock after 2 seconds
+        overlayCSS : {
+          backgroundColor : '#FFF',
+          cursor          : 'wait',
+        },
+        css        : {
+          border          : 0,
+          padding         : 0,
+          backgroundColor : 'none'
+        }
+      });
     },
     hide : function () {
       $('#grid-card').unblock();
@@ -168,7 +171,7 @@ function startParser() {
   let d = {};
   d.parser_code = $('#parser-code').val();
   $('.parser-run-input').map(function () {
-    if ($(this).attr("type") === "checkbox"){
+    if ($(this).attr("type") === "checkbox") {
       d[$(this).attr("name")] = $(this).is(':checked') ? $(this).val() : null;
     } else {
       d[$(this).attr("name")] = $(this).val();
@@ -180,9 +183,9 @@ function startParser() {
       url  : "/run_parser",
       data : d
     }
-  ).done(function(response){
+  ).done(function (response) {
     console.log(response);
-    if (response.status === 'error'){
+    if (response.status === 'error') {
       errorNotify("Can't start parser", response.message);
     } else {
       successNotify("Parser started", response.message);
@@ -192,7 +195,7 @@ function startParser() {
   });
 }
 
-$(document).ready(function (){
+$(document).ready(function () {
   $('#parser-code').change(function () {
     $('.parser-run-form-group').hide();
     $('.parser-run-form-group-' + $('#parser-code').val()).show();

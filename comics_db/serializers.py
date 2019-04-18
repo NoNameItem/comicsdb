@@ -181,6 +181,7 @@ class ParserRunListSerializer(serializers.HyperlinkedModelSerializer):
         help_text="Status code",
         read_only=True
     )
+
     class Meta:
         model = models.ParserRun
         fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "parser_code", "parser_name", "status_code",
@@ -234,7 +235,7 @@ class ParserRunDetailSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class CloudFilesParserRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
-    step_name=serializers.CharField(source="file_key")
+    step_name = serializers.CharField(source="file_key")
 
     class Meta:
         model = models.CloudFilesParserRunDetail
@@ -279,6 +280,23 @@ class CloudFilesParserRunDetailDetailSerializer(serializers.HyperlinkedModelSeri
             'error_detail': {'help_text': "Error detail"},
             'created': {'help_text': "Was issue created as result of parser run"}
         }
+
+
+class MarvelAPIParserRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = models.MarvelAPIParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "step_name", "entity_type", "action", "entity_type_name", "action_name")
+        read_only_fields = fields
+
+
+class MarvelAPIParserRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = models.MarvelAPIParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end",
+                  "entity_type", "entity_id", "data", "error", "error_detail", "action", "entity_type_name",
+                  "action_name")
+        read_only_fields = fields
 
 
 # App Token

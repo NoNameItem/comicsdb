@@ -1,9 +1,12 @@
 <form action method="get" id="search-form">
   <div class="row">
-    <div class="col-auto">
-      <input type="checkbox" class="switch" id="hide-read" name="hide-read" data-reverse data-off-label="Show read"
-             data-on-label="Hide read" {% if hide_read %}checked{% endif %} onchange="$('#search-form').submit()">
-    </div>
+
+    {% if user.is_authenticated %}
+      <div class="col-auto">
+        <input type="checkbox" class="switch" id="hide-read" name="hide-read" data-reverse data-off-label="Show read"
+               data-on-label="Hide read" {% if hide_read %}checked{% endif %} onchange="$('#search-form').submit()">
+      </div>
+    {% endif %}
     <div class="col">
       <fieldset class="form-group position-relative">
         <input type="text" class="form-control form-control-xl input-xl" id="search-field"

@@ -7,6 +7,8 @@ TITLE_CHOICES = tuple((x.name, x.name) for x in models.TitleType.objects.all())
 PARSER_CHOICES = models.ParserRun.PARSER_CHOICES
 RUN_STATUS_CHOICES = models.ParserRun.STATUS_CHOICES
 RUN_DETAIL_STATUS_CHOICES = models.ParserRunDetail.STATUS_CHOICES
+ACTION_CHOICES = models.MarvelAPIParserRunDetail.ACTION_CHOICES
+ENTITY_TYPE_CHOICES = models.MarvelAPIParserRunDetail.ENTITY_TYPE_CHOICES
 
 
 class PublisherFilter(filters.FilterSet):
@@ -235,6 +237,73 @@ class CloudFilesParserRunDetailFilter(filters.FilterSet):
         lookup_expr="icontains",
         label="File key",
         help_text="`file_key` contains (ignore case)"
+    )
+    error = filters.CharFilter(
+        field_name="error",
+        lookup_expr="icontains",
+        label="Error",
+        help_text="`error` contains (ignore case)"
+    )
+    created = filters.BooleanFilter(
+        field_name="created",
+        label="Created",
+        help_text="`created` equals",
+        widget=BooleanWidget()
+    )
+
+
+class MarvelAPIParserRunDetailFilter(filters.FilterSet):
+    start_lte = filters.DateTimeFilter(
+        field_name="start",
+        lookup_expr="lte",
+        label="Start",
+        help_text="`start` less than or equal. Date format: YYYY-MM-DDThh:mm:ss.sTZD (iso-8601 datetime)"
+    )
+    start_gte = filters.DateTimeFilter(
+        field_name="start",
+        lookup_expr="gte",
+        label="Start",
+        help_text="`start` greater than or equal. Date format: YYYY-MM-DDThh:mm:ss.sTZD (iso-8601 datetime)"
+    )
+    end_lte = filters.DateTimeFilter(
+        field_name="end",
+        lookup_expr="lte",
+        label="End",
+        help_text="`end` less than or equal. Date format: YYYY-MM-DDThh:mm:ss.sTZD (iso-8601 datetime)"
+    )
+    end_gte = filters.DateTimeFilter(
+        field_name="end",
+        lookup_expr="gte",
+        label="End",
+        help_text="`end` greater than or equal. Date format: YYYY-MM-DDThh:mm:ss.sTZD (iso-8601 datetime)"
+    )
+    status = filters.ChoiceFilter(
+        field_name="status",
+        lookup_expr="iexact",
+        choices=RUN_DETAIL_STATUS_CHOICES,
+        label="Status",
+        help_text="`status` equals (ignore_case).\n"
+                  "Possible choices are:\n{0}".format("\n".join(map(lambda x: "* `%s` - "
+                                                                              "%s" % x, RUN_DETAIL_STATUS_CHOICES)))
+
+    )
+    action = filters.ChoiceFilter(
+        field_name="action",
+        lookup_expr="iexact",
+        choices=ACTION_CHOICES,
+        label="Action",
+        help_text="`parser` equals (ignore_case).\n"
+                  "Possible choices are:\n{0}".format("\n".join(map(lambda x: "* `%s` - %s" % x, ACTION_CHOICES)))
+
+    )
+    entity_type = filters.ChoiceFilter(
+        field_name="entity_type",
+        lookup_expr="iexact",
+        choices=ENTITY_TYPE_CHOICES,
+        label="Entity_type",
+        help_text="`parser` equals (ignore_case).\n"
+                  "Possible choices are:\n{0}".format("\n".join(map(lambda x: "* `%s` - %s" % x, ENTITY_TYPE_CHOICES)))
+
     )
     error = filters.CharFilter(
         field_name="error",

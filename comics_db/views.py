@@ -764,7 +764,7 @@ class ParserRunDetail(UserPassesTestMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         status_css = None
-        if self.object.status == "RUNNING":
+        if self.object.status in ("RUNNING", "COLLECTING"):
             status_css = 'info'
         elif self.object.status == "SUCCESS":
             status_css = 'success'
@@ -795,6 +795,9 @@ class RunParser(UserPassesTestMixin, View):
                 full = bool(request.POST['cloud-full'])
                 load_covers = bool(request.POST['cloud-load-cover'])
                 args = (path_root, full, load_covers)
+            elif parser == 'MARVEL_API':
+                incremental = request.POST['marvel-api-incremental']
+                args = (incremental,)
             tasks.parser_run_task.delay(parser, args)
             return JsonResponse({'status': 'success', 'message': '%s started' % self.parser_dict[parser]})
         except Exception as err:
@@ -1226,27 +1229,33 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
     serializer_classes = {
         'list': serializers.ParserRunListSerializer,
         'retrieve': serializers.ParserRunDetailSerializer,
-        'details_cloud': serializers.CloudFilesParserRunDetailListSerializer
+        'details_cloud': serializers.CloudFilesParserRunDetailListSerializer,
+        'details_marvel_api': serializers.MarvelAPIParserRunDetailListSerializer
+
     }
     filterset_classes = {
         'list': filtersets.ParserRunFilter,
-        'details_cloud': filtersets.CloudFilesParserRunDetailFilter
+        'details_cloud': filtersets.CloudFilesParserRunDetailFilter,
+        'details_marvel_api': filtersets.MarvelAPIParserRunDetailFilter
     }
     ordering_fields_set = {
         'list': (("parser", "Parser"), ("status", "Status"), ("start", "Start date and time"),
                  ("end", "End date and time"),),
         'details_cloud': (("status_name", "Status"), ("start", "Start date and time"), ("end", "End date and time"),
-                          ("file_key", "File key in DO cloud"))
+                          ("file_key", "File key in DO cloud")),
+        'details_marvel_api': (
+            ("status_name", "Status"), ("start", "Start date and time"), ("end", "End date and time"),),
     }
     ordering_set = {
         'list': ("-start",),
-        'details_cloud': ('-start',)
+        'details_cloud': ('-start',),
+        'details_marvel_api': ('-start',),
     }
 
     @action(detail=True, name="Parser run details")
     def details(self, request, pk):
         run = get_object_or_404(models.ParserRun, pk=pk)
-        if run.parser == 'CLOUD_FILES':
+        if run.parser in ('CLOUD_FILES', 'MARVEL_API'):
             return HttpResponseRedirect(run.run_details_url)
         raise Http404
 
@@ -1271,11 +1280,39 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         details = self.filter_queryset(details)
         return self.get_response(details, True)
 
+    @action(detail=True, name="Marvel API Parser Run details")
+    def details_marvel_api(self, request, pk):
+        """
+        Marvel API Parser Run details
+
+        Return details of Marvel API parser's run with specified `id`. If this is not Marvel API parser's run, returns
+        HTTP404.
+        By default ordered by `start` descending with `page_size` = 10
+
+        Available ordering keys:
+          * `status_name` - Status
+          * `start` - Start date and time
+          * `end` - End date and time
+          * `action` - Action (get or process)
+        """
+        run = get_object_or_404(models.ParserRun, pk=pk)
+        if run.parser != 'MARVEL_API':
+            raise Http404
+        details = run.marvelapiparserrundetails.all()
+        details = self.filter_queryset(details)
+        return self.get_response(details, True)
+
 
 class CloudFilesParserRunDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     permission_classes = (IsAdminUser,)
     queryset = models.CloudFilesParserRunDetail.objects.all()
     serializer_class = serializers.CloudFilesParserRunDetailDetailSerializer
+
+
+class MarvelAPIParserRunDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+    permission_classes = (IsAdminUser,)
+    queryset = models.MarvelAPIParserRunDetail.objects.all()
+    serializer_class = serializers.MarvelAPIParserRunDetailDetailSerializer
 
 
 class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
@@ -1300,6 +1337,10 @@ class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, Gene
                 full = bool(request.POST['cloud-full'])
                 load_covers = bool(request.POST['cloud-load-cover'])
                 init_args = (path_root, full, load_covers)
+                task_args = json.dumps((parser, init_args))
+            elif parser == 'MARVEL_API':
+                incremental = request.POST['marvel-api-incremental']
+                init_args = (incremental,)
                 task_args = json.dumps((parser, init_args))
             else:
                 return Response({'status': 'error', 'message': 'Unknown parser code "%s"' % parser})
