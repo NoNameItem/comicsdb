@@ -34,16 +34,11 @@ function showStep(obj) {
     .done(function (response) {
         console.log(response);
         // Set fields
-        $("#modal-file-key").text(response.file_key);
+        $("#modal-action").text(response.action_name);
+        $("#modal-entity").text(response.entity_type_name);
         $("#modal-status").text(response.status_name);
-        $("#modal-issue").text(response.issue_name);
-        if (response.created) {
-          $("#modal-created").html('<i class="far fa-check-circle success fa-2x"></i>');
-        } else {
-          $("#modal-created").html('<i class="far fa-times-circle danger fa-2x"></i>');
-        }
-        $("#modal-regex").text(response.regex);
-        $("#modal-groups").text(response.groups);
+
+        $("#modal-data").text(response.data);
         $("#modal-start").val(moment(response.start).format("DD.MM.YYYY hh:mm:ss.SSS"));
         $("#modal-end").val(moment(response.end).format("DD.MM.YYYY hh:mm:ss.SSS"));
 
@@ -130,7 +125,7 @@ $(document).ready(function () {
         type         : "control",
         width        : 50,
         itemTemplate : function (value, item) {
-          return "";
+          return '';
         }
       },
       {
@@ -151,12 +146,6 @@ $(document).ready(function () {
         cellRenderer : function (value, item) {
           return $('<td class="bg-' + STATUS_COLORS[item.status] + ' bg-lighten-4">').text(value)
         }
-      },
-      {
-        name  : "created",
-        type  : "checkbox",
-        title : "Created",
-        width : 100
       },
       {
         name      : "start",

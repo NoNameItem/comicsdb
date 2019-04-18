@@ -4,6 +4,7 @@ from json import JSONDecodeError
 from typing import Optional
 
 import requests
+from requests import RequestException
 
 import marvel_api_wrapper.entities # import BaseEntity, Creator, Comic, Character, Event, Series
 
@@ -56,8 +57,9 @@ class BaseEndpoint:
                     return self.get(retries - 1, **filters)
                 else:
                     r.raise_for_status()
-        except ConnectionError:
+        except (RequestException, ConnectionError):
             if retries:
+                print("retry")
                 return self.get(retries - 1, **filters)
             else:
                 raise APIError('Could not establish connection to %s' % self.endpoint_url)
@@ -70,7 +72,7 @@ class BaseEndpoint:
         count = 0
         total = None
 
-        while not total or count < total:
+        while total is None or count < total:
             filters['offset'] = offset
             filters['limit'] = 100
             data = self.get(**filters)
@@ -78,6 +80,7 @@ class BaseEndpoint:
             count += data['count']
             total = data['total']
             offset += 100
+            print(total, count)
 
         return results
 
@@ -124,7 +127,7 @@ class ComicsMixin:
 
 
 class CharacterMixin:
-    ENTITY_CODE = "character"
+    ENTITY_CODE = "characters"
     ENTITY_CLASS = marvel_api_wrapper.entities.Character
 
 

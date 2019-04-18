@@ -22,6 +22,13 @@ function addTask(){
   });
 }
 
+const PARSER_LOV = [
+  {name : "", id : ""},
+  {name : "Base parser", id : "BASE"},
+  {name : "Cloud files parser", id : "CLOUD_FILES"},
+  {name : "Marvel API parser", id : "MARVEL_API"}
+];
+
 $(document).ready(function (){
   $('#parser-code').change(function () {
     $('.parser-run-form-group').hide();
@@ -32,4 +39,6 @@ $(document).ready(function (){
     $('.row.schedule-parameters.' + $('#schedule-type').val()).show();
   });
   $('#add-task-btn').click(addTask);
+
+
 });

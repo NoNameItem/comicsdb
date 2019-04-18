@@ -31,6 +31,7 @@ router.register(r'title', views.TitleViewSet)
 router.register(r'issue', views.IssueViewSet)
 router.register(r'parser_run', views.ParserRunViewSet)
 router.register(r'cloud_parser_run_details', views.CloudFilesParserRunDetailViewSet)
+router.register(r'marvel_api_parser_run_details', views.MarvelAPIParserRunDetailViewSet)
 router.register(r'parser_schedule', views.ParserScheduleViewSet)
 
 schema_view = get_schema_view(

@@ -1,4 +1,4 @@
-{{ parser_name }} ended with error.
+{{ parser_name }} ended with critical error.
 
 Error type:    {{ status }}
 Error:         {{ error }}

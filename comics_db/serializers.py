@@ -181,6 +181,7 @@ class ParserRunListSerializer(serializers.HyperlinkedModelSerializer):
         help_text="Status code",
         read_only=True
     )
+
     class Meta:
         model = models.ParserRun
         fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "parser_code", "parser_name", "status_code",
@@ -282,52 +283,20 @@ class CloudFilesParserRunDetailDetailSerializer(serializers.HyperlinkedModelSeri
 
 
 class MarvelAPIParserRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
-    step_name = serializers.CharField(source="file_key")
-
     class Meta:
-        model = models.CloudFilesParserRunDetail
+        model = models.MarvelAPIParserRunDetail
         fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
-                  "created", "step_name")
+                  "step_name", "entity_type", "action", "entity_type_name", "action_name")
         read_only_fields = fields
-        extra_kwargs = {
-            'id': {'help_text': "Unique identifier"},
-            settings.REST_FRAMEWORK['URL_FIELD_NAME']: {'help_text': "Link to detail API endpoint"},
-            'status': {'help_text': "Status code"},
-            'status_name': {'help_text': "Status display name"},
-            'start': {'help_text': "Parser step start date and time"},
-            'end': {'help_text': "Parser step end date and time"},
-            'error': {'help_text': "Error message"},
-            'created': {'help_text': "Was record created as result of parser run"}
-        }
 
 
-class CloudFilesParserRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
-    issue_name = serializers.CharField(
-        read_only=True,
-        help_text="Name of issue matching file key "
-    )
-
+class MarvelAPIParserRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = models.CloudFilesParserRunDetail
-        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "file_key",
-                  "regex", "groups", "issue", "created", "error", "error_detail", "issue_name")
+        model = models.MarvelAPIParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end",
+                  "entity_type", "entity_id", "data", "error", "error_detail", "action", "entity_type_name",
+                  "action_name")
         read_only_fields = fields
-        extra_kwargs = {
-            'id': {'help_text': "Unique identifier"},
-            settings.REST_FRAMEWORK['URL_FIELD_NAME']: {'help_text': "Link to detail API endpoint"},
-            'status': {'help_text': "Status code"},
-            'status_name': {'help_text': "Status display name"},
-            'start': {'help_text': "Parser step start date and time"},
-            'end': {'help_text': "Parser step end date and time"},
-            'file_key': {'help_text': "File key in DO cloud"},
-            'regex': {'help_text': "Regex, used for parse"},
-            'groups': {'help_text': "Parsed groups"},
-            'issue': {'help_text': "Issue matching file key"},
-            'error': {'help_text': "Error message"},
-            'error_detail': {'help_text': "Error detail"},
-            'created': {'help_text': "Was issue created as result of parser run"}
-        }
-
 
 
 # App Token

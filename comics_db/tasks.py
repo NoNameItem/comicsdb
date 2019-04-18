@@ -1,10 +1,11 @@
 from celery import shared_task
 
-from comics_db.parsers import CloudFilesParser
+from comics_db.parsers import CloudFilesParser, MarvelAPIParser
 from comicsdb.celery import logger
 
 parsers = {
-    'CLOUD_FILES': CloudFilesParser
+    'CLOUD_FILES': CloudFilesParser,
+    'MARVEL_API': MarvelAPIParser
 }
 
 

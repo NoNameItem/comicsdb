@@ -19,6 +19,9 @@ class MarvelAPIData:
     def to_dict(self):
         return {}
 
+    def __repr__(self):
+        return str(self)
+
 
 class MarvelAPIJSONEncoder(json.JSONEncoder):
     def default(self, z):
@@ -170,69 +173,17 @@ class ComicsPrice(MarvelAPIData):
         }
 
 
-class ResourceList(MarvelAPIData):
-    __slots__ = ['_available', '_collection_uri', '_entities', '_entities_endpoint']
-
-    # noinspection PyPep8Naming
-    def __init__(self, endpoint_class, available, collectionURI, **kwargs):
-        self._collection_uri = collectionURI
-        self._available = available
-        f = EndpointFabric.get_instance()
-        self._entities_endpoint = f.get_endpoint(endpoint_class, endpoint_url=self._collection_uri)
-        if available == 0:
-            self._entities = []
-        else:
-            self._entities = None
-
-    def to_dict(self):
-        return {
-            'available': self._available,
-            'collectionURI': self._collection_uri
-        }
-
-    @property
-    def entities(self):
-        if self._entities is None:
-            self._entities = self._entities_endpoint.get_all()
-        return self._entities
-
-    @property
-    def collection_uri(self):
-        return self._collection_uri
-
-    @property
-    def available(self):
-        return self._available
-
-
-class NotSupportedResourceList(MarvelAPIData):
-
-    def __bool__(self):
-        return False
-
-    @property
-    def entities(self):
-        raise ActionNotSupportedError
-
-    @property
-    def collection_uri(self):
-        raise ActionNotSupportedError
-
-    @property
-    def available(self):
-        raise ActionNotSupportedError
-
-
 # Summary Entities
 
 
 class BaseSummary(MarvelAPIData):
-    __slots__ = ['_name', '_resource_uri', '_id', '_entity', '_entity_endpoint']
+    __slots__ = ['_name', '_resource_uri', '_id', '_role' '_entity', '_entity_endpoint']
 
     # noinspection PyPep8Naming
-    def __init__(self, name, resourceURI, **kwargs):
+    def __init__(self, name, resourceURI, role=None, **kwargs):
         self._name = name
         self._resource_uri = resourceURI
+        self._role = role
         self._id = int(re.search(r"\d+$", resourceURI)[0])
         self._entity = None
         f = EndpointFabric.get_instance()
@@ -258,6 +209,10 @@ class BaseSummary(MarvelAPIData):
         return self._name
 
     @property
+    def role(self):
+        return self._role
+
+    @property
     def resource_uri(self) -> str:
         return self._resource_uri
 
@@ -268,7 +223,7 @@ class BaseSummary(MarvelAPIData):
         return self._entity
 
     def __str__(self):
-        return "[{0.__class__}] {0.name}".format(self)
+        return "[{0.__class__.__name__}] {0.name}".format(self)
 
 
 class SeriesSummary(BaseSummary):
@@ -291,6 +246,109 @@ class EventSummary(BaseSummary):
         from marvel_api_wrapper.endpoints import EventDetailEndpoint
         return EventDetailEndpoint
 
+
+class CreatorSummary(BaseSummary):
+    @staticmethod
+    def get_endpoint_class():
+        from marvel_api_wrapper.endpoints import CreatorDetailEndpoint
+        return CreatorDetailEndpoint
+
+
+class CharacterSummary(BaseSummary):
+    @staticmethod
+    def get_endpoint_class():
+        from marvel_api_wrapper.endpoints import CharacterDetailEndpoint
+        return CharacterDetailEndpoint
+
+
+# Resource Lists
+
+
+class ResourceList(MarvelAPIData):
+    __slots__ = ['_available', '_collection_uri', '_items', '_entities', '_entities_endpoint']
+    SUMMARY_CLASS = BaseSummary
+
+    # noinspection PyPep8Naming
+    def __init__(self, endpoint_class, available, collectionURI, items, **kwargs):
+        self._collection_uri = collectionURI
+        self._available = available
+        f = EndpointFabric.get_instance()
+        self._entities_endpoint = f.get_endpoint(endpoint_class, endpoint_url=self._collection_uri)
+        if available == 0:
+            self._entities = []
+            self._items = []
+        else:
+            self._entities = None
+            self._items = []
+            for i in items:
+                self._items.append(self.SUMMARY_CLASS(**i))
+
+    def to_dict(self):
+        return {
+            'available': self._available,
+            'collectionURI': self._collection_uri
+        }
+
+    @property
+    def items(self):
+        return self._items
+
+    @property
+    def entities(self):
+        if self._entities is None:
+            self._entities = self._entities_endpoint.get_all()
+        return self._entities
+
+    @property
+    def collection_uri(self):
+        return self._collection_uri
+
+    @property
+    def available(self):
+        return self._available
+
+    def __str__(self):
+        return "[ResourceList] available: {0._available}; collectionURI: {0._collection_uri}".format(self)
+
+
+class ComicResourceList(ResourceList):
+    SUMMARY_CLASS = ComicSummary
+
+
+class SeriesResourceList(ResourceList):
+    SUMMARY_CLASS = SeriesSummary
+
+
+class EventResourceList(ResourceList):
+    SUMMARY_CLASS = EventSummary
+
+
+class CreatorResourceList(ResourceList):
+    SUMMARY_CLASS = CreatorSummary
+
+
+class CharacterResourceList(ResourceList):
+    SUMMARY_CLASS = CharacterSummary
+
+
+class NotSupportedResourceList(MarvelAPIData):
+
+    def __bool__(self):
+        return False
+
+    @property
+    def entities(self):
+        raise ActionNotSupportedError
+
+    @property
+    def collection_uri(self):
+        raise ActionNotSupportedError
+
+    @property
+    def available(self):
+        raise ActionNotSupportedError
+
+
 # Full Entities
 
 
@@ -303,7 +361,7 @@ class BaseEntity(MarvelAPIData):
                  thumbnail: Image = None, **kwargs):
         self._id = id
         self._modified = modified
-        self._resource_uri = resourceURI
+        self._resource_uri = resourceURI or ""
         self._urls = urls
         self._thumbnail = thumbnail
 
@@ -311,31 +369,31 @@ class BaseEntity(MarvelAPIData):
 
         comics = kwargs.get('comics')
         if comics:
-            self._comics = ResourceList(endpoints.ComicsListEndpoint, **comics)
+            self._comics = ComicResourceList(endpoints.ComicsListEndpoint, **comics)
         else:
             self._comics = NotSupportedResourceList()
 
         events = kwargs.get('events')
         if events:
-            self._events = ResourceList(endpoints.EventsListEndpoint, **events)
+            self._events = EventResourceList(endpoints.EventsListEndpoint, **events)
         else:
             self._events = NotSupportedResourceList()
 
         series = kwargs.get('series')
         if series:
-            self._series = ResourceList(endpoints.SeriesListEndpoint, **series)
+            self._series = SeriesResourceList(endpoints.SeriesListEndpoint, **series)
         else:
             self._series = NotSupportedResourceList()
 
         creators = kwargs.get('creators')
         if creators:
-            self._creators = ResourceList(endpoints.CreatorsListEndpoint, **creators)
+            self._creators = CreatorResourceList(endpoints.CreatorsListEndpoint, **creators)
         else:
             self._creators = NotSupportedResourceList()
 
         characters = kwargs.get('characters')
         if characters:
-            self._characters = ResourceList(endpoints.CharactersListEndpoint, **characters)
+            self._characters = CharacterResourceList(endpoints.CharactersListEndpoint, **characters)
         else:
             self._characters = NotSupportedResourceList()
 
@@ -460,16 +518,16 @@ class Comic(BaseEntity):
                  **kwargs):
         super(Comic, self).__init__(id, resourceURI, modified, urls, thumbnail, **kwargs)
         self._digital_id = digitalId
-        self._title = title
+        self._title = title or ""
         self._issue_number = issueNumber
-        self._variant_descriptor = variantDescriptor
-        self._description = description
-        self._isbn = isbn
-        self._upc = upc
-        self._diamond_code = diamondCode
-        self._ean = ean
-        self._issn = issn
-        self._format = format
+        self._variant_descriptor = variantDescriptor or ""
+        self._description = description or ""
+        self._isbn = isbn or ""
+        self._upc = upc or ""
+        self._diamond_code = diamondCode or ""
+        self._ean = ean or ""
+        self._issn = issn or ""
+        self._format = format or ""
         self._page_count = pageCount
         self._text_objects = textObjects
         self._series = series
@@ -547,7 +605,7 @@ class Comic(BaseEntity):
         return res
 
     def __str__(self):
-        return "[{0.__class__] id: {0._id}; title: {0._title}".format(self)
+        return "[Comics] id: {0._id}; title: {0._title}".format(self)
 
     @property
     def digital_id(self) -> int:
@@ -645,11 +703,11 @@ class Character(BaseEntity):
                  description: str = None,
                  **kwargs):
         super().__init__(id, resourceURI, modified, urls, thumbnail, **kwargs)
-        self._name = name
-        self._description = description
+        self._name = name or ""
+        self._description = description or ""
 
     def __str__(self):
-        return "[{0.__class__] id: {0._id}; name: {0._name}".format(self)
+        return "[Character] id: {0._id}; name: {0._name}".format(self)
 
     def to_dict(self):
         super_d = super(Character, self).to_dict()
@@ -688,14 +746,14 @@ class Creator(BaseEntity):
                  fullName: str = None,
                  **kwargs):
         super().__init__(id, resourceURI, modified, urls, thumbnail, **kwargs)
-        self._first_name = firstName
-        self._middle_name = middleName
-        self._last_name = lastName
-        self._suffix = suffix
-        self._full_name = fullName
+        self._first_name = firstName or ""
+        self._middle_name = middleName or ""
+        self._last_name = lastName or ""
+        self._suffix = suffix or ""
+        self._full_name = fullName or ""
 
     def __str__(self):
-        return "[{0.__class__] id: {0._id}; full name: {0._full_name}".format(self)
+        return "[Creator] id: {0._id}; full name: {0._full_name}".format(self)
 
     def to_dict(self):
         super_d = super(Creator, self).to_dict()
@@ -750,15 +808,15 @@ class Event(BaseEntity):
                  previous: EventSummary = None,
                  **kwargs):
         super().__init__(id, resourceURI, modified, urls, thumbnail, **kwargs)
-        self._title = title
-        self._description = description
+        self._title = title or ""
+        self._description = description or ""
         self._start = start
         self._end = end
         self._next = next
         self._previous = previous
 
     def __str__(self):
-        return "[{0.__class__] id: {0._id}; title: {0._title}".format(self)
+        return "[Event] id: {0._id}; title: {0._title}".format(self)
 
     def to_dict(self):
         super_d = super(Event, self).to_dict()
@@ -822,7 +880,7 @@ class Event(BaseEntity):
 
 
 class Series(BaseEntity):
-    __slots__ = ['_title', '_description', '_start_year', '_end_year', '_rating', '_next', '_previous']
+    __slots__ = ['_title', '_description', '_start_year', '_end_year', '_rating', '_next', '_previous', '_type']
 
     # noinspection PyPep8Naming,PyShadowingBuiltins
     def __init__(self,
@@ -833,6 +891,7 @@ class Series(BaseEntity):
                  thumbnail: Image = None,
 
                  title: str = None,
+                 type: str = None,
                  description: str = None,
                  startYear: int = None,
                  endYear: int = None,
@@ -841,22 +900,24 @@ class Series(BaseEntity):
                  previous: EventSummary = None,
                  **kwargs):
         super().__init__(id, resourceURI, modified, urls, thumbnail, **kwargs)
-        self._rating = rating
-        self._title = title
-        self._description = description
+        self._rating = rating or ""
+        self._title = title or ""
+        self._type = type or ""
+        self._description = description or ""
         self._start_year = startYear
         self._end_year = endYear
         self._next = next
         self._previous = previous
 
     def __str__(self):
-        return "[{0.__class__] id: {0._id}; title: {0._title}".format(self)
+        return "[Series] id: {0._id}; title: {0._title}".format(self)
 
     def to_dict(self):
         super_d = super(Series, self).to_dict()
         d = {
             'rating': self._title,
             'title': self._title,
+            'type': self._type,
             'description': self._description,
             'startYear': self._start_year,
             'endYear': self._end_year,
@@ -884,6 +945,10 @@ class Series(BaseEntity):
     @property
     def title(self):
         return self._title
+
+    @property
+    def type(self):
+        return self._type
 
     @property
     def description(self):
