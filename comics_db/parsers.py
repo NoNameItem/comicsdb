@@ -578,7 +578,7 @@ class MarvelAPIParser(BaseParser):
         return len(self._data)
 
     def _process_comics(self, data: entities.Comic):
-        comics, _ = MarvelAPIComics.objects.get(id=data.id)
+        comics, _ = MarvelAPIComics.objects.get_or_create(id=data.id)
         comics.title = data.title
         comics.issue_number = data.issue_number
         comics.description = data.description
