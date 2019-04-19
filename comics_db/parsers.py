@@ -600,7 +600,7 @@ class MarvelAPIParser(BaseParser):
             u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type, url=url.url, comics=comics)
             u.save()
 
-        # Events
+        # Eventsbejeo1b7btp4sv4z
         if data.events.available == len(data.events.items):
             for event in data.events.items:
                 event_record = self._events_dict.get(event.id) or \
