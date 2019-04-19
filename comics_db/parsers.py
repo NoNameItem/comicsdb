@@ -578,17 +578,16 @@ class MarvelAPIParser(BaseParser):
         return len(self._data)
 
     def _process_comics(self, data: entities.Comic):
-        comics, _ = MarvelAPIComics.objects.get_or_create(id=data.id)
+        # Series
+        series = self._series_dict[data.series.id] or MarvelAPISeries.objects.get(id=data.series.id)
+
+        comics, _ = MarvelAPIComics.objects.get_or_create(id=data.id, defaults={'series': series})
         comics.title = data.title
         comics.issue_number = data.issue_number
         comics.description = data.description
         comics.modified = data.modified
         comics.page_count = data.page_count
         comics.resource_URI = data.resource_uri
-
-        # Series
-        series = self._series_dict[data.series.id] or MarvelAPISeries.objects.get(id=data.series.id)
-        comics.series = series
 
         # Thumbnail
         thumbnail, _ = MarvelAPIImage.objects.get_or_create(path=data.thumbnail.path,
@@ -600,7 +599,7 @@ class MarvelAPIParser(BaseParser):
             u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type, url=url.url, comics=comics)
             u.save()
 
-        # Eventsbejeo1b7btp4sv4z
+        # Events
         if data.events.available == len(data.events.items):
             for event in data.events.items:
                 event_record = self._events_dict.get(event.id) or \
@@ -699,6 +698,8 @@ class MarvelAPIParser(BaseParser):
             u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type, url=url.url, event=event)
             u.save()
 
+        self._events_dict[data.id] = event
+
     def _process_series(self, data: entities.Series):
         series, _ = MarvelAPISeries.objects.get_or_create(id=data.id)
         series.title = data.title
@@ -719,6 +720,8 @@ class MarvelAPIParser(BaseParser):
         for url in data.urls:
             u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type, url=url.url, series=series)
             u.save()
+
+        self._series_dict[data.id] = series
 
     def _process(self) -> bool:
         run_detail = None
