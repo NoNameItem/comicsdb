@@ -578,7 +578,7 @@ class MarvelAPIParser(BaseParser):
         return len(self._data)
 
     def _process_comics(self, data: entities.Comic):
-        comics, _ = MarvelAPIComics.objects.get(id=data.id)
+        comics, _ = MarvelAPIComics.objects.get_or_create(id=data.id)
         comics.title = data.title
         comics.issue_number = data.issue_number
         comics.description = data.description
@@ -600,7 +600,7 @@ class MarvelAPIParser(BaseParser):
             u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type, url=url.url, comics=comics)
             u.save()
 
-        # Events
+        # Eventsbejeo1b7btp4sv4z
         if data.events.available == len(data.events.items):
             for event in data.events.items:
                 event_record = self._events_dict.get(event.id) or \
