@@ -223,6 +223,7 @@ class BaseParser:
             self._parser_run.save()
             self._prepare()
             self._parser_run.items_count = self._items_count
+            self._parser_run.status = 'RUNNING'
             self._parser_run.save()
 
             # Starting processing
