@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -541,10 +542,12 @@ class ReadIssue(View, LoginRequiredMixin):
         try:
             issue = models.Issue.objects.get(slug=slug)
             profile = request.user.profile
-            r = models.ReadIssue(profile=profile, issue=issue)
-            r.save()
+            issue.readers.add(profile)
+            # r = models.ReadIssue(profile=profile, issue=issue)
+            # r.save()
             return JsonResponse({'status': "success", 'issue_name': issue.name,
-                                 'date': formats.localize(r.read_date, use_l10n=True)})
+                                 'date': formats.localize(datetime.date.today(), use_l10n=True)
+                                 })
         except IntegrityError:
             return JsonResponse({'status': 'error', 'message': 'You already marked this issue as read'})
         except Exception as err:
