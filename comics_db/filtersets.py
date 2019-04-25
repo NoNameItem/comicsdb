@@ -305,6 +305,11 @@ class MarvelAPIParserRunDetailFilter(filters.FilterSet):
                   "Possible choices are:\n{0}".format("\n".join(map(lambda x: "* `%s` - %s" % x, ENTITY_TYPE_CHOICES)))
 
     )
+    entity_id = filters.NumberFilter(
+        field_name="entity_id",
+        label="Entity_id",
+        help_text="`entity_id` equals"
+    )
     error = filters.CharFilter(
         field_name="error",
         lookup_expr="icontains",

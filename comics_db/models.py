@@ -25,8 +25,8 @@ class ParserRun(models.Model):
     )
 
     STATUS_CHOICES = (
-        ("RUNNING", "Running"),
         ("COLLECTING", "Collecting data"),
+        ("RUNNING", "Running"),
         ("SUCCESS", "Successfully ended"),
         ("ENDED_WITH_ERRORS", "Ended with errors"),
         ("API_THROTTLE", "API rate limit has been surpassed."),
@@ -534,7 +534,7 @@ class MarvelAPIEvent(models.Model):
     end = models.DateField(null=True, help_text='The date of publication of the last issue in this event.')
     characters = models.ManyToManyField(MarvelAPICharacter, related_name='events',
                                         help_text='Characters which appear in this event.')
-    creators = models.ManyToManyField(MarvelAPIEventCreator, related_name='events',
+    creators = models.ManyToManyField(MarvelAPICreator, through=MarvelAPIEventCreator, related_name='events',
                                       help_text='Creators whose work appears in this event.')
 
 
@@ -559,7 +559,7 @@ class MarvelAPISeries(models.Model):
                                     help_text='Events which take place in comics in this series.')
     characters = models.ManyToManyField(MarvelAPICharacter, related_name='series',
                                         help_text='Characters which appear in comics in this series.')
-    creators = models.ManyToManyField(MarvelAPISeriesCreator, related_name='series',
+    creators = models.ManyToManyField(MarvelAPICreator, through=MarvelAPISeriesCreator, related_name='series',
                                       help_text='Creators whose work appears in comics in this series.')
 
 
@@ -579,7 +579,7 @@ class MarvelAPIComics(models.Model):
     modified = models.DateTimeField(null=True, help_text='The date the resource was most recently modified.')
     page_count = models.IntegerField(null=True, help_text='The number of story pages in the comic.')
     resource_URI = models.TextField(blank=True, help_text='The canonical URL identifier for this resource.')
-    creators = models.ManyToManyField(MarvelAPIComicsCreator, related_name='comics',
+    creators = models.ManyToManyField(MarvelAPICreator, through=MarvelAPIComicsCreator, related_name='comics',
                                       help_text='Creators associated with this comic.')
     characters = models.ManyToManyField(MarvelAPICharacter, related_name='comics',
                                         help_text='Characters which appear in this comic.')
@@ -593,6 +593,11 @@ class MarvelAPIDate(models.Model):
     type = models.CharField(max_length=30)
     date = models.DateTimeField()
     comics = models.ForeignKey(MarvelAPIComics, related_name='dates', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = (
+            ('type', 'date', 'comics'),
+        )
 
 
 class MarvelAPISiteUrl(models.Model):

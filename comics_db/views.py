@@ -1247,7 +1247,8 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         'details_cloud': (("status_name", "Status"), ("start", "Start date and time"), ("end", "End date and time"),
                           ("file_key", "File key in DO cloud")),
         'details_marvel_api': (
-            ("status_name", "Status"), ("start", "Start date and time"), ("end", "End date and time"),),
+            ("status_name", "Status"), ("start", "Start date and time"), ("end", "End date and time"),
+            ("action", "Action type"), ("entity_type", "Entity type"), ("entity_id", "Entity ID")),
     }
     ordering_set = {
         'list': ("-start",),
@@ -1318,10 +1319,13 @@ class MarvelAPIParserRunDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet)
     serializer_class = serializers.MarvelAPIParserRunDetailDetailSerializer
 
 
-class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin,
+                            mixins.UpdateModelMixin, GenericViewSet):
     permission_classes = (IsAdminUser,)
     queryset = PeriodicTask.objects.filter(task='comics_db.tasks.parser_run_task')
     serializer_class = serializers.ParserScheduleSerializer
+    filter_backends = (OrderingFilter,)
+    ordering_fields = ("name", "enabled", "last_run_at")
 
     def create(self, request, *args, **kwargs):
         try:
@@ -1367,14 +1371,14 @@ class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, Gene
                     name=name,
                     description=desc
                 )
-            elif schedule_type == 'CRONE':
+            elif schedule_type == 'CRON':
                 minute = request.data['crontab__minute'] or '*'
                 hour = request.data['crontab__hour'] or '*'
                 day_of_week = request.data['crontab__day_of_week'] or '*'
                 day_of_month = request.data['crontab__day_of_month'] or '*'
                 month_of_year = request.data['crontab__month_of_year'] or '*'
 
-                schedule = CrontabSchedule.objects.get_or_create(
+                schedule, _ = CrontabSchedule.objects.get_or_create(
                     minute=minute,
                     hour=hour,
                     day_of_week=day_of_week,

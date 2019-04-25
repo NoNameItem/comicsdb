@@ -17,12 +17,26 @@ const STATUS_LOV = [
   {name : "Error", id : "ERROR"},
 ];
 
+const ACTION_LOV = [
+  {name : "", id : ""},
+  {name : "Getting data from API", id : "GET"},
+  {name : "Processing data", id : "PROCESS"},
+];
+
+const ENTITY_LOV = [
+  {name : "", id : ""},
+  {name : "Comics", id : "COMICS"},
+  {name : "Character", id : "CHARACTER"},
+  {name : "Creator", id : "CREATOR"},
+  {name : "Event", id : "EVENT"},
+  {name : "Series", id : "SERIES"},
+];
+
 const ORDER_MAP = {
   parser_code : "parser",
   status_name : "status",
-  start       : "start",
-  end         : "end"
 };
+
 
 function showStep(obj) {
   console.log(obj);
@@ -42,7 +56,7 @@ function showStep(obj) {
         $("#modal-start").val(moment(response.start).format("DD.MM.YYYY hh:mm:ss.SSS"));
         $("#modal-end").val(moment(response.end).format("DD.MM.YYYY hh:mm:ss.SSS"));
 
-        if (response.status === 'ERROR'){
+        if (response.status === 'ERROR') {
           $('#modal-error-block').show();
           $('#modal-error').text(response.error);
           $('#modal-error-detail').text(response.error_detail);
@@ -74,9 +88,9 @@ let controller = {
     let d = $.Deferred();
     let f = {};
     if (filter.sortParams) {
-
       f.ordering = filter.sortParams.map(function (filter) {
-        return filter.o === "asc" ? ORDER_MAP[filter.f] : "-" + ORDER_MAP[filter.f];
+        let name = ORDER_MAP[filter.f] || filter.f;
+        return filter.o === "asc" ? name : "-" + name;
       }).join(",");
     }
     if (filter.pageIndex) {
@@ -86,10 +100,12 @@ let controller = {
     if (filter.start) {
       f.start_date = filter.start;
     }
-    f.file_key = filter.step_name;
     f.status = filter.status_name;
-    f.created = filter.created
+    f.created = filter.created;
     f.error = filter.error;
+    f.action = filter.action;
+    f.entity_type = filter.entity_type;
+    f.entity_id = filter.entity_id;
     $.ajax({
       type : "GET",
       url  : details_url,
@@ -129,11 +145,33 @@ $(document).ready(function () {
         }
       },
       {
-        name  : "step_name",
-        type  : "text",
-        title : "Step",
-        width : 400,
-        align : "left"
+        name       : "action",
+        title      : "Action",
+        type       : "select",
+        items      : ACTION_LOV,
+        valueField : "id",
+        textField  : "name",
+        align      : "left",
+        width      : 200
+
+      },
+      {
+        name  : "entity_type",
+        title : "Entity",
+        type       : "select",
+        items      : ENTITY_LOV,
+        valueField : "id",
+        textField  : "name",
+        align      : "left",
+        width      : 100
+
+      },
+      {
+        name  : "entity_id",
+        title : "Entity ID",
+        type  : "number",
+        align : "left",
+
       },
       {
         name         : "status_name",

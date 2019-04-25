@@ -286,7 +286,7 @@ class MarvelAPIParserRunDetailListSerializer(serializers.HyperlinkedModelSeriali
     class Meta:
         model = models.MarvelAPIParserRunDetail
         fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
-                  "step_name", "entity_type", "action", "entity_type_name", "action_name")
+                  "step_name", "entity_type", "action", "entity_type_name", "action_name", "entity_id")
         read_only_fields = fields
 
 
@@ -349,7 +349,7 @@ class ParserScheduleSerializer(serializers.ModelSerializer):
 
     def get_schedule_type(self, obj):
         if obj.crontab:
-            return 'Crone tab'
+            return 'Crontab'
         else:
             return 'Interval'
 
