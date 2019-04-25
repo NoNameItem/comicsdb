@@ -75,21 +75,39 @@ class ParserRun(models.Model):
     @property
     def success_count(self):
         if self.details is not None:
-            return self.details.filter(status='SUCCESS').count()
+            if self.parser == 'MARVEL_API':
+                if self.status == 'COLLECTING':
+                    return self.details.filter(status='SUCCESS').count()
+                else:
+                    return self.details.filter(status='SUCCESS', action='PROCESS').count()
+            else:
+                return self.details.filter(status='SUCCESS').count()
         else:
             return 0
 
     @property
     def error_count(self):
         if self.details is not None:
-            return self.details.filter(status='ERROR').count()
+            if self.parser == 'MARVEL_API':
+                if self.status == 'COLLECTING':
+                    return self.details.filter(status='ERROR').count()
+                else:
+                    return self.details.filter(status='ERROR', action='PROCESS').count()
+            else:
+                return self.details.filter(status='ERROR').count()
         else:
             return 0
 
     @property
     def processed(self):
         if self.details is not None:
-            return self.details.exclude(status='RUNNING').count()
+            if self.parser == 'MARVEL_API':
+                if self.status == 'COLLECTING':
+                    return self.details.exclude(status='RUNNING').count()
+                else:
+                    return self.details.exclude(status='RUNNING').filter(action='PROCESS').count()
+            else:
+                return self.details.exclude(status='RUNNING').count()
         else:
             return 0
 
