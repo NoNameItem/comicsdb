@@ -72,14 +72,13 @@ class BaseEndpoint:
         count = 0
         total = None
 
-        while total is None or count < total:
+        while total is None or offset < total:
             filters['offset'] = offset
             filters['limit'] = 100
             data = self.get(**filters)
             results += data['results']
-            count += data['count']
             total = data['total']
-            offset += 100
+            offset += data['count']
             print(total, count)
 
         return results

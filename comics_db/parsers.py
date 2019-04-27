@@ -844,6 +844,10 @@ class MarvelAPIParser(BaseParser):
                 if run_detail:
                     run_detail.end_with_error("Invalid data", err.args[0])
                 has_errors = True
+            except APIRateLimitError:
+                if run_detail:
+                    run_detail.end_with_error("API Rate limit")
+                raise RuntimeParserError("API Rate Limit exceeded")
             except Error as err:
                 if run_detail:
                     run_detail.end_with_error("Database error while processing {0}".format(i[0].lower()), err)
