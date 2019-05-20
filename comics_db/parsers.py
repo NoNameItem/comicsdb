@@ -272,7 +272,7 @@ class CloudFilesParser(BaseParser):
                         r"(?P<year>\d+?)/"
                         r"(?P<title_type>.+?)/"
                         r"(?:(?P<title>.+?)\/)?"
-                        r"(?P<issue_name>[^#]+?(?:#(?P<number>-?[.0-9]+))?[^#]*)\.(?:cbr|cbt|cbz)$",
+                        r"(?P<issue_name>[^#]+?(?:#(?P<number>-?[0-9]+))?[^#]*)\.(?:cbr|cbt|cbz)$",
                         re.IGNORECASE)
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
