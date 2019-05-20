@@ -402,7 +402,7 @@ class CloudFilesParser(BaseParser):
 
                         # Getting number
                         try:
-                            number = int(info['number'])
+                            number = int(float(info['number']))
                         except ValueError:
                             number = 0
                         except TypeError:
