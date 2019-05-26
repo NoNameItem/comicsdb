@@ -18,6 +18,10 @@
   {% endifchanged %}
   <div class="col-4k-2 col-fhd-3 col-xl-4 col-md-6 col-12 {% if issue.read %}read{% endif %}" id="issue-{{ issue.id }}">
     <div class="card card-with-cover card-link">
+    <a class="btn btn-sm btn-secondary card-btn-bottom-right" data-toggle="tooltip"
+         data-placement="bottom" title="Download" href="{{ issue.download_link }}">
+        <i class="fal fa-download white"></i>
+      </a>
       {% if edit %}
         <button type="button" class="btn btn-sm btn-danger card-btn-top-right" data-toggle="tooltip"
                 data-placement="bottom" title="Delete from reading list" onclick="delete_from_list({{ issue.id }})">

@@ -40,6 +40,20 @@
   background-color: rgba(0,0,0,.6)
 }
 
+.card-btn-top-right {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
+}
+
+.card-btn-bottom-right {
+  position: absolute;
+  top: 170px;
+  right: 5px;
+  z-index: 10;
+}
+
 .read {
   opacity: 0.4;
 }

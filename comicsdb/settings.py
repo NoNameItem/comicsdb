@@ -147,7 +147,8 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 
-STATICFILES_STORAGE = custom_settings.STATICFILES_STORAGE
+# STATICFILES_STORAGE = custom_settings.STATICFILES_STORAGE
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
 # django-s3-storage static settings
 
