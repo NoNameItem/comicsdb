@@ -11,8 +11,7 @@
       </a>
       <a class='default-link' href='{% url "site-issue-detail" issue.slug %}'></a>
       <div class="card-img-top img-fluid bg-cover height-200"
-           style="background: url('
-               {% if issue.main_cover %}{{ issue.main_cover.thumb_url }}{% else %}{% static "images/defaults/default_issue_cover_small.png" %}{% endif %}') 50%"></div>
+           style="background: url('{% if issue.main_cover %}{{ issue.main_cover.thumb_url }}{% else %}{% static "images/defaults/default_issue_cover_small.png" %}{% endif %}') 50%"></div>
       <div class="card-profile-image">
         <img src="{% if issue.title.publisher.logo %}
                   {{ issue.title.publisher.logo.thumb_url }}
