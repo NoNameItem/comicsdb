@@ -597,6 +597,11 @@ class ReadingListListView(ListView, LoginRequiredMixin):
             .annotate(read_total_ratio=Case(When(total=0, then=0),
                                             default=F('read') * 100 / F('total')))
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['sorting_choices'] = models.ReadingList.SORTING_CHOICES
+        return context
+
     def post(self, request):
         form = forms.ReadingListForm(request.POST)
         self.object_list = self.get_queryset()
