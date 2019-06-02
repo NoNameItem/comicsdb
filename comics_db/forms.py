@@ -43,5 +43,5 @@ class IssueForm(forms.ModelForm):
 class ReadingListForm(forms.ModelForm):
     class Meta:
         model = models.ReadingList
-        fields = ["name", "desc", "owner"]
+        fields = ["name", "desc", "owner", "sorting"]
 

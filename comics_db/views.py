@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -30,7 +31,6 @@ from el_pagination.views import AjaxListView
 
 from comics_db import models, serializers, filtersets, tasks, forms
 
-
 ########################################################################################################################
 # Site
 ########################################################################################################################
@@ -39,6 +39,7 @@ from comics_db import models, serializers, filtersets, tasks, forms
 ########################################################################################################################
 # Main Page
 ########################################################################################################################
+from comics_db.models import ReadingListIssue
 
 
 class MainPageView(TemplateView):
@@ -441,7 +442,13 @@ class AddTitleToReadingList(View, LoginRequiredMixin):
                 issues = issues.filter(number__gte=number_from)
             if number_to:
                 issues = issues.filter(number__lte=number_to)
-            reading_list.issues.add(*issues)
+            issues.order_by('number')
+            order = ReadingListIssue.objects.filter(reading_list=reading_list).aggregate(max_order=Max('order'))[
+                        'max_order'] \
+                    or 0
+            for issue in issues:
+                order += 1
+                reading_list.issues.add(issue, through_defaults={'order': order})
             reading_list.save()
             return JsonResponse({'status': "success", 'issue_count': issues.count(),
                                  'list_name': reading_list.name})
@@ -541,10 +548,12 @@ class ReadIssue(View, LoginRequiredMixin):
         try:
             issue = models.Issue.objects.get(slug=slug)
             profile = request.user.profile
-            r = models.ReadIssue(profile=profile, issue=issue)
-            r.save()
+            issue.readers.add(profile)
+            # r = models.ReadIssue(profile=profile, issue=issue)
+            # r.save()
             return JsonResponse({'status': "success", 'issue_name': issue.name,
-                                 'date': formats.localize(r.read_date, use_l10n=True)})
+                                 'date': formats.localize(datetime.date.today(), use_l10n=True)
+                                 })
         except IntegrityError:
             return JsonResponse({'status': 'error', 'message': 'You already marked this issue as read'})
         except Exception as err:
@@ -557,7 +566,10 @@ class AddToReadingList(View, LoginRequiredMixin):
         try:
             issue = models.Issue.objects.get(slug=slug)
             reading_list = self.request.user.profile.reading_lists.get(pk=request.POST.get('list_id'))
-            reading_list.issues.add(issue)
+            order = ReadingListIssue.objects.filter(reading_list=reading_list).aggregate(max_order=Max('order'))[
+                        'max_order'] \
+                    or 0
+            reading_list.issues.add(issue, through_defaults={'order': order + 1})
             reading_list.save()
             return JsonResponse({'status': "success", 'issue_name': issue.name,
                                  'list_name': reading_list.name})
@@ -601,25 +613,42 @@ class ReadingListDetailView(AjaxListView):
     context_object_name = "issues"
     page_template = "comics_db/profile/issue_list_block.html"
 
-    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
-                     'title__publisher__name__icontains', 'title__universe__name__icontains')
+    search_fields = (
+    'issue__name__icontains', 'issue__title__name__icontains', 'issue__title__title_type__name__icontains',
+    'issue__title__publisher__name__icontains', 'issue__title__universe__name__icontains')
 
     def get_queryset(self):
+        # Get all reading list
         self.reading_list = models.ReadingList.objects.all()
 
+        # Join read stats
         if self.request.user.is_authenticated:
             self.reading_list = self.reading_list.annotate(total=Count('issues', distinct=True)) \
                 .annotate(read=Count('issues', distinct=True, filter=Q(issues__readers=self.request.user.profile))) \
                 .annotate(read_total_ratio=Case(When(total=0, then=0),
                                                 default=F('read') * 100 / F('total')))
 
+        # Get current reading list
         self.reading_list = self.reading_list.get(slug=self.kwargs['slug'])
 
-        queryset = self.reading_list.issues.select_related("title__publisher", "title__universe",
-                                                           "title__title_type")
+        # Get all issues in reading list and join publisher, universe and title
+        # queryset = self.reading_list.issues.select_related("title__publisher", "title__universe",
+        #                                                    "title__title_type")
+
+        queryset = ReadingListIssue.objects.filter(
+            reading_list=self.reading_list).select_related(
+            "issue",
+            "issue__title",
+            "issue__title__publisher",
+            "issue__title__universe",
+            "issue__title__title_type")
+
+        # Get read status if user is authenticated
         if self.request.user.is_authenticated:
-            queryset = queryset.annotate(read=Count('readers', distinct=True,
-                                                    filter=Q(readers=self.request.user.profile)))
+            queryset = queryset.annotate(read=Count('issue__readers', distinct=True,
+                                                    filter=Q(issue__readers=self.request.user.profile)))
+
+        # Filter and hide read
         try:
             search = self.request.GET.get('search', None)
             hide_read = self.request.GET.get('hide-read')
@@ -628,11 +657,19 @@ class ReadingListDetailView(AjaxListView):
             if search:
                 q = Q()
                 for field in self.search_fields:
-                    q = q | Q(**{field: search})
-                return queryset.filter(q)
-            return queryset
+                    q |= Q(**{field: search})
+                queryset = queryset.filter(q)
+            queryset = queryset
         except KeyError:
-            return queryset
+            queryset = queryset
+
+        # Ordering
+        if self.reading_list.sorting == 'MANUAL':
+            queryset = queryset.order_by('order')
+        else:
+            queryset = queryset.order_by('issue__title', 'issue__number')
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -640,6 +677,7 @@ class ReadingListDetailView(AjaxListView):
         context['hide_read'] = self.request.GET.get('hide-read')
         context['reading_list'] = self.reading_list
         context['edit'] = self.request.user.is_authenticated and self.reading_list.owner == self.request.user.profile
+        context['sorting_choices'] = models.ReadingList.SORTING_CHOICES
         return context
 
     def post(self, request, slug):
@@ -665,11 +703,40 @@ class DeleteReadingList(View, LoginRequiredMixin):
         return JsonResponse({'status': 'success'})
 
 
+class ChangeReadingOrder(View, LoginRequiredMixin):
+    def post(self, request, slug):
+        if not request.user.is_authenticated:
+            raise PermissionError
+        try:
+            reading_list = self.request.user.profile.reading_lists.get(slug=slug)
+            old_pos = self.request.POST['oldPos']
+            new_pos = self.request.POST['newPos']
+            issue_id = self.request.POST['issueID']
+
+            if old_pos < new_pos:
+                ReadingListIssue.objects.filter(reading_list=reading_list, order__gt=old_pos, order__lte=new_pos) \
+                    .update(order=F('order') - 1)
+            else:
+                ReadingListIssue.objects.filter(reading_list=reading_list, order__gte=new_pos, order__lt=old_pos) \
+                    .update(order=F('order') + 1)
+
+            rl_issue = ReadingListIssue.objects.get(reading_list=reading_list, issue_id=issue_id)
+            rl_issue.order = new_pos
+            rl_issue.save()
+
+            return JsonResponse({'status': 'success'})
+        except KeyError:
+            return JsonResponse({'status': "error", 'message': "Can't get new order."})
+
+
 class DeleteFromReadingList(View, LoginRequiredMixin):
     def post(self, request, slug):
         try:
             reading_list = request.user.profile.reading_lists.get(slug=slug)
             issue = reading_list.issues.get(pk=request.POST.get('issue_id'))
+            rl_issue = ReadingListIssue.objects.get(reading_list=reading_list, issue=issue)
+            order = rl_issue.order
+            ReadingListIssue.objects.filter(reading_list=reading_list, order__gt=order).update(order=F("order") - 1)
             reading_list.issues.remove(issue)
             reading_list.save()
             reading_list = request.user.profile.reading_lists.annotate(
@@ -722,12 +789,27 @@ class ReadingListIssueDetailView(DetailView):
         context['reading_list'] = self.reading_list
         context['edit'] = self.request.user.is_authenticated and self.reading_list.owner == self.request.user.profile
 
-        issues = list(self.reading_list.issues.all())
-        current_number = issues.index(issue)
-        if current_number > 0:
-            context['previous_issue'] = issues[current_number - 1]
-        if current_number < len(issues) - 1:
-            context['next_issue'] = issues[current_number + 1]
+        if self.reading_list.sorting == "MANUAL":
+            rl_issue = ReadingListIssue.objects.get(reading_list=self.reading_list, issue=issue)
+            try:
+                context['previous_issue'] = ReadingListIssue.objects.get(reading_list=self.reading_list,
+                                                                         order=rl_issue.order - 1).issue
+            except ReadingListIssue.DoesNotExist:
+                context['previous_issue'] = None
+
+            try:
+                context['next_issue'] = ReadingListIssue.objects.get(reading_list=self.reading_list,
+                                                                     order=rl_issue.order + 1).issue
+            except ReadingListIssue.DoesNotExist:
+                context['next_issue'] = None
+
+        else:
+            issues = list(self.reading_list.issues.all())
+            current_number = issues.index(issue)
+            if current_number > 0:
+                context['previous_issue'] = issues[current_number - 1]
+            if current_number < len(issues) - 1:
+                context['next_issue'] = issues[current_number + 1]
 
         return context
 
@@ -1244,7 +1326,8 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         'details_cloud': (("status_name", "Status"), ("start", "Start date and time"), ("end", "End date and time"),
                           ("file_key", "File key in DO cloud")),
         'details_marvel_api': (
-            ("status_name", "Status"), ("start", "Start date and time"), ("end", "End date and time"),),
+            ("status_name", "Status"), ("start", "Start date and time"), ("end", "End date and time"),
+            ("action", "Action type"), ("entity_type", "Entity type"), ("entity_id", "Entity ID")),
     }
     ordering_set = {
         'list': ("-start",),
@@ -1315,10 +1398,13 @@ class MarvelAPIParserRunDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet)
     serializer_class = serializers.MarvelAPIParserRunDetailDetailSerializer
 
 
-class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin,
+                            mixins.UpdateModelMixin, GenericViewSet):
     permission_classes = (IsAdminUser,)
     queryset = PeriodicTask.objects.filter(task='comics_db.tasks.parser_run_task')
     serializer_class = serializers.ParserScheduleSerializer
+    filter_backends = (OrderingFilter,)
+    ordering_fields = ("name", "enabled", "last_run_at")
 
     def create(self, request, *args, **kwargs):
         try:
@@ -1364,14 +1450,14 @@ class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, Gene
                     name=name,
                     description=desc
                 )
-            elif schedule_type == 'CRONE':
+            elif schedule_type == 'CRON':
                 minute = request.data['crontab__minute'] or '*'
                 hour = request.data['crontab__hour'] or '*'
                 day_of_week = request.data['crontab__day_of_week'] or '*'
                 day_of_month = request.data['crontab__day_of_month'] or '*'
                 month_of_year = request.data['crontab__month_of_year'] or '*'
 
-                schedule = CrontabSchedule.objects.get_or_create(
+                schedule, _ = CrontabSchedule.objects.get_or_create(
                     minute=minute,
                     hour=hour,
                     day_of_week=day_of_week,

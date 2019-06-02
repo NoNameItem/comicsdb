@@ -6,7 +6,9 @@ import inspect
 import json
 import re
 import tempfile
+import traceback
 from typing import NoReturn
+from urllib.parse import urlparse
 
 import boto3
 import botocore
@@ -23,7 +25,7 @@ from requests import HTTPError, RequestException
 from comics_db import models as comics_models
 from comics_db.models import ParserRun, ParserRunDetail, CloudFilesParserRunDetail, MarvelAPIParserRunDetail, \
     MarvelAPIComics, MarvelAPICharacter, MarvelAPICreator, MarvelAPIEvent, MarvelAPISeries, MarvelAPIImage, \
-    MarvelAPISiteUrl
+    MarvelAPISiteUrl, MarvelAPIDate, MarvelAPIComicsCreator
 from comics_db.reader import ComicsReader
 from comicsdb import settings
 from marvel_api_wrapper import endpoints, entities
@@ -223,6 +225,7 @@ class BaseParser:
             self._parser_run.save()
             self._prepare()
             self._parser_run.items_count = self._items_count
+            self._parser_run.status = 'RUNNING'
             self._parser_run.save()
 
             # Starting processing
@@ -251,8 +254,8 @@ class BaseParser:
             return False
         except Exception as err:
             self._parser_run.status = "INVALID_PARSER"
-            self._parser_run.error = "{0} Unhandled error in method run".format(BaseParser)
-            self._parser_run.error_detail = err
+            self._parser_run.error = "{0} Unhandled error in method run".format(self.__class__.__name__)
+            self._parser_run.error_detail = traceback.format_exc()
             self._parser_run.end = timezone.now()
             self._parser_run.save()
             self._notify_staff_error()
@@ -269,7 +272,7 @@ class CloudFilesParser(BaseParser):
                         r"(?P<year>\d+?)/"
                         r"(?P<title_type>.+?)/"
                         r"(?:(?P<title>.+?)\/)?"
-                        r"(?P<issue_name>[^#]+?(?:#(?P<number>-?[.0-9]+))?[^#]*)\.(?:cbr|cbt|cbz)$",
+                        r"(?P<issue_name>[^#]+?(?:#(?P<number>-?[0-9]+))?[^#]*)\.(?:cbr|cbt|cbz)$",
                         re.IGNORECASE)
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
@@ -399,7 +402,7 @@ class CloudFilesParser(BaseParser):
 
                         # Getting number
                         try:
-                            number = int(info['number'])
+                            number = int(float(info['number']))
                         except ValueError:
                             number = 0
                         except TypeError:
@@ -478,8 +481,11 @@ class CloudFilesParser(BaseParser):
                 for t in comics_models.Title.objects.filter(image=''):
                     i = t.issues.exclude(main_cover='').order_by('number').first()
                     if i:
-                        t.image.save(i.main_cover.name, i.main_cover.file)
-                        t.save()
+                        try:
+                            t.image.save(i.main_cover.name, i.main_cover.file)
+                            t.save()
+                        except Exception:
+                            pass
         except Error as err:
             raise RuntimeParserError("Error while performing postprocessing", err.args[0])
 
@@ -561,11 +567,11 @@ class MarvelAPIParser(BaseParser):
 
     def _prepare(self) -> NoReturn:
         self._dump_api('COMICS', self._comics_endpoint, self._comics, formatType='comic', noVariants='true',
-                       orderBy='modified')
-        self._dump_api('CHARACTER', self._characters_endpoint, self._characters, orderBy='modified')
-        self._dump_api('CREATOR', self._creators_endpoint, self._creators, orderBy='modified')
-        self._dump_api('EVENT', self._events_endpoint, self._events, orderBy='modified')
-        self._dump_api('SERIES', self._series_endpoint, self._series, orderBy='modified')
+                       orderBy='modified,title')
+        self._dump_api('CHARACTER', self._characters_endpoint, self._characters, orderBy='modified,name')
+        self._dump_api('CREATOR', self._creators_endpoint, self._creators, orderBy='modified,firstName,lastName')
+        self._dump_api('EVENT', self._events_endpoint, self._events, orderBy='modified,name')
+        self._dump_api('SERIES', self._series_endpoint, self._series, orderBy='modified,title')
 
         self._data = [('CREATOR', x) for x in self._creators]
         self._data += [('CHARACTER', x) for x in self._characters]
@@ -578,63 +584,77 @@ class MarvelAPIParser(BaseParser):
         return len(self._data)
 
     def _process_comics(self, data: entities.Comic):
-        comics, _ = MarvelAPIComics.objects.get(id=data.id)
+        # Series
+        series = self._series_dict.get(data.series.id) or MarvelAPISeries.objects.get(id=data.series.id)
+
+        comics, _ = MarvelAPIComics.objects.get_or_create(id=data.id, defaults={'series': series})
         comics.title = data.title
         comics.issue_number = data.issue_number
         comics.description = data.description
         comics.modified = data.modified
         comics.page_count = data.page_count
         comics.resource_URI = data.resource_uri
-
-        # Series
-        series = self._series_dict[data.series.id] or MarvelAPISeries.objects.get(id=data.series.id)
-        comics.series = series
+        comics.save()
 
         # Thumbnail
-        thumbnail, _ = MarvelAPIImage.objects.get_or_create(path=data.thumbnail.path,
-                                                            extension=data.thumbnail.extension, comics=comics)
-        thumbnail.save()
+        if "image_not_available" not in data.thumbnail.path:
+            thumbnail, _ = MarvelAPIImage.objects.get_or_create(comics=comics,
+                                                                defaults={
+                                                                    'path': data.thumbnail.path,
+                                                                    'extension': data.thumbnail.extension
+                                                                })
+            thumbnail.path = data.thumbnail.path
+            thumbnail.extension = data.thumbnail.extension
+            thumbnail.save()
 
         # Urls
         for url in data.urls:
-            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type, url=url.url, comics=comics)
+            o = urlparse(url.url)
+            url_text = "{0}://{1}{2}".format(*o[:3])
+            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type,
+                                                          comics=comics,
+                                                          defaults={
+                                                              'url': url_text
+                                                          })
+            u.url = url_text
             u.save()
 
+        # Dates
+        for date in data.dates:
+            d, _ = MarvelAPIDate.objects.get_or_create(type=date.type, comics=comics, defaults={'date': date.date})
+            d.date = date.date
+            d.save()
+
         # Events
-        if data.events.available == len(data.events.items):
-            for event in data.events.items:
-                event_record = self._events_dict.get(event.id) or \
-                               MarvelAPIEvent.objects.get(id=event.id)
-                comics.events.add(event_record)
-        else:
+        for event in data.events.items:
+            event_record = self._events_dict.get(event.id) or MarvelAPIEvent.objects.get(id=event.id)
+            comics.events.add(event_record)
+        if data.events.available != len(data.events.items):
             for event in data.events.entities:
-                event_record = self._events_dict.get(event.id) or \
-                               MarvelAPIEvent.objects.get(id=event.id)
+                event_record = self._events_dict.get(event.id) or MarvelAPIEvent.objects.get(id=event.id)
                 comics.events.add(event_record)
 
         # Characters
-        if data.characters.available == len(data.characters.items):
-            for character in data.characters.items:
-                character_record = self._characters_dict.get(character.id) or \
-                                   MarvelAPICharacter.objects.get(id=character.id)
-                comics.characters.add(character_record)
-        else:
+        for character in data.characters.items:
+            character_record = self._characters_dict.get(character.id) or \
+                               MarvelAPICharacter.objects.get(id=character.id)
+            comics.characters.add(character_record)
+        if data.characters.available != len(data.characters.items):
             for character in data.characters.entities:
                 character_record = self._characters_dict.get(character.id) or \
                                    MarvelAPICharacter.objects.get(id=character.id)
                 comics.characters.add(character_record)
 
         # Creators
-        if data.creators.available == len(data.creators.items):
-            for creator in data.creators.items:
-                creator_record = self._creators_dict.get(creator.id) or \
-                                 MarvelAPICreator.objects.get(id=creator.id)
-                comics.creators.add(creator_record, through_defaults={'role': creator.role})
-        else:
+        for creator in data.creators.items:
+            creator_record = self._creators_dict.get(creator.id) or \
+                             MarvelAPICreator.objects.get(id=creator.id)
+            comics.creators.add(creator_record, through_defaults={'role': creator.role})
+        if data.creators.available != len(data.creators.items):
             for creator in data.creators.entities:
                 creator_record = self._creators_dict.get(creator.id) or \
                                  MarvelAPICreator.objects.get(id=creator.id)
-                comics.creators.add(creator_record, through_defaults={'role': creator.role})
+                comics.creators.add(creator_record, through_defaults={'role': 'unknown'})
 
     def _process_creator(self, data: entities.Creator):
         creator, created = MarvelAPICreator.objects.get_or_create(id=data.id)
@@ -648,13 +668,26 @@ class MarvelAPIParser(BaseParser):
         creator.save()
 
         # Thumbnail
-        thumbnail, _ = MarvelAPIImage.objects.get_or_create(path=data.thumbnail.path,
-                                                            extension=data.thumbnail.extension, creator=creator)
-        thumbnail.save()
+        if "image_not_available" not in data.thumbnail.path:
+            thumbnail, _ = MarvelAPIImage.objects.get_or_create(creator=creator,
+                                                                defaults={
+                                                                    'path': data.thumbnail.path,
+                                                                    'extension': data.thumbnail.extension
+                                                                })
+            thumbnail.path = data.thumbnail.path
+            thumbnail.extension = data.thumbnail.extension
+            thumbnail.save()
 
         # Urls
         for url in data.urls:
-            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type, url=url.url, creator=creator)
+            o = urlparse(url.url)
+            url_text = "{0}://{1}{2}".format(*o[:3])
+            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type,
+                                                          creator=creator,
+                                                          defaults={
+                                                              'url': url_text
+                                                          })
+            u.url = url_text
             u.save()
 
         self._creators_dict[data.id] = creator
@@ -668,13 +701,26 @@ class MarvelAPIParser(BaseParser):
         character.save()
 
         # Thumbnail
-        thumbnail, _ = MarvelAPIImage.objects.get_or_create(path=data.thumbnail.path,
-                                                            extension=data.thumbnail.extension, character=character)
-        thumbnail.save()
+        if "image_not_available" not in data.thumbnail.path:
+            thumbnail, _ = MarvelAPIImage.objects.get_or_create(character=character,
+                                                                defaults={
+                                                                    'path': data.thumbnail.path,
+                                                                    'extension': data.thumbnail.extension
+                                                                })
+            thumbnail.path = data.thumbnail.path
+            thumbnail.extension = data.thumbnail.extension
+            thumbnail.save()
 
         # Urls
         for url in data.urls:
-            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type, url=url.url, character=character)
+            o = urlparse(url.url)
+            url_text = "{0}://{1}{2}".format(*o[:3])
+            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type,
+                                                          character=character,
+                                                          defaults={
+                                                              'url': url_text
+                                                          })
+            u.url = url_text
             u.save()
 
         self._characters_dict[data.id] = character
@@ -690,14 +736,29 @@ class MarvelAPIParser(BaseParser):
         event.save()
 
         # Thumbnail
-        thumbnail, _ = MarvelAPIImage.objects.get_or_create(path=data.thumbnail.path,
-                                                            extension=data.thumbnail.extension, event=event)
-        thumbnail.save()
+        if "image_not_available" not in data.thumbnail.path:
+            thumbnail, _ = MarvelAPIImage.objects.get_or_create(event=event,
+                                                                defaults={
+                                                                    'path': data.thumbnail.path,
+                                                                    'extension': data.thumbnail.extension
+                                                                })
+            thumbnail.path = data.thumbnail.path
+            thumbnail.extension = data.thumbnail.extension
+            thumbnail.save()
 
         # Urls
         for url in data.urls:
-            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type, url=url.url, event=event)
+            o = urlparse(url.url)
+            url_text = "{0}://{1}{2}".format(*o[:3])
+            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type,
+                                                          event=event,
+                                                          defaults={
+                                                              'url': url_text
+                                                          })
+            u.url = url_text
             u.save()
+
+        self._events_dict[data.id] = event
 
     def _process_series(self, data: entities.Series):
         series, _ = MarvelAPISeries.objects.get_or_create(id=data.id)
@@ -711,14 +772,29 @@ class MarvelAPIParser(BaseParser):
         series.save()
 
         # Thumbnail
-        thumbnail, _ = MarvelAPIImage.objects.get_or_create(path=data.thumbnail.path,
-                                                            extension=data.thumbnail.extension, series=series)
-        thumbnail.save()
+        if "image_not_available" not in data.thumbnail.path:
+            thumbnail, _ = MarvelAPIImage.objects.get_or_create(series=series,
+                                                                defaults={
+                                                                    'path': data.thumbnail.path,
+                                                                    'extension': data.thumbnail.extension
+                                                                })
+            thumbnail.path = data.thumbnail.path
+            thumbnail.extension = data.thumbnail.extension
+            thumbnail.save()
 
         # Urls
         for url in data.urls:
-            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type, url=url.url, series=series)
+            o = urlparse(url.url)
+            url_text = "{0}://{1}{2}".format(*o[:3])
+            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type,
+                                                          series=series,
+                                                          defaults={
+                                                              'url': url_text
+                                                          })
+            u.url = url_text
             u.save()
+
+        self._series_dict[data.id] = series
 
     def _process(self) -> bool:
         run_detail = None
@@ -726,8 +802,9 @@ class MarvelAPIParser(BaseParser):
         for i in self._data:
             try:
                 run_detail = self.RUN_DETAIL_MODEL(action='PROCESS', entity_type=i[0], entity_id=i[1].id,
-                                               data=json.dumps(i[1], indent=2, cls=MarvelAPIJSONEncoder),
-                                               parser_run=self._parser_run)
+                                                   data=json.dumps(i[1], indent=2, cls=MarvelAPIJSONEncoder),
+                                                   parser_run=self._parser_run)
+                run_detail.save()
                 if i[0] == 'COMICS':
                     self._process_comics(i[1])
                 elif i[0] == 'CHARACTER':
@@ -767,8 +844,44 @@ class MarvelAPIParser(BaseParser):
                 if run_detail:
                     run_detail.end_with_error("Invalid data", err.args[0])
                 has_errors = True
+            except APIRateLimitError:
+                if run_detail:
+                    run_detail.end_with_error("API Rate limit")
+                raise RuntimeParserError("API Rate Limit exceeded")
             except Error as err:
                 if run_detail:
                     run_detail.end_with_error("Database error while processing {0}".format(i[0].lower()), err)
                 has_errors = True
         return not has_errors
+
+    def _series_link(self) -> NoReturn:
+        for series in MarvelAPISeries.objects.all():
+            comics = series.comics.all()
+
+            creators = MarvelAPIComicsCreator.objects.filter(comics_fk__in=comics).distinct('creator', 'role')
+            for creator in creators:
+                series.creators.add(creator.creator, through_defaults={'role': creator.role})
+
+            events = MarvelAPIEvent.objects.filter(comics__in=comics).distinct()
+            for event in events:
+                series.events.add(event)
+
+            characters = MarvelAPICharacter.objects.filter(comics__in=comics).distinct()
+            for character in characters:
+                series.characters.add(character)
+
+    def _events_link(self) -> NoReturn:
+        for event in MarvelAPIEvent.objects.all():
+            comics = event.comics.all()
+
+            creators = MarvelAPIComicsCreator.objects.filter(comics_fk__in=comics).distinct('creator', 'role')
+            for creator in creators:
+                event.creators.add(creator.creator, through_defaults={'role': creator.role})
+
+            characters = MarvelAPICharacter.objects.filter(comics__in=comics).distinct()
+            for character in characters:
+                event.characters.add(character)
+
+    def _postprocessing(self) -> NoReturn:
+        self._series_link()
+        self._events_link()

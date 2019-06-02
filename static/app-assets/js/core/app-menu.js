@@ -764,13 +764,13 @@
         $this.addClass('hover');
       }).on('mouseleave.app.menu', 'li', function() {
         // $(this).removeClass('hover');
-      }).on('active.app.menu', 'li', function(e) {
+      }).on('kit.active.app.menu', 'li', function(e) {
         $(this).addClass('active');
         e.stopPropagation();
-      }).on('deactive.app.menu', 'li.active', function(e) {
+      }).on('kit.deactive.app.menu', 'li.active', function(e) {
         $(this).removeClass('active');
         e.stopPropagation();
-      }).on('open.app.menu', 'li', function(e) {
+      }).on('kit.open.app.menu', 'li', function(e) {
 
         var $listItem = $(this);
         $listItem.addClass('open');
@@ -788,7 +788,7 @@
         }
 
         e.stopPropagation();
-      }).on('close.app.menu', 'li.open', function(e) {
+      }).on('kit.close.app.menu', 'li.open', function(e) {
         var $listItem = $(this);
 
         $listItem.removeClass('open');
@@ -807,14 +807,14 @@
           else{
             if ($listItem.has('ul')) {
               if ($listItem.is('.open')) {
-                $listItem.trigger('close.app.menu');
+                $listItem.trigger('kit.close.app.menu');
               } else {
-                $listItem.trigger('open.app.menu');
+                $listItem.trigger('kit.open.app.menu');
               }
             } else {
               if (!$listItem.is('.active')) {
-                $listItem.siblings('.active').trigger('deactive.app.menu');
-                $listItem.trigger('active.app.menu');
+                $listItem.siblings('.active').trigger('kit.deactive.app.menu');
+                $listItem.trigger('kit.active.app.menu');
               }
             }
           }

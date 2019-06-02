@@ -25,8 +25,8 @@ class ParserRun(models.Model):
     )
 
     STATUS_CHOICES = (
-        ("RUNNING", "Running"),
         ("COLLECTING", "Collecting data"),
+        ("RUNNING", "Running"),
         ("SUCCESS", "Successfully ended"),
         ("ENDED_WITH_ERRORS", "Ended with errors"),
         ("API_THROTTLE", "API rate limit has been surpassed."),
@@ -75,21 +75,39 @@ class ParserRun(models.Model):
     @property
     def success_count(self):
         if self.details is not None:
-            return self.details.filter(status='SUCCESS').count()
+            if self.parser == 'MARVEL_API':
+                if self.status == 'COLLECTING':
+                    return self.details.filter(status='SUCCESS').count()
+                else:
+                    return self.details.filter(status='SUCCESS', action='PROCESS').count()
+            else:
+                return self.details.filter(status='SUCCESS').count()
         else:
             return 0
 
     @property
     def error_count(self):
         if self.details is not None:
-            return self.details.filter(status='ERROR').count()
+            if self.parser == 'MARVEL_API':
+                if self.status == 'COLLECTING':
+                    return self.details.filter(status='ERROR').count()
+                else:
+                    return self.details.filter(status='ERROR', action='PROCESS').count()
+            else:
+                return self.details.filter(status='ERROR').count()
         else:
             return 0
 
     @property
     def processed(self):
         if self.details is not None:
-            return self.details.exclude(status='RUNNING').count()
+            if self.parser == 'MARVEL_API':
+                if self.status == 'COLLECTING':
+                    return self.details.exclude(status='RUNNING').count()
+                else:
+                    return self.details.exclude(status='RUNNING').filter(action='PROCESS').count()
+            else:
+                return self.details.exclude(status='RUNNING').count()
         else:
             return 0
 
@@ -534,7 +552,7 @@ class MarvelAPIEvent(models.Model):
     end = models.DateField(null=True, help_text='The date of publication of the last issue in this event.')
     characters = models.ManyToManyField(MarvelAPICharacter, related_name='events',
                                         help_text='Characters which appear in this event.')
-    creators = models.ManyToManyField(MarvelAPIEventCreator, related_name='events',
+    creators = models.ManyToManyField(MarvelAPICreator, through=MarvelAPIEventCreator, related_name='events',
                                       help_text='Creators whose work appears in this event.')
 
 
@@ -559,7 +577,7 @@ class MarvelAPISeries(models.Model):
                                     help_text='Events which take place in comics in this series.')
     characters = models.ManyToManyField(MarvelAPICharacter, related_name='series',
                                         help_text='Characters which appear in comics in this series.')
-    creators = models.ManyToManyField(MarvelAPISeriesCreator, related_name='series',
+    creators = models.ManyToManyField(MarvelAPICreator, through=MarvelAPISeriesCreator, related_name='series',
                                       help_text='Creators whose work appears in comics in this series.')
 
 
@@ -579,7 +597,7 @@ class MarvelAPIComics(models.Model):
     modified = models.DateTimeField(null=True, help_text='The date the resource was most recently modified.')
     page_count = models.IntegerField(null=True, help_text='The number of story pages in the comic.')
     resource_URI = models.TextField(blank=True, help_text='The canonical URL identifier for this resource.')
-    creators = models.ManyToManyField(MarvelAPIComicsCreator, related_name='comics',
+    creators = models.ManyToManyField(MarvelAPICreator, through=MarvelAPIComicsCreator, related_name='comics',
                                       help_text='Creators associated with this comic.')
     characters = models.ManyToManyField(MarvelAPICharacter, related_name='comics',
                                         help_text='Characters which appear in this comic.')
@@ -593,6 +611,11 @@ class MarvelAPIDate(models.Model):
     type = models.CharField(max_length=30)
     date = models.DateTimeField()
     comics = models.ForeignKey(MarvelAPIComics, related_name='dates', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = (
+            ('type', 'date', 'comics'),
+        )
 
 
 class MarvelAPISiteUrl(models.Model):
@@ -630,12 +653,30 @@ class ReadIssue(models.Model):
         unique_together = (("profile", "issue"), )
 
 
+class ReadingListIssue(models.Model):
+    reading_list = models.ForeignKey('ReadingList', on_delete=models.CASCADE, db_column="readinglist_id")
+    issue = models.ForeignKey(Issue, on_delete=models.CASCADE, db_column="issue_id")
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = "comics_db_readinglist_issues"
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super(ReadingListIssue, self).save(force_insert, force_update, using, update_fields)
+
+
 class ReadingList(models.Model):
+    SORTING_CHOICES = (
+        ('DEFAULT', 'Order by title and issue number'),
+        ('MANUAL', 'Manual ordering')
+    )
     owner = models.ForeignKey('Profile', on_delete=models.CASCADE, related_name='reading_lists')
     name = models.CharField(max_length=100)
     desc = models.TextField(blank=True)
-    issues = models.ManyToManyField(Issue, related_name='reading_lists')
+    issues = models.ManyToManyField(Issue, related_name='reading_lists', through=ReadingListIssue)
     slug = models.SlugField(allow_unicode=True, max_length=500, unique=True)
+    sorting = models.CharField(max_length=20, choices=SORTING_CHOICES, default="DEFAULT")
 
     @property
     def site_link(self):

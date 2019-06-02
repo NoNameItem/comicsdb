@@ -41,6 +41,7 @@ class BaseEndpoint:
     def get(self, retries=9, **filters) -> dict:
         params = filters
         params.update(self._get_auth_params())
+        print(filters)
         try:
             r = requests.get(self.endpoint_url, params=params, timeout=None)
             data = r.json()
@@ -69,18 +70,16 @@ class BaseEndpoint:
     def get_all(self, **filters):
         results = []
         offset = 0
-        count = 0
         total = None
 
-        while total is None or count < total:
+        while total is None or offset < total:
             filters['offset'] = offset
             filters['limit'] = 100
             data = self.get(**filters)
             results += data['results']
-            count += data['count']
             total = data['total']
-            offset += 100
-            print(total, count)
+            offset += data['count']
+            print(total, offset)
 
         return results
 

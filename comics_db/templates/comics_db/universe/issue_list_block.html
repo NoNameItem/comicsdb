@@ -18,6 +18,10 @@
   {% endifchanged %}
   <div class="col-4k-2 col-fhd-3 col-xl-4 col-md-6 col-12 {% if issue.read %}read{% endif %}">
     <div class="card card-with-cover card-link">
+    <a class="btn btn-sm btn-secondary card-btn-bottom-right" data-toggle="tooltip"
+         data-placement="bottom" title="Download" href="{{ issue.download_link }}">
+        <i class="fal fa-download white"></i>
+      </a>
       <a class='default-link' href='{% url "site-issue-detail" issue.slug %}'></a>
       <div class="card-img-top img-fluid bg-cover height-200"
            style="background: url('{% if issue.main_cover %}{{ issue.main_cover.thumb_url }}{% else %}{% static "images/defaults/default_issue_cover_small.png" %}{% endif %}') 50%"></div>

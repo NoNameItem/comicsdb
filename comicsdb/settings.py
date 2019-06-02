@@ -147,14 +147,15 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 
-STATICFILES_STORAGE = custom_settings.STATICFILES_STORAGE
+# STATICFILES_STORAGE = custom_settings.STATICFILES_STORAGE
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
 # django-s3-storage static settings
 
-AWS_S3_ENDPOINT_URL_STATIC = custom_settings.DO_ENDPOINT_URL
-AWS_S3_BUCKET_NAME_STATIC = custom_settings.DO_STORAGE_BUCKET_NAME
+AWS_S3_ENDPOINT_URL_STATIC = custom_settings.DO_ENDPOINT_URL_STATIC
+AWS_S3_BUCKET_NAME_STATIC = custom_settings.DO_STORAGE_BUCKET_NAME_STATIC
 AWS_S3_KEY_PREFIX_STATIC = "static"
-AWS_S3_PUBLIC_URL_STATIC = custom_settings.DO_PUBLIC_URL + '/static/'
+AWS_S3_PUBLIC_URL_STATIC = custom_settings.DO_PUBLIC_URL_STATIC + '/static/'
 AWS_S3_FILE_OVERWRITE_STATIC = True
 
 # Media settings
@@ -167,9 +168,9 @@ MEDIA_URL = custom_settings.MEDIA_URL
 # django-s3-storage file storage settings
 
 AWS_S3_ENDPOINT_URL = custom_settings.DO_ENDPOINT_URL
-AWS_S3_BUCKET_NAME = custom_settings.DO_STORAGE_BUCKET_NAME
+AWS_S3_BUCKET_NAME = custom_settings.DO_STORAGE_BUCKET_NAME_MEDIA
 AWS_S3_KEY_PREFIX = "media"
-AWS_S3_PUBLIC_URL = custom_settings.DO_PUBLIC_URL + '/media/'
+AWS_S3_PUBLIC_URL = custom_settings.DO_PUBLIC_URL_MEDIA + '/media/'
 AWS_S3_FILE_OVERWRITE = False
 AWS_S3_BUCKET_AUTH = False
 
