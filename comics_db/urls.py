@@ -81,6 +81,7 @@ urlpatterns = [
     path('reading-lists', views.ReadingListListView.as_view(), name="site-user-reading-lists"),
     path('reading-list/<str:slug>/', views.ReadingListDetailView.as_view(), name="site-user-reading-list"),
     path('reading-list/<str:slug>/delete', views.DeleteReadingList.as_view(), name="site-reading-list-delete"),
+    path('reading-list/<str:slug>/reorder', views.ChangeReadingOrder.as_view(), name="site-reading-list-reorder"),
     path('reading-list/<str:slug>/delete-issue', views.DeleteFromReadingList.as_view(),
          name="site-reading-list-delete-issue"),
     path('reading-list/<str:list_slug>/issue/<str:slug>', views.ReadingListIssueDetailView.as_view(),
