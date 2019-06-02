@@ -653,12 +653,30 @@ class ReadIssue(models.Model):
         unique_together = (("profile", "issue"), )
 
 
+class ReadingListIssue(models.Model):
+    reading_list = models.ForeignKey('ReadingList', on_delete=models.CASCADE, db_column="readinglist_id")
+    issue = models.ForeignKey(Issue, on_delete=models.CASCADE, db_column="issue_id")
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = "comics_db_readinglist_issues"
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super(ReadingListIssue, self).save(force_insert, force_update, using, update_fields)
+
+
 class ReadingList(models.Model):
+    SORTING_CHOICES = (
+        ('DEFAULT', 'Order by title and issue number'),
+        ('MANUAL', 'Manual ordering')
+    )
     owner = models.ForeignKey('Profile', on_delete=models.CASCADE, related_name='reading_lists')
     name = models.CharField(max_length=100)
     desc = models.TextField(blank=True)
-    issues = models.ManyToManyField(Issue, related_name='reading_lists')
+    issues = models.ManyToManyField(Issue, related_name='reading_lists', through=ReadingListIssue)
     slug = models.SlugField(allow_unicode=True, max_length=500, unique=True)
+    sorting = models.CharField(max_length=20, choices=SORTING_CHOICES, default="DEFAULT")
 
     @property
     def site_link(self):

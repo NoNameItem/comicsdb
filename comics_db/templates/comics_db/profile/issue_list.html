@@ -17,6 +17,7 @@
 
 {% block vendor_css %}
   <link rel="stylesheet" href="{% static "app-assets/css/plugins/forms/switch.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/extensions/dragula.min.css" %}">
 {% endblock %}
 
 {% block page_css %}
@@ -29,7 +30,7 @@
   {% endif %}
 
   {% include "comics_db/elements/issue_search_form.html" %}
-  <div class="row">
+  <div class="row" id="draggable-container">
     {% include "comics_db/profile/issue_list_block.html" %}
   </div>
 {% endblock %}
@@ -37,12 +38,14 @@
 {% block vendor_js %}
   <script src="{% static "app-assets/vendors/js/forms/toggle/bootstrap-checkbox.min.js" %}" type="text/javascript"></script>
   <script src="{% static "app-assets/vendors/js/extensions/sweetalert.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/extensions/dragula.min.js" %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block page_js %}
   <script src="{% static "el-pagination/js/el-pagination.js" %}"></script>
   <script src="{% static "comics_db/js/read_list_issues.js" %}"></script>
   <script>
+    let sortMode = "{{ reading_list.sorting }}";
     $.endlessPaginate({
       paginateOnScroll : true,
     });
@@ -75,6 +78,16 @@
                   <p>{{ error }}</p>
                 {% endfor %}
               </div>
+            </div>
+            <div class="form-group">
+              <label for="list-sorting">Sorting type</label>
+              <select class="form-control" name="sorting" id="list-sorting">
+                {% for choice in sorting_choices %}
+                  <option value="{{ choice.0 }}" {% if choice.0 == reading_list.sorting %}selected{% endif %}>
+                  {{ choice.1 }}
+                  </option>
+                {% endfor %}
+              </select>
             </div>
             <fieldset class="form-group">
               <label for="title-description">Description</label>
