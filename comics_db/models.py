@@ -394,7 +394,7 @@ def get_issue_cover_name(instance, filename):
 
 class Issue(models.Model):
     name = models.CharField(max_length=500)
-    number = models.IntegerField(null=True)
+    number = models.FloatField(null=True)
     desc = models.TextField(blank=True)
     publish_date = models.DateField()
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)

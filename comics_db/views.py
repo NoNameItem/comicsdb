@@ -714,9 +714,9 @@ class ChangeReadingOrder(View, LoginRequiredMixin):
             raise PermissionError
         try:
             reading_list = self.request.user.profile.reading_lists.get(slug=slug)
-            old_pos = self.request.POST['oldPos']
-            new_pos = self.request.POST['newPos']
-            issue_id = self.request.POST['issueID']
+            old_pos = int(self.request.POST['oldPos'])
+            new_pos = int(self.request.POST['newPos'])
+            issue_id = int(self.request.POST['issueID'])
 
             if old_pos < new_pos:
                 ReadingListIssue.objects.filter(reading_list=reading_list, order__gt=old_pos, order__lte=new_pos) \
