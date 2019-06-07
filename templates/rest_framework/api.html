@@ -6,6 +6,18 @@
 <html class="loading" lang="en" data-textdirection="ltr">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <!-- Yandex.Metrika counter -->
+  <script type="text/javascript"> (function (m, e, t, r, i, k, a) {
+    m[i] = m[i] || function () {
+      (m[i].a = m[i].a || []).push(arguments)
+    };
+    m[i].l = 1 * new Date();
+    k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+  })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+  ym(53974480, "init", {clickmap : true, trackLinks : true, accurateTrackBounce : true, webvisor : true}); </script>
+  <noscript>
+    <div><img src="https://mc.yandex.ru/watch/53974480" style="position:absolute; left:-9999px;" alt=""/></div>
+  </noscript> <!-- /Yandex.Metrika counter -->
   <meta name="robots" content="NONE,NOARCHIVE"/>
   <title>{% block title %}{% if name %}{{ name }} – {% endif %}ComicsDB API{% endblock %}</title>
   <link rel="icon" href="{% static "images/favicon.png" %}">
@@ -385,7 +397,8 @@
                 <pre class="prettyprint"><span
                     class="meta nocode"><b>HTTP {{ response.status_code }} {{ response.status_text }}</b>
                   {% for key, val in response_headers|items %}
-<b>{{ key }}:</b> <span class="lit">{{ val|break_long_headers|urlize_quoted_links }}</span>{% endfor %}
+                    <b>{{ key }}:</b>
+                    <span class="lit">{{ val|break_long_headers|urlize_quoted_links }}</span>{% endfor %}
 
 </span>{{ content|urlize_quoted_links }}</pre>
                   </div>
