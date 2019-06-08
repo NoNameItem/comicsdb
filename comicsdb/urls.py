@@ -15,9 +15,23 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import render_to_response
 from django.urls import path, include
+from django.contrib.sitemaps import views as sitemap_views
+from django.views.decorators.cache import cache_page
+
+from .sitemaps import sitemaps
+
+
+def robots(request):
+    return render_to_response('robots.txt', content_type="text/plain")
+
 
 urlpatterns = [
-    path('', include("comics_db.urls")),
-    path('accounts/', include('registration.backends.default.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+                  path('', include("comics_db.urls")),
+                  path('robots.txt', robots),
+                  path('sitemap.xml', sitemap_views.index, {'sitemaps': sitemaps}),
+                  path('sitemap-<section>.xml', sitemap_views.sitemap, {'sitemaps': sitemaps},
+                       name='django.contrib.sitemaps.views.sitemap'),
+                  path('accounts/', include('registration.backends.default.urls')),
+              ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

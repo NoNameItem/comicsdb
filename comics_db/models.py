@@ -235,6 +235,10 @@ class Publisher(models.Model):
     desc = models.TextField(blank=True)
     slug = models.SlugField(max_length=500, unique=True, allow_unicode=True)
 
+    # Dates
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
+
     def save(self, *args, **kwargs):
         self.slug = self.get_slug()
         super(Publisher, self).save(*args, **kwargs)
@@ -244,6 +248,9 @@ class Publisher(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("site-publisher-detail", args=(self.slug,))
 
     @property
     def issue_count(self):
@@ -261,6 +268,10 @@ class Creator(models.Model):
 
     # Marvel-specific fields
     marvel_api_id = models.IntegerField(null=True)
+
+    # Dates
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -286,6 +297,10 @@ class Universe(models.Model):
 
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="universes")
 
+    # Dates
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         self.slug = self.get_slug()
@@ -293,6 +308,9 @@ class Universe(models.Model):
 
     def get_slug(self):
         return slugify(str(self), allow_unicode=True)
+
+    def get_absolute_url(self):
+        return reverse("site-universe-detail", args=(self.slug,))
 
     @property
     def logo(self):
@@ -350,6 +368,10 @@ class Title(models.Model):
     marvel_api_id = models.IntegerField(null=True)
     marvel_api_status = models.CharField(default='NEW', choices=MARVEL_API_STATUS_CHOICES, max_length=30)
 
+    # Dates
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         self.slug = self.get_slug()
@@ -375,6 +397,9 @@ class Title(models.Model):
     @property
     def site_link(self):
         return reverse('site-title-detail', args=(self.slug,))
+
+    def get_absolute_url(self):
+        return self.site_link
 
     class Meta:
         unique_together = (("name", "publisher", "universe", "title_type"),
@@ -406,6 +431,7 @@ class Issue(models.Model):
     creators = models.ManyToManyField(Creator, through=IssueCreator, related_name='issues')
     tags = models.ManyToManyField(Tag, related_name="issues")
 
+    # Dates
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
 
@@ -452,6 +478,9 @@ class Issue(models.Model):
     def site_link(self):
         return reverse('site-issue-detail', args=(self.slug, ))
 
+    def get_absolute_url(self):
+        return self.site_link
+
     @property
     def logo(self):
         return self.title.publisher.logo
@@ -473,6 +502,10 @@ class Character(models.Model):
     # Marvel-specific fields
     marvel_api_id = models.IntegerField(null=True)
     marvel_detail_link = models.URLField(max_length=1000, blank=True)
+
+    # Dates
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
 
     def get_slug(self):
         return slugify(str(self), allow_unicode=True)
@@ -499,6 +532,10 @@ class MarvelEvent(models.Model):
     issues = models.ManyToManyField(Issue, related_name='events')
     characters = models.ManyToManyField(Character, related_name='events')
     creators = models.ManyToManyField(Creator, related_name='events')
+
+    # Dates
+    created_dt = models.DateTimeField(auto_now_add=True)
+    modified_dt = models.DateTimeField(auto_now=True)
 
     def get_slug(self):
         return slugify(str(self), allow_unicode=True)

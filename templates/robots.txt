@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /accounts
+Disallow: /api
+Disallow: /parser_log
+Disallow: /parser_schedule
