@@ -6,6 +6,8 @@
 
 {% block page_title %}{% endblock %}
 
+{% block meta_description %}{{ title.name }}{% endblock %}
+
 {% block breadcrumb_items %}
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
   <li class="breadcrumb-item"><a href="{% url "site-title-list" %}">Titles</a></li>
