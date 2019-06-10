@@ -910,7 +910,7 @@ class Series(BaseEntity):
         self._previous = previous
 
     def __str__(self):
-        return "[Series] id: {0._id}; title: {0._title}".format(self)
+        return "{0._title}".format(self)
 
     def to_dict(self):
         super_d = super(Series, self).to_dict()

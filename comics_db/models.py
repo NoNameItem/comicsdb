@@ -426,6 +426,7 @@ class Issue(models.Model):
     main_cover = ThumbnailImageField(null=True, upload_to=get_issue_cover_name, thumb_width=380)
     link = models.URLField(max_length=1000, unique=True)
     page_count = models.IntegerField(null=True)
+    file_size = models.IntegerField(null=True)
 
     title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="issues", db_index=True)
     creators = models.ManyToManyField(Creator, through=IssueCreator, related_name='issues')

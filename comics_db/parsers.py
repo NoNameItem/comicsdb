@@ -297,7 +297,7 @@ class CloudFilesParser(BaseParser):
     def _prepare(self):
         try:
             bucket_comics = self._bucket.objects.filter(Prefix=self._params['path_prefix'])
-            self._data = [x.key for x in bucket_comics if self._FILE_REGEX.search(x.key)]
+            self._data = [(x.key, x.size) for x in bucket_comics if self._FILE_REGEX.search(x.key)]
         except botocore.exceptions.ConnectionError:
             raise RuntimeParserError("Could not establish connection to DO cloud")
         except botocore.exceptions.ClientError as err:
@@ -322,8 +322,9 @@ class CloudFilesParser(BaseParser):
         titles = {}
         try:
             has_errors = False
-            for file_key in self._data:
-
+            for obj in self._data:
+                file_key = obj[0]
+                file_size = obj[1]
                 # Creating run detail log entry
                 run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run,
                                                    file_key=file_key,
@@ -416,8 +417,9 @@ class CloudFilesParser(BaseParser):
                                                                                        'title': title,
                                                                                        'publish_date': publish_date
                                                                                    })
-                        if created:
-                            issue.save()
+
+                        issue.file_size = file_size
+                        issue.save()
 
                         if self._params['full']:  # Saving in set for not deleting
                             self._issues.add(issue.id)
