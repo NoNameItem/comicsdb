@@ -1,10 +1,11 @@
 venv/*
 .idea/*
 __pycache__/*
-*/__pycache__/
+*/__pycache__/*
 db.sqlite3
 comicsdb/custom_settings.py
 ca-certificate.crt
 app-messages/*
 media/*
 static_root/*
+*.pyc
