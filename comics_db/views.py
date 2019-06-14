@@ -1,12 +1,17 @@
 import datetime
 import json
+import math
+import os
+from zipfile import ZIP_DEFLATED
 
+import boto3
+import zipstream
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import IntegrityError
 from django.db.models import Count, Q, Max, Case, When, F, Window
 from django.db.models.functions import RowNumber
-from django.http import Http404, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponseRedirect, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import formats
@@ -28,6 +33,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from knox.settings import CONSTANTS, knox_settings
 from el_pagination.views import AjaxListView
+from smart_open import open as sm_open
 
 from comics_db import models, serializers, filtersets, tasks, forms
 
@@ -40,6 +46,8 @@ from comics_db import models, serializers, filtersets, tasks, forms
 # Main Page
 ########################################################################################################################
 from comics_db.models import ReadingListIssue
+from comics_db.issue_archive import S3FileWrapper, construct_archive
+from comicsdb import settings
 
 
 class MainPageView(TemplateView):
@@ -435,6 +443,7 @@ class AddTitleToReadingList(View, LoginRequiredMixin):
         try:
             title = models.Title.objects.get(slug=slug)
             reading_list = self.request.user.profile.reading_lists.get(pk=request.POST.get('list_id'))
+            added_issues = list(reading_list.issues.filter(title=title))
             issues = title.issues.all()
             number_from = request.POST.get('number_from')
             number_to = request.POST.get('number_to')
@@ -444,13 +453,17 @@ class AddTitleToReadingList(View, LoginRequiredMixin):
                 issues = issues.filter(number__lte=number_to)
             issues.order_by('number')
             order = ReadingListIssue.objects.filter(reading_list=reading_list).aggregate(max_order=Max('order'))[
-                        'max_order'] \
-                    or 0
+                        'max_order'] or 0
+            rl_issues = []
             for issue in issues:
                 order += 1
-                reading_list.issues.add(issue, through_defaults={'order': order})
-            reading_list.save()
-            return JsonResponse({'status': "success", 'issue_count': issues.count(),
+
+                if issue not in added_issues:
+                    rl_issue = ReadingListIssue(reading_list=reading_list, issue=issue, order=order)
+                    rl_issues.append(rl_issue)
+
+            ReadingListIssue.objects.bulk_create(rl_issues)
+            return JsonResponse({'status': "success", 'issue_count': len(rl_issues),
                                  'list_name': reading_list.name})
         except models.Title.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': "Title not found."})
@@ -459,6 +472,21 @@ class AddTitleToReadingList(View, LoginRequiredMixin):
         except Exception as err:
             return JsonResponse({'status': 'error', 'message': 'Unknown error, please contact administrator. \n'
                                                                'Error message: %s' % err.args[0]})
+
+
+class DownloadTitle(View):
+    def get(self, request, slug):
+        title = get_object_or_404(models.Title, slug=slug)
+
+        issues = list(map(lambda x: ("{0}/{1}.{2}".format(title, x, os.path.splitext(x.link)[1]), x.link),
+                          title.issues.all()))
+
+        z = construct_archive(issues)
+
+        response = StreamingHttpResponse(z, content_type="application/zip")
+        response['Content-Disposition'] = "attachment; filename=\"{0}.zip\"".format(title)
+
+        return response
 
 
 ########################################################################################################################
@@ -619,8 +647,8 @@ class ReadingListDetailView(AjaxListView):
     page_template = "comics_db/profile/issue_list_block.html"
 
     search_fields = (
-    'issue__name__icontains', 'issue__title__name__icontains', 'issue__title__title_type__name__icontains',
-    'issue__title__publisher__name__icontains', 'issue__title__universe__name__icontains')
+        'issue__name__icontains', 'issue__title__name__icontains', 'issue__title__title_type__name__icontains',
+        'issue__title__publisher__name__icontains', 'issue__title__universe__name__icontains')
 
     def get_queryset(self):
         # Get all reading list
@@ -828,6 +856,52 @@ class ReadingListIssueDetailView(DetailView):
             return HttpResponseRedirect(reverse('site-reading-list-issue', args=(list_slug, slug)))
         context = self.get_context_data(object=self.object, form=form)
         return self.render_to_response(context)
+
+
+class DownloadReadingList(View):
+    def get(self, request, slug):
+        rl = get_object_or_404(models.ReadingList, slug=slug)
+
+        queryset = ReadingListIssue.objects.filter(reading_list=rl).select_related('issue', 'issue__title')
+
+        if rl.sorting == 'MANUAL':
+            queryset = queryset.order_by('order')
+            num_length = math.ceil(math.log10(queryset.count()))
+
+            issues = [
+                (
+                    "{list_name}/{num} - {issue_name}.{issue_ext}".format(
+                        list_name=rl,
+                        num=str(num).rjust(num_length, '0'),
+                        issue_name=rl_issue.issue,
+                        issue_ext=os.path.splitext(rl_issue.issue.link)[1]
+                    ),
+                    rl_issue.issue.link
+                )
+                for num, rl_issue in enumerate(queryset, 1)
+            ]
+
+        else:
+            issues = [
+                (
+                    "{list_name}/{title}/{issue_name}.{issue_ext}".format(
+                        list_name=rl,
+                        title=rl_issue.issue.title,
+                        issue_name=rl_issue.issue,
+                        issue_ext=os.path.splitext(rl_issue.issue.link)[1]
+                    ),
+                    rl_issue.issue.link
+                )
+                for num, rl_issue in enumerate(queryset)
+            ]
+
+        z = construct_archive(issues)
+
+        response = StreamingHttpResponse(z, content_type="application/zip")
+        response['Content-Disposition'] = "attachment; filename=\"{0}.zip\"".format(rl)
+        # response['Content-Length'] = size
+
+        return response
 
 
 ########################################################################################################################
