@@ -8,3 +8,4 @@ ca-certificate.crt
 app-messages/*
 media/*
 static_root/*
+*.pyc

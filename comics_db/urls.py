@@ -69,6 +69,7 @@ urlpatterns = [
     path('title/<str:slug>/delete', views.DeleteTitle.as_view(), name="site-title-delete"),
     path('title/<str:slug>/move-issues', views.MoveTitleIssues.as_view(), name="site-title-move-issues"),
     path('title/<str:slug>/add-to-list', views.AddTitleToReadingList.as_view(), name="site-title-add-to-list"),
+    path('title/<str:slug>/download', views.DownloadTitle.as_view(), name="site-title-download"),
 
     # Issues
     path('issues', views.IssueListView.as_view(), name="site-issue-list"),
@@ -81,6 +82,7 @@ urlpatterns = [
     path('reading-lists', views.ReadingListListView.as_view(), name="site-user-reading-lists"),
     path('reading-list/<str:slug>/', views.ReadingListDetailView.as_view(), name="site-user-reading-list"),
     path('reading-list/<str:slug>/delete', views.DeleteReadingList.as_view(), name="site-reading-list-delete"),
+    path('reading-list/<str:slug>/download', views.DownloadReadingList.as_view(), name="site-reading-list-download"),
     path('reading-list/<str:slug>/reorder', views.ChangeReadingOrder.as_view(), name="site-reading-list-reorder"),
     path('reading-list/<str:slug>/delete-issue', views.DeleteFromReadingList.as_view(),
          name="site-reading-list-delete-issue"),

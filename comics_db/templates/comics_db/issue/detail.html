@@ -62,7 +62,7 @@
                           class="fal fa-backward"></i></a>
                     {% endif %}{% endblock %}
                     <a role="button" class="btn btn-secondary" href="{{ issue.download_link }}" data-toggle="tooltip"
-                       data-placement="bottom" title="Download issue"><i class="fal fa-download"></i></a>
+                       data-placement="bottom" title="Download issue"><i class="fal fa-download"></i> ({{ issue.file_size|filesizeformat }})</a>
                     {% if user.is_authenticated and reading_lists %}
                       <button type="button" class="btn btn-secondary" data-toggle="tooltip"
                               data-placement="bottom" title="Add to read list"

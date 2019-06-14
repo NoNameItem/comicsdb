@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.aggregates import Sum
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import escape_uri_path
@@ -386,9 +387,13 @@ class Title(models.Model):
 
     def __str__(self):
         if self.universe:
-            return "[{0.publisher.name}, {0.universe.name}, {0.title_type.name}] {0.name}".format(self)
+            return "[{0.publisher.name}; {0.universe.name}; {0.title_type.name}] {0.name}".format(self)
         else:
-            return "[{0.publisher.name}, {0.title_type.name}] {0.name}".format(self)
+            return "[{0.publisher.name}; {0.title_type.name}] {0.name}".format(self)
+
+    @property
+    def file_size(self):
+        return self.issues.aggregate(file_size=Sum('file_size'))['file_size']
 
     @property
     def logo(self):
@@ -715,6 +720,10 @@ class ReadingList(models.Model):
     issues = models.ManyToManyField(Issue, related_name='reading_lists', through=ReadingListIssue)
     slug = models.SlugField(allow_unicode=True, max_length=500, unique=True)
     sorting = models.CharField(max_length=20, choices=SORTING_CHOICES, default="DEFAULT")
+
+    @property
+    def file_size(self):
+        return self.issues.aggregate(file_size=Sum('file_size'))['file_size']
 
     @property
     def site_link(self):
