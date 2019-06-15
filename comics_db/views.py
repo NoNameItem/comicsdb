@@ -478,7 +478,7 @@ class DownloadTitle(View):
     def get(self, request, slug):
         title = get_object_or_404(models.Title, slug=slug)
 
-        issues = list(map(lambda x: ("{0}/{1}.{2}".format(title, x, os.path.splitext(x.link)[1]), x.link),
+        issues = list(map(lambda x: ("{0}/[{0.name}] {1}.{2}".format(title, x.name, os.path.splitext(x.link)[1]), x.link),
                           title.issues.all()))
 
         z = construct_archive(issues)
@@ -870,10 +870,10 @@ class DownloadReadingList(View):
 
             issues = [
                 (
-                    "{list_name}/{num} - {issue_name}.{issue_ext}".format(
+                    "{list_name}/{num} - [{issue.title.name}]{issue.name}.{issue_ext}".format(
                         list_name=rl,
                         num=str(num).rjust(num_length, '0'),
-                        issue_name=rl_issue.issue,
+                        issue=rl_issue.issue,
                         issue_ext=os.path.splitext(rl_issue.issue.link)[1]
                     ),
                     rl_issue.issue.link
@@ -884,10 +884,10 @@ class DownloadReadingList(View):
         else:
             issues = [
                 (
-                    "{list_name}/{title}/{issue_name}.{issue_ext}".format(
+                    "{list_name}/{title}/[{title.name}]{issue_name}.{issue_ext}".format(
                         list_name=rl,
                         title=rl_issue.issue.title,
-                        issue_name=rl_issue.issue,
+                        issue_name=rl_issue.issue.name,
                         issue_ext=os.path.splitext(rl_issue.issue.link)[1]
                     ),
                     rl_issue.issue.link
