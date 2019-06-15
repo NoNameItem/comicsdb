@@ -34,7 +34,7 @@ def construct_archive(issues):
                           aws_secret_access_key=settings.DO_SECRET_ACCESS_KEY)
     bucket = s3.Bucket(settings.DO_STORAGE_BUCKET_NAME)
 
-    z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED)
+    z = zipstream.ZipFile(mode='w', compression=ZIP_DEFLATED, allowZip64=True)
 
     for issue in issues:
         f = S3FileWrapper(bucket, issue[1])
