@@ -5,6 +5,8 @@
 
 {% block page_title %}{% endblock %}
 
+{% block meta_description %}{{ reading_list.description }}{% endblock %}
+
 {% block breadcrumb_items %}
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
   {% if edit %}
