@@ -453,7 +453,7 @@ class Issue(models.Model):
         super(Issue, self).save(force_insert, force_update, using, update_fields)
 
     def get_slug(self):
-        return slugify(self.link.replace('/', '_')[8:-4], allow_unicode=True)
+        return slugify(self.link.replace('/', '_').replace('.', '_')[8:-4], allow_unicode=True)
 
     def __str__(self):
         return "[{0.title.publisher.name}, {0.title.universe.name}, {0.publish_date.year}] {0.name}".format(self)

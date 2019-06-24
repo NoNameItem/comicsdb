@@ -272,7 +272,7 @@ class CloudFilesParser(BaseParser):
                         r"(?P<year>\d+?)/"
                         r"(?P<title_type>.+?)/"
                         r"(?:(?P<title>.+?)\/)?"
-                        r"(?P<issue_name>[^#]+?(?:#(?P<number>-?[0-9]+))?[^#]*)\.(?:cbr|cbt|cbz)$",
+                        r"(?P<issue_name>[^#]+?(?:#(?P<number>-?[0-9.]+))?[^#]*)\.(?:cbr|cbt|cbz)$",
                         re.IGNORECASE)
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
@@ -480,14 +480,15 @@ class CloudFilesParser(BaseParser):
                 comics_models.Universe.objects.exclude(id__in=self._universes).delete()
                 comics_models.Publisher.objects.exclude(id__in=self._publishers).delete()
             if self._params['load_covers']:
-                for t in comics_models.Title.objects.filter(image=''):
-                    i = t.issues.exclude(main_cover='').order_by('number').first()
-                    if i:
-                        try:
-                            t.image.save(i.main_cover.name, i.main_cover.file)
-                            t.save()
-                        except Exception:
-                            pass
+                for t in comics_models.Title.objects.all():
+                    if t.image == '' or t.image is None:
+                        i = t.issues.exclude(main_cover='').order_by('number').first()
+                        if i:
+                            try:
+                                t.image.save(i.main_cover.name, i.main_cover.file)
+                                t.save()
+                            except Exception:
+                                pass
         except Error as err:
             raise RuntimeParserError("Error while performing postprocessing", err.args[0])
 
