@@ -530,8 +530,7 @@ class MarvelAPIParser(BaseParser):
 
     def _dump_api(self, entity_type, endpoint, target, **filters):
         if self._params['incremental']:
-            target_model = self.MODELS[entity_type]
-            max_modified = target_model.objects.aggregate(max_modified=Max('modified'))['max_modified']
+            max_modified = ParserRun.objects.filter(parser="MARVEL_API", status="SUCCESS").aggregate(max_modified=Max('start'))['max_modified']
             filters['modifiedSince'] = max_modified.date().isoformat()
         offset = 0
         # count = 0
