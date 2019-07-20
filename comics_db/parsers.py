@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 import boto3
 import botocore
 import botocore.exceptions
+import requests
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.core.mail import send_mail, EmailMultiAlternatives
@@ -25,7 +26,8 @@ from requests import HTTPError, RequestException
 from comics_db import models as comics_models
 from comics_db.models import ParserRun, ParserRunDetail, CloudFilesParserRunDetail, MarvelAPIParserRunDetail, \
     MarvelAPIComics, MarvelAPICharacter, MarvelAPICreator, MarvelAPIEvent, MarvelAPISeries, MarvelAPIImage, \
-    MarvelAPISiteUrl, MarvelAPIDate, MarvelAPIComicsCreator
+    MarvelAPISiteUrl, MarvelAPIDate, MarvelAPIComicsCreator, MarvelAPICreatorMergeParserRunDetail, \
+    MarvelAPICharacterMergeParserRunDetail, Universe, Publisher
 from comics_db.reader import ComicsReader
 from comicsdb import settings
 from marvel_api_wrapper import endpoints, entities
@@ -888,3 +890,135 @@ class MarvelAPIParser(BaseParser):
     def _postprocessing(self) -> NoReturn:
         self._series_link()
         self._events_link()
+
+
+class MarvelAPICreatorMergeParser(BaseParser):
+    PARSER_CODE = "MARVEL_API_CREATOR_MERGE"
+    PARSER_NAME = "Marvel API creator merge"
+    RUN_DETAIL_MODEL = MarvelAPICreatorMergeParserRunDetail
+
+    def __init__(self):
+        super().__init__()
+        self._api_creators = None
+
+    def _prepare(self) -> NoReturn:
+        self._api_creators = MarvelAPICreator.objects.all()
+
+    @property
+    def _items_count(self) -> int:
+        return len(self._api_creators)
+
+    def _process(self) -> bool:
+        run_detail = None
+        has_errors = False
+        for api_creator in self._api_creators:
+            run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, api_creator=api_creator)
+            run_detail.save()
+            # Finding db creator
+            try:
+                if api_creator.creator:
+                    db_creator = api_creator.creator
+                    db_creator.name = api_creator.full_name
+
+                else:
+                    db_creator, created = comics_models.Creator.objects.get_or_create(name=api_creator.full_name)
+                    if created:
+                        run_detail.created = True
+                        db_creator.save()
+                    api_creator.creator = db_creator
+                run_detail.db_creator = db_creator
+                run_detail.save()
+                # Marvel URL
+                try:
+                    db_creator.url = api_creator.urls.get(type="detail").url
+                except MarvelAPISiteUrl.DoesNotExist:
+                    db_creator.url = ''
+
+                # Image
+                try:
+                    api_image = api_creator.image
+                    link = "{0.path}.{0.extension}".format(api_image)
+                    r = requests.get(link, allow_redirects=True)
+                    with tempfile.NamedTemporaryFile() as image:
+                        image.write(r.content)
+                        db_creator.image.save(link, image)
+                    db_creator.save()
+                except MarvelAPIImage.DoesNotExist:
+                    db_creator.image = None
+
+                run_detail.end_with_success()
+
+            except Error as err:
+                if run_detail:
+                    run_detail.end_with_error("Error while processing creator (id={0})".format(api_creator.id), err)
+                has_errors = True
+        return not has_errors
+
+
+class MarvelAPICharacterMergeParser(BaseParser):
+    PARSER_CODE = "MARVEL_API_CHARACTER_MERGE"
+    PARSER_NAME = "Marvel API character merge"
+    RUN_DETAIL_MODEL = MarvelAPICharacterMergeParserRunDetail
+
+    def __init__(self):
+        super().__init__()
+        self._api_characters = None
+
+    def _prepare(self) -> NoReturn:
+        self._api_characters = MarvelAPICharacter.objects.all()
+
+    @property
+    def _items_count(self) -> int:
+        return len(self._api_characters)
+
+    def _process(self) -> bool:
+        run_detail = None
+        has_errors = False
+        for api_character in self._api_characters:
+            run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, api_character=api_character)
+            run_detail.save()
+            # Finding db creator
+            try:
+                if api_character.character:
+                    db_character = api_character.character
+                    db_character.name = api_character.name
+
+                else:
+                    db_character, created = comics_models.Character.objects.get_or_create(name=api_character.name)
+                    if created:
+                        run_detail.created = True
+                        db_character.save()
+                    api_character.character = db_character
+
+                db_character.publisher = Publisher.objects.get(slug="marvel")
+                run_detail.db_character = db_character
+                run_detail.save()
+
+                # Description
+                db_character.desc = api_character.description or db_character.desc
+
+                # Marvel URL
+                try:
+                    db_character.marvel_wiki_url = api_character.urls.get(type="wiki").url
+                except MarvelAPISiteUrl.DoesNotExist:
+                    db_character.marvel_wiki_url = ''
+
+                # Image
+                try:
+                    api_image = api_character.image
+                    link = "{0.path}.{0.extension}".format(api_image)
+                    r = requests.get(link, allow_redirects=True)
+                    with tempfile.NamedTemporaryFile() as image:
+                        image.write(r.content)
+                        db_character.image.save(link, image)
+                    db_character.save()
+                except MarvelAPIImage.DoesNotExist:
+                    db_character.image = None
+
+                run_detail.end_with_success()
+
+            except Error as err:
+                if run_detail:
+                    run_detail.end_with_error("Error while processing creator (id={0})".format(api_character.id), err)
+                has_errors = True
+        return not has_errors

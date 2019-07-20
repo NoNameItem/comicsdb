@@ -1391,13 +1391,17 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         'list': serializers.ParserRunListSerializer,
         'retrieve': serializers.ParserRunDetailSerializer,
         'details_cloud': serializers.CloudFilesParserRunDetailListSerializer,
-        'details_marvel_api': serializers.MarvelAPIParserRunDetailListSerializer
+        'details_marvel_api': serializers.MarvelAPIParserRunDetailListSerializer,
+        'details_marvel_api_creator_merge' : serializers.MarvelAPICreatorMergeRunDetailListSerializer,
+        'details_marvel_api_character_merge': serializers.MarvelAPICharacterMergeRunDetailListSerializer,
 
     }
     filterset_classes = {
         'list': filtersets.ParserRunFilter,
         'details_cloud': filtersets.CloudFilesParserRunDetailFilter,
-        'details_marvel_api': filtersets.MarvelAPIParserRunDetailFilter
+        'details_marvel_api': filtersets.MarvelAPIParserRunDetailFilter,
+        'details_marvel_api_creator_merge': filtersets.MarvelAPICreatorMergeRunDetailFilter,
+        'details_marvel_api_character_merge': filtersets.MarvelAPICharacterMergeRunDetailFilter,
     }
     ordering_fields_set = {
         'list': (("parser", "Parser"), ("status", "Status"), ("start", "Start date and time"),
@@ -1407,17 +1411,21 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         'details_marvel_api': (
             ("status_name", "Status"), ("start", "Start date and time"), ("end", "End date and time"),
             ("action", "Action type"), ("entity_type", "Entity type"), ("entity_id", "Entity ID")),
+        'details_marvel_api_creator_merge': ("start", "end", "status", "api_creator__full_name", "db_creator__name"),
+        'details_marvel_api_character_merge': ("start", "end", "status", "api_character__name", "db_character__name")
     }
     ordering_set = {
         'list': ("-start",),
         'details_cloud': ('-start',),
         'details_marvel_api': ('-start',),
+        'details_marvel_api_creator_merge': ('-start',),
+        'details_marvel_api_character_merge': ('-start',),
     }
 
     @action(detail=True, name="Parser run details")
     def details(self, request, pk):
         run = get_object_or_404(models.ParserRun, pk=pk)
-        if run.parser in ('CLOUD_FILES', 'MARVEL_API'):
+        if run.parser in ('CLOUD_FILES', 'MARVEL_API', 'MARVEL_API_CREATOR_MERGE'):
             return HttpResponseRedirect(run.run_details_url)
         raise Http404
 
@@ -1464,6 +1472,24 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         details = self.filter_queryset(details)
         return self.get_response(details, True)
 
+    @action(detail=True, name="Marvel API Creator merge details")
+    def details_marvel_api_creator_merge(self, request, pk):
+        run = get_object_or_404(models.ParserRun, pk=pk)
+        if run.parser != 'MARVEL_API_CREATOR_MERGE':
+            raise Http404
+        details = run.marvelapicreatormergeparserrundetails.all()
+        details = self.filter_queryset(details)
+        return self.get_response(details, True)
+
+    @action(detail=True, name="Marvel API character merge details")
+    def details_marvel_api_character_merge(self, request, pk):
+        run = get_object_or_404(models.ParserRun, pk=pk)
+        if run.parser != 'MARVEL_API_CHARACTER_MERGE':
+            raise Http404
+        details = run.marvelapicharactermergeparserrundetails.all()
+        details = self.filter_queryset(details)
+        return self.get_response(details, True)
+
 
 class CloudFilesParserRunDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     permission_classes = (IsAdminUser,)
@@ -1475,6 +1501,18 @@ class MarvelAPIParserRunDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet)
     permission_classes = (IsAdminUser,)
     queryset = models.MarvelAPIParserRunDetail.objects.all()
     serializer_class = serializers.MarvelAPIParserRunDetailDetailSerializer
+
+
+class MarvelAPICreatorMergeRunDetailDetailSerializerViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+    permission_classes = (IsAdminUser,)
+    queryset = models.MarvelAPICreatorMergeParserRunDetail.objects.all()
+    serializer_class = serializers.MarvelAPICreatorMergeRunDetailDetailSerializer
+
+
+class MarvelAPICharacterMergeRunDetailDetailSerializerViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+    permission_classes = (IsAdminUser,)
+    queryset = models.MarvelAPICharacterMergeParserRunDetail.objects.all()
+    serializer_class = serializers.MarvelAPICharacterMergeRunDetailListSerializer
 
 
 class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin,
