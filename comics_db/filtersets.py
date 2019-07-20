@@ -329,6 +329,27 @@ class MarvelAPICharacterMergeRunDetailFilter(ParserRunDetailFilter):
     )
 
 
+class MarvelAPIEventMergeRunDetailFilter(ParserRunDetailFilter):
+    created = filters.BooleanFilter(
+        field_name="created",
+        label="Created",
+        help_text="`created` equals",
+        widget=BooleanWidget()
+    )
+    db_name = filters.CharFilter(
+        field_name="db_event__name",
+        lookup_expr="icontains",
+        label="DB creator",
+        help_text="`db creator` contains (ignore case)"
+    )
+    api_name = filters.CharFilter(
+        field_name="api_event__title",
+        lookup_expr="icontains",
+        label="API creator",
+        help_text="`API creator` contains (ignore case)"
+    )
+
+
 class AppTokenFilter(filters.FilterSet):
     app_name = filters.CharFilter(
         field_name="app_name",

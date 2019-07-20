@@ -27,7 +27,8 @@ from comics_db import models as comics_models
 from comics_db.models import ParserRun, ParserRunDetail, CloudFilesParserRunDetail, MarvelAPIParserRunDetail, \
     MarvelAPIComics, MarvelAPICharacter, MarvelAPICreator, MarvelAPIEvent, MarvelAPISeries, MarvelAPIImage, \
     MarvelAPISiteUrl, MarvelAPIDate, MarvelAPIComicsCreator, MarvelAPICreatorMergeParserRunDetail, \
-    MarvelAPICharacterMergeParserRunDetail, Universe, Publisher
+    MarvelAPICharacterMergeParserRunDetail, Universe, Publisher, MarvelAPIEventMergeParserRunDetail, \
+    MarvelAPIEventCreator, EventCreator
 from comics_db.reader import ComicsReader
 from comicsdb import settings
 from marvel_api_wrapper import endpoints, entities
@@ -926,6 +927,7 @@ class MarvelAPICreatorMergeParser(BaseParser):
                         run_detail.created = True
                         db_creator.save()
                     api_creator.creator = db_creator
+                    api_creator.save()
                 run_detail.db_creator = db_creator
                 run_detail.save()
                 # Marvel URL
@@ -942,10 +944,11 @@ class MarvelAPICreatorMergeParser(BaseParser):
                     with tempfile.NamedTemporaryFile() as image:
                         image.write(r.content)
                         db_creator.image.save(link, image)
-                    db_creator.save()
+
                 except MarvelAPIImage.DoesNotExist:
                     db_creator.image = None
 
+                db_creator.save()
                 run_detail.end_with_success()
 
             except Error as err:
@@ -989,6 +992,7 @@ class MarvelAPICharacterMergeParser(BaseParser):
                         run_detail.created = True
                         db_character.save()
                     api_character.character = db_character
+                    api_character.save()
 
                 db_character.publisher = Publisher.objects.get(slug="marvel")
                 run_detail.db_character = db_character
@@ -1011,10 +1015,105 @@ class MarvelAPICharacterMergeParser(BaseParser):
                     with tempfile.NamedTemporaryFile() as image:
                         image.write(r.content)
                         db_character.image.save(link, image)
-                    db_character.save()
+
                 except MarvelAPIImage.DoesNotExist:
                     db_character.image = None
 
+                db_character.save()
+                run_detail.end_with_success()
+
+            except Error as err:
+                if run_detail:
+                    run_detail.end_with_error("Error while processing creator (id={0})".format(api_character.id), err)
+                has_errors = True
+        return not has_errors
+
+
+class MarvelAPIEventMergeParser(BaseParser):
+    PARSER_CODE = "MARVEL_API_EVENT_MERGE"
+    PARSER_NAME = "Marvel API event merge"
+    RUN_DETAIL_MODEL = MarvelAPIEventMergeParserRunDetail
+
+    def __init__(self):
+        super().__init__()
+        self._api_events = None
+
+    def _prepare(self) -> NoReturn:
+        self._api_events = MarvelAPIEvent.objects.all()
+
+    @property
+    def _items_count(self) -> int:
+        return len(self._api_events)
+
+    def _process(self) -> bool:
+        run_detail = None
+        has_errors = False
+        for api_event in self._api_events:
+            run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, api_event=api_event)
+            run_detail.save()
+            # Finding db creator
+            try:
+                if api_event.event:
+                    db_event = api_event.event
+                    db_event.name = api_event.title
+
+                else:
+                    db_event, created = comics_models.Event.objects.get_or_create(name=api_event.title)
+                    if created:
+                        run_detail.created = True
+                        db_event.save()
+                    api_event.event = db_event
+                    api_event.save()
+
+                db_event.publisher = Publisher.objects.get(slug="marvel")
+                run_detail.db_event = db_event
+                run_detail.save()
+
+                # Description
+                db_event.desc = api_event.description or db_event.desc
+
+                # Start / End
+                db_event.start = api_event.start
+                db_event.end = api_event.end
+
+                # Creators
+                event_creators = []
+                for api_creator in MarvelAPIEventCreator.objects.filter(event=api_event):
+                    event_creator = EventCreator(event=db_event, creator=api_creator.creator.creator, role = api_creator.role)
+                    event_creators.append(event_creator)
+
+                EventCreator.objects.filter(event = db_event).delete()
+                EventCreator.objects.bulk_create(event_creators)
+
+                # Characters
+                event_characters = []
+                for api_character in api_event.characters.all():
+                    event_characters.append(api_character.character)
+
+                db_event.characters.set(event_characters)
+
+                # Marvel URL
+                try:
+                    db_event.url = api_event.urls.get(type="wiki").url
+                except MarvelAPISiteUrl.DoesNotExist:
+                    try:
+                        db_event.url = api_event.urls.get(type="detail").url
+                    except MarvelAPISiteUrl.DoesNotExist:
+                        db_event.url = ''
+
+                # Image
+                try:
+                    api_image = api_event.image
+                    link = "{0.path}.{0.extension}".format(api_image)
+                    r = requests.get(link, allow_redirects=True)
+                    with tempfile.NamedTemporaryFile() as image:
+                        image.write(r.content)
+                        db_event.image.save(link, image)
+
+                except MarvelAPIImage.DoesNotExist:
+                    db_event.image = None
+
+                db_event.save()
                 run_detail.end_with_success()
 
             except Error as err:

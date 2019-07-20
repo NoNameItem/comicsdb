@@ -37,6 +37,7 @@ class ParserRun(models.Model):
         ("MARVEL_API", "Marvel API parser"),
         ("MARVEL_API_CREATOR_MERGE", "Marvel API creator merge"),
         ("MARVEL_API_CHARACTER_MERGE", "Marvel API character merge"),
+        ("MARVEL_API_EVENT_MERGE", "Marvel API event merge"),
     )
 
     STATUS_CHOICES = (
@@ -77,6 +78,8 @@ class ParserRun(models.Model):
             return reverse('parserrun-details-marvel-api-creator-merge', args=(self.id,))
         elif self.parser == 'MARVEL_API_CHARACTER_MERGE':
             return reverse('parserrun-details-marvel-api-character-merge', args=(self.id,))
+        elif self.parser == 'MARVEL_API_EVENT_MERGE':
+            return reverse('parserrun-details-marvel-api-event-merge', args=(self.id,))
         return None
 
     @property
@@ -93,6 +96,8 @@ class ParserRun(models.Model):
             return self.marvelapicreatormergeparserrundetails
         elif self.parser == 'MARVEL_API_CHARACTER_MERGE':
             return self.marvelapicharactermergeparserrundetails
+        elif self.parser == 'MARVEL_API_EVENT_MERGE':
+            return self.marvelapieventmergeparserrundetails
         else:
             return None
 
@@ -240,6 +245,12 @@ class MarvelAPICreatorMergeParserRunDetail(ParserRunDetail):
 class MarvelAPICharacterMergeParserRunDetail(ParserRunDetail):
     api_character = models.ForeignKey('MarvelAPICharacter', on_delete=models.CASCADE)
     db_character = models.ForeignKey('Character', on_delete=models.CASCADE, null=True)
+    created = models.BooleanField(default=False)
+
+
+class MarvelAPIEventMergeParserRunDetail(ParserRunDetail):
+    api_event = models.ForeignKey('MarvelAPIEvent', on_delete=models.CASCADE)
+    db_event = models.ForeignKey('Event', on_delete=models.CASCADE, null=True)
     created = models.BooleanField(default=False)
 
 
@@ -571,19 +582,31 @@ class Character(models.Model):
         super(Character, self).save(force_insert, force_update, using, update_fields)
 
 
-class MarvelEvent(models.Model):
+def get_event_image_name(instance, filename):
+    return "events/{0}.{1}".format(instance.name, filename.split('.')[-1])
+
+
+class EventCreator(models.Model):
+    creator = models.ForeignKey(Creator, on_delete=models.CASCADE)
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
+    role = models.CharField(max_length=50)
+
+
+class Event(models.Model):
     name = models.CharField(max_length=200, unique=True)
     desc = models.TextField(blank=True)
     image = models.ImageField(null=True, upload_to='event-image')
-    detail_link = models.URLField(max_length=1000, blank=True)
+    url = models.URLField(max_length=1000, blank=True)
     start = models.DateField(null=True)
     end = models.DateField(null=True)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
 
+    publisher = models.ForeignKey(Publisher, null=True, on_delete=models.SET_NULL, related_name="events")
+
     titles = models.ManyToManyField(Title, related_name='events')
     issues = models.ManyToManyField(Issue, related_name='events')
     characters = models.ManyToManyField(Character, related_name='events')
-    creators = models.ManyToManyField(Creator, related_name='events')
+    creators = models.ManyToManyField(Creator, related_name='events', through=EventCreator)
 
     # Dates
     created_dt = models.DateTimeField(auto_now_add=True)
@@ -598,7 +621,7 @@ class MarvelEvent(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         self.slug = self.get_slug()
-        super(MarvelEvent, self).save(force_insert, force_update, using, update_fields)
+        super(Event, self).save(force_insert, force_update, using, update_fields)
 
 
 ########################################################################################################################
@@ -647,6 +670,8 @@ class MarvelAPIEvent(models.Model):
                                         help_text='Characters which appear in this event.')
     creators = models.ManyToManyField(MarvelAPICreator, through=MarvelAPIEventCreator, related_name='events',
                                       help_text='Creators whose work appears in this event.')
+
+    event = models.ForeignKey(Event, null=True, on_delete=models.SET_NULL, related_name="marvel_api_event")
 
 
 class MarvelAPISeriesCreator(models.Model):
@@ -729,7 +754,7 @@ class MarvelAPIImage(models.Model):
     creator = models.OneToOneField(MarvelAPICreator, null=True, on_delete=models.SET_NULL, related_name='image')
     event = models.OneToOneField(MarvelAPIEvent, null=True, on_delete=models.SET_NULL, related_name='image')
     comics = models.OneToOneField(MarvelAPIComics, null=True, on_delete=models.SET_NULL, related_name='image')
-    series = models.ForeignKey(MarvelAPISeries, null=True, on_delete=models.SET_NULL, related_name='image')
+    series = models.OneToOneField(MarvelAPISeries, null=True, on_delete=models.SET_NULL, related_name='image')
 
 
 ########################################################################################################################

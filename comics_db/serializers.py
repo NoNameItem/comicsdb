@@ -367,6 +367,40 @@ class MarvelAPICharacterMergeRunDetailDetailSerializer(serializers.HyperlinkedMo
         read_only_fields = fields
 
 
+class MarvelAPIEventMergeRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_event.title"
+    )
+    db_name = serializers.CharField(
+        read_only=True,
+        source="db_event.name"
+    )
+
+    class Meta:
+        model = models.MarvelAPIEventMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "created", "api_name", "db_name")
+        read_only_fields = fields
+
+
+class MarvelAPIEventMergeRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_event.title"
+    )
+    db_name = serializers.CharField(
+        read_only=True,
+        source="db_event.name"
+    )
+
+    class Meta:
+        model = models.MarvelAPICharacterMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "created", "api_name", "db_name", "error_detail")
+        read_only_fields = fields
+
+
 # App Token
 
 

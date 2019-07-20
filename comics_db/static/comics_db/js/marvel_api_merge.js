@@ -21,6 +21,14 @@ const ORDER_MAP = {
   'MARVEL_API_CREATOR_MERGE' : {
     api_name : "api_creator__full_name",
     db_name : "db_creator__name",
+  },
+  'MARVEL_API_CHARACTER_MERGE' : {
+    api_name : "api_character__name",
+    db_name : "db_character__name",
+  },
+  'MARVEL_API_EVENT_MERGE' : {
+    api_name : "api_event__title",
+    db_name : "db_event__name",
   }
 };
 
