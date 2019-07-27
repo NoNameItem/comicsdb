@@ -601,8 +601,8 @@ class Issue(models.Model):
     modified_dt = models.DateTimeField(auto_now=True)
 
     # Marvel-specific fields
-    marvel_api_id = models.IntegerField(null=True)
-    marvel_api_status = models.CharField(default='NEW', choices=MARVEL_API_STATUS_CHOICES, max_length=30)
+    marvel_api_comic = models.OneToOneField("MarvelAPIComics", null=True, on_delete=models.SET_NULL,
+                                            related_name="db_issue")
     marvel_detail_link = models.URLField(max_length=1000, blank=True)
     marvel_purchase_link = models.URLField(max_length=1000, blank=True)
 
@@ -823,7 +823,7 @@ class MarvelAPIComicsCreator(models.Model):
 class MarvelAPIComics(models.Model):
     id = models.IntegerField(primary_key=True, help_text='The unique ID of the comic resource.')
     title = models.TextField(blank=True, help_text='The canonical title of the comic.')
-    issue_number = models.IntegerField(null=True,
+    issue_number = models.FloatField(null=True,
                                        help_text='The number of the issue in the series '
                                                  '(will generally be 0 for collection formats).')
     description = models.TextField(blank=True, help_text='The preferred description of the comic.')

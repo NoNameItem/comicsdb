@@ -411,12 +411,12 @@ class CloudFilesParser(BaseParser):
                         issue, created = comics_models.Issue.objects.get_or_create(link=file_key,
                                                                                    defaults={
                                                                                        'name': info['issue_name'],
-                                                                                       'number': number,
                                                                                        'title': title,
                                                                                        'publish_date': publish_date
                                                                                    })
 
                         issue.file_size = file_size
+                        issue.number = number
                         issue.save()
 
                         if self._params['full']:  # Saving in set for not deleting
