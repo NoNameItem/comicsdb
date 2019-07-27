@@ -13,7 +13,7 @@
     <tr>
       <td align="center" valign="center"><button type="button" class="btn btn-icon btn-success" onclick="set_api_series({{ db_title_id }}, {{ title.id }})"><i class="fa fa-check"></i></button></td>
       <td>{{ title.id }}</td>
-      <td><a href="{% url "site-marvel-api-title" title.id %}" target="_blank">{{ title.title }}</a></td>
+      <td><a href="{% url "site-marvel-api-series-detail" title.id %}" target="_blank">{{ title.title }}</a></td>
       <td>{{ title.series_type }}</td>
       <td>{{ title.comics.all.count }}</td>
     </tr>

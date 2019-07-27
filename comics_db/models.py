@@ -445,7 +445,8 @@ class Title(models.Model):
     MARVEL_TITLE_TYPES = {
         'limited': 'Limited',
         'one shot': 'One-shot',
-        'ongoing': 'Ongoing'
+        'ongoing': 'Ongoing',
+        'empty': 'Ongoing'
     }
 
     name = models.CharField(max_length=500)

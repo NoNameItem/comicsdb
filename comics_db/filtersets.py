@@ -9,6 +9,8 @@ RUN_STATUS_CHOICES = models.ParserRun.STATUS_CHOICES
 RUN_DETAIL_STATUS_CHOICES = models.ParserRunDetail.STATUS_CHOICES
 ACTION_CHOICES = models.MarvelAPIParserRunDetail.ACTION_CHOICES
 ENTITY_TYPE_CHOICES = models.MarvelAPIParserRunDetail.ENTITY_TYPE_CHOICES
+MARVEL_API_SERIES_TYPE_CHOICES = tuple((x['series_type'], x['series_type'])
+                                       for x in models.MarvelAPISeries.objects.values("series_type").distinct())
 
 
 class PublisherFilter(filters.FilterSet):
@@ -377,3 +379,54 @@ class AppTokenFilter(filters.FilterSet):
         label="App name",
         help_text="`app_name` contains (ignore case)"
     )
+
+
+class MarvelAPISeriesFilter(filters.FilterSet):
+    id = filters.NumberFilter(
+        field_name="id",
+        label="Id",
+        help_text="`id` equals"
+    )
+    title = filters.CharFilter(
+        field_name="title",
+        lookup_expr="icontains",
+        label="Title",
+        help_text="`title` contains (ignore case)"
+    )
+    start_year = filters.NumberFilter(
+        field_name="start_year",
+        label="Start_year",
+        help_text="`start_year` equals"
+    )
+    end_year = filters.NumberFilter(
+        field_name="end_year",
+        label="End_year",
+        help_text="`end_year` equals"
+    )
+    rating = filters.CharFilter(
+        field_name="rating",
+        lookup_expr="icontains",
+        label="Rating",
+        help_text="`rating` contains (ignore case)"
+    )
+    series_type = filters.ChoiceFilter(
+        field_name="series_type",
+        lookup_expr="iexact",
+        choices=MARVEL_API_SERIES_TYPE_CHOICES,
+        label="Series_type",
+        help_text="`series_type` equals (ignore_case).\n"
+                  "Possible choices are:\n{0}".format(
+            "\n".join(map(lambda x: "* `%s` - %s" % x, MARVEL_API_SERIES_TYPE_CHOICES)))
+    )
+    show_ignored = filters.BooleanFilter(method="show_ignored_filter")
+    show_matched = filters.BooleanFilter(method="show_matched_filter")
+
+    def show_ignored_filter(self, queryset, name, value):
+        if not value:
+            queryset = queryset.exclude(ignore=True)
+        return queryset
+
+    def show_matched_filter(self, queryset, name, value):
+        if not value:
+            queryset = queryset.exclude(db_title__isnull=False)
+        return queryset

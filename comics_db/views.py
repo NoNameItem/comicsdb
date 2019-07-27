@@ -9,7 +9,7 @@ import zipstream
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import IntegrityError
-from django.db.models import Count, Q, Max, Case, When, F, Window
+from django.db.models import Count, Q, Max, Case, When, F, Window, QuerySet
 from django.db.models.functions import RowNumber
 from django.http import Http404, HttpResponseRedirect, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -937,10 +937,22 @@ class ParserRunDetail(UserPassesTestMixin, DetailView):
         return context
 
 
-class MarvelAPISeries(UserPassesTestMixin, DetailView):
+class MarvelAPISeriesList(UserPassesTestMixin, TemplateView):
+    template_name = "comics_db/admin/marvel_api_series_list.html"
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super(MarvelAPISeriesList, self).get_context_data(**kwargs)
+        context["TYPE_CHOICES"] = filtersets.MARVEL_API_SERIES_TYPE_CHOICES
+        return context
+
+
+class MarvelAPISeriesDetail(UserPassesTestMixin, DetailView):
     model = models.MarvelAPISeries
     context_object_name = 'api_series'
-    template_name = "comics_db/admin/marvel_api_series.html"
+    template_name = "comics_db/admin/marvel_api_series_detail.html"
 
     def test_func(self):
         return self.request.user.is_staff
@@ -1541,6 +1553,24 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         details = run.marvelapititlemergeparserrundetails.all().select_related("api_title", "db_title")
         details = self.filter_queryset(details)
         return self.get_response(details, True)
+
+
+class MarvelAPISeriesViewSet(mixins.ListModelMixin, GenericViewSet):
+    queryset = models.MarvelAPISeries.objects.all()
+    permission_classes = (IsAdminUser,)
+    serializer_class = serializers.MarvelAPISeriesSerializer
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    filterset_class = filtersets.MarvelAPISeriesFilter
+    pagination_class = PaginationClass
+    ordering_fields = ("id", "title", "start_year", "end_year", "rating", "series_type")
+    ordering = ("title", "start_year")
+
+    @action(detail=True, name="Toggle Marvel API series ignore flag", methods=["post"])
+    def toggle_ignore(self, request, pk):
+        series = get_object_or_404(models.MarvelAPISeries, pk=pk)
+        series.ignore = not series.ignore
+        series.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 class CloudFilesParserRunDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet):

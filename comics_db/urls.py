@@ -37,6 +37,7 @@ router.register(r'marvel_api_character_merge_details', views.MarvelAPICharacterM
 router.register(r'marvel_api_event_merge_details', views.MarvelAPIEventMergeRunDetailDetailSerializerViewSet)
 router.register(r'marvel_api_title_merge_details', views.MarvelAPITitleMergeRunDetailDetailSerializerViewSet)
 router.register(r'parser_schedule', views.ParserScheduleViewSet, base_name='parser-schedule')
+router.register(r'marvel_api/series', views.MarvelAPISeriesViewSet, base_name='marvel-api-series')
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -110,7 +111,8 @@ urlpatterns = [
          name="parser-schedule"),
 
     # Marvel API
-    path(r'marvel-api/series/<int:pk>', views.MarvelAPISeries.as_view(), name="site-marvel-api-title"),
+    path(r'marvel-api/series/', views.MarvelAPISeriesList.as_view(), name="site-marvel-api-series-list"),
+    path(r'marvel-api/series/<int:pk>', views.MarvelAPISeriesDetail.as_view(), name="site-marvel-api-series-detail"),
 
     # API
     path('api/', include(router.urls)),

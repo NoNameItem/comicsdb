@@ -771,7 +771,7 @@ class MarvelAPIParser(BaseParser):
         series.end_year = data.end_year
         series.rating = data.rating
         series.modified = data.modified
-        series.series_type = data.type
+        series.series_type = data.type or 'empty'
         series.save()
 
         # Thumbnail
@@ -1133,7 +1133,8 @@ class MarvelAPITitleMergeParser(BaseParser):
     title_types = {
         'limited': 'Limited',
         'one shot': 'One-shot',
-        'ongoing': 'Ongoing'
+        'ongoing': 'Ongoing',
+        'empty': 'Ongoing'
     }
 
     def __init__(self):

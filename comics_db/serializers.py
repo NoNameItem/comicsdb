@@ -171,9 +171,10 @@ class IssueDetailSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class MarvelAPISeriesSerializer(serializers.ModelSerializer):
-    model = models.MarvelAPISeries
-    fields = ("id", "title", "start_year", "end_year", "rating", "series_type")
-    read_only_fields = fields
+    class Meta:
+        model = models.MarvelAPISeries
+        fields = ("id", "title", "start_year", "end_year", "rating", "series_type", "ignore")
+        read_only_fields = fields
 
 
 # ParserRun

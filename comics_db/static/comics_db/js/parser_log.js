@@ -44,7 +44,6 @@ const ORDER_MAP = {
 
 let controller = {
   loadData : function (filter) {
-    console.log(filter);
     let d = $.Deferred();
     let f = {};
     if (filter.sortParams) {
