@@ -1384,6 +1384,7 @@ class TitleViewSet(ComicsDBBaseViewSet):
         try:
             run_detail = models.MarvelAPITitleMergeParserRunDetail.objects.get(id=request.data['run_detail_id'])
             run_detail.merge_result = 'MANUAL'
+            run_detail.api_title = api_series
             run_detail.save()
         except Exception:
             pass
@@ -1442,6 +1443,7 @@ class IssueViewSet(ComicsDBBaseViewSet):
         try:
             run_detail = models.MarvelAPIIssueMergeParserRunDetail.objects.get(id=request.data['run_detail_id'])
             run_detail.merge_result = 'MANUAL'
+            run_detail.api_comic = api_comic
             run_detail.save()
         except Exception:
             pass
