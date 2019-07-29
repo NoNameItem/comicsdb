@@ -35,7 +35,7 @@ const ORDER_MAP = {
 
 function set_api_series(db_title_id, api_series_id) {
   $.ajax({
-    url         : '/api/issue/'+db_title_id+'/set_api_series',
+    url         : '/api/title/'+db_title_id+'/set_api_series',
     type        : 'POST',
     contentType : 'application/json; charset=utf-8',
     data        : JSON.stringify({
@@ -47,7 +47,28 @@ function set_api_series(db_title_id, api_series_id) {
     $('#grid').jsGrid('loadData');
   }).fail(function (jqXHR, textStatus, errorThrown) {
     if (jqXHR.status === 404) {
-      errorNotify("", "Пожалуйста, обновите страницу");
+      errorNotify("Not found", "Please refresh page");
+    } else {
+
+    }
+  });
+}
+
+function set_api_comics(db_issue_id, api_comic_id) {
+  $.ajax({
+    url         : '/api/issue/'+db_issue_id+'/set_api_comic',
+    type        : 'POST',
+    contentType : 'application/json; charset=utf-8',
+    data        : JSON.stringify({
+      api_comic_id: api_comic_id,
+      run_detail_id: run_detail_id
+    })
+  }).done(function (data, textStatus, jqXHR) {
+    successNotify("Success","API series assigned");
+    $('#grid').jsGrid('loadData');
+  }).fail(function (jqXHR, textStatus, errorThrown) {
+    if (jqXHR.status === 404) {
+      errorNotify("Not found", "Please refresh page");
     } else {
 
     }
@@ -55,7 +76,6 @@ function set_api_series(db_title_id, api_series_id) {
 }
 
 function showStep(obj) {
-  console.log(obj);
   // Get step data
   $.ajax({
     type : "GET",

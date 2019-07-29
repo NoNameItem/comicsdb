@@ -23,6 +23,7 @@ const PARSER_LOV = [
   {name : "Marvel API character merge", id : "MARVEL_API_CHARACTER_MERGE"},
   {name : "Marvel API event merge", id : "MARVEL_API_EVENT_MERGE"},
   {name : "Marvel API title merge", id : "MARVEL_API_TITLE_MERGE"},
+  {name : "Marvel API issue merge", id : "MARVEL_API_ISSUE_MERGE"},
 ];
 
 const STATUS_LOV = [

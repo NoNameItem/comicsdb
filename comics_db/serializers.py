@@ -437,10 +437,6 @@ class MarvelAPITitleMergeRunDetailDetailSerializer(serializers.HyperlinkedModelS
         read_only=True,
         source="api_title.title"
     )
-    # db_name = serializers.CharField(
-    #     read_only=True,
-    #     source="db_title.name"
-    # )
     site_link = serializers.CharField(
         read_only=True,
         source="db_title.site_link"
@@ -448,6 +444,41 @@ class MarvelAPITitleMergeRunDetailDetailSerializer(serializers.HyperlinkedModelS
 
     class Meta:
         model = models.MarvelAPITitleMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "api_name", "db_name", "error_detail", "site_link",  "merge_result", "merge_result_name",
+                  "possible_matches")
+        read_only_fields = fields
+
+
+class MarvelAPIIssueMergeRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_comic.title"
+    )
+    site_link = serializers.CharField(
+        read_only=True,
+        source="db_issue.site_link"
+    )
+
+    class Meta:
+        model = models.MarvelAPIIssueMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "api_name", "db_name", "site_link", "merge_result")
+        read_only_fields = fields
+
+
+class MarvelAPIIssueMergeRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_comic.title"
+    )
+    site_link = serializers.CharField(
+        read_only=True,
+        source="db_issue.site_link"
+    )
+
+    class Meta:
+        model = models.MarvelAPIIssueMergeParserRunDetail
         fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
                   "api_name", "db_name", "error_detail", "site_link",  "merge_result", "merge_result_name",
                   "possible_matches")

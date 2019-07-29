@@ -138,6 +138,14 @@
                 <a href="{% url "site-title-detail" issue.title.slug %}">{{ issue.title.name }}</a>
               </div>
             </div>
+          <div class="row">
+              <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
+                <strong>Number: </strong>
+              </div>
+              <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
+                {{ issue.number|floatformat }}
+              </div>
+            </div>
             <div class="row">
               <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
                 <strong>Title type: </strong>

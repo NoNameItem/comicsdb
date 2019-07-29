@@ -958,6 +958,38 @@ class MarvelAPISeriesDetail(UserPassesTestMixin, DetailView):
         return self.request.user.is_staff
 
 
+class MarvelAPIComicsList(UserPassesTestMixin, TemplateView):
+    template_name = "comics_db/admin/marvel_api_comics_list.html"
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super(MarvelAPIComicsList, self).get_context_data(**kwargs)
+        return context
+
+
+class MarvelAPIComicsDetail(UserPassesTestMixin, DetailView):
+    model = models.MarvelAPIComics
+    context_object_name = 'api_comic'
+    template_name = "comics_db/admin/marvel_api_comics_detail.html"
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super(MarvelAPIComicsDetail, self).get_context_data(**kwargs)
+        api_comic = context['api_comic']
+        api_image = api_comic.image
+        link = "{0.path}.{0.extension}".format(api_image)
+        context['image_link'] = link
+        try:
+            context['publish_date'] = api_comic.dates.get(type="onsaleDate").date
+        except models.MarvelAPISiteUrl.DoesNotExist:
+            pass
+        return context
+
+
 class RunParser(UserPassesTestMixin, View):
     parser_dict = dict(models.ParserRun.PARSER_CHOICES)
 
@@ -1342,6 +1374,21 @@ class TitleViewSet(ComicsDBBaseViewSet):
         titles = self.filter_queryset(titles)
         return self.get_response(titles, True)
 
+    @action(detail=True, name="Set api series", methods=['post'])
+    def set_api_series(self, request, pk):
+        db_title = get_object_or_404(models.Title, pk=pk)
+        api_series = get_object_or_404(models.MarvelAPISeries, id=request.data['api_series_id'])
+        db_title.api_series = api_series
+        db_title.fill_from_marvel_api(api_series)
+        db_title.save()
+        try:
+            run_detail = models.MarvelAPITitleMergeParserRunDetail.objects.get(id=request.data['run_detail_id'])
+            run_detail.merge_result = 'MANUAL'
+            run_detail.save()
+        except Exception:
+            pass
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
 
 class IssueViewSet(ComicsDBBaseViewSet):
     """
@@ -1385,18 +1432,18 @@ class IssueViewSet(ComicsDBBaseViewSet):
         'list': ("title__publisher__name", "title__universe__name", "title__name", "publish_date", "number")
     }
 
-    @action(detail=True, name="Set api series", methods=['post'])
-    def set_api_series(self, request, pk):
-        db_title = get_object_or_404(models.Title, pk=pk)
-        api_series = get_object_or_404(models.MarvelAPISeries, id=request.data['api_series_id'])
-        db_title.api_series = api_series
-        db_title.fill_from_marvel_api(api_series)
-        db_title.save()
+    @action(detail=True, name="Set api comic", methods=['post'])
+    def set_api_comic(self, request, pk):
+        db_issue = get_object_or_404(models.Issue, pk=pk)
+        api_comic = get_object_or_404(models.MarvelAPIComics, id=request.data['api_comic_id'])
+        db_issue.api_comic = api_comic
+        db_issue.fill_from_marvel_api(api_comic)
+        db_issue.save()
         try:
-            run_detail = models.MarvelAPITitleMergeParserRunDetail.objects.get(id=request.data['run_detail_id'])
+            run_detail = models.MarvelAPIIssueMergeParserRunDetail.objects.get(id=request.data['run_detail_id'])
             run_detail.merge_result = 'MANUAL'
             run_detail.save()
-        except:
+        except Exception:
             pass
         return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
@@ -1433,6 +1480,7 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         'details_marvel_api_character_merge': serializers.MarvelAPICharacterMergeRunDetailListSerializer,
         'details_marvel_api_event_merge': serializers.MarvelAPIEventMergeRunDetailListSerializer,
         'details_marvel_api_title_merge': serializers.MarvelAPITitleMergeRunDetailListSerializer,
+        'details_marvel_api_issue_merge': serializers.MarvelAPIIssueMergeRunDetailListSerializer,
 
     }
     filterset_classes = {
@@ -1443,6 +1491,7 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         'details_marvel_api_character_merge': filtersets.MarvelAPICharacterMergeRunDetailFilter,
         'details_marvel_api_event_merge': filtersets.MarvelAPIEventMergeRunDetailFilter,
         'details_marvel_api_title_merge': filtersets.MarvelAPITitleMergeRunDetailFilter,
+        'details_marvel_api_issue_merge': filtersets.MarvelAPIIssueMergeRunDetailFilter,
     }
     ordering_fields_set = {
         'list': (("parser", "Parser"), ("status", "Status"), ("start", "Start date and time"),
@@ -1456,6 +1505,7 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         'details_marvel_api_character_merge': ("start", "end", "status", "api_character__name", "db_character__name"),
         'details_marvel_api_event_merge': ("start", "end", "status", "api_event__title", "db_event__name"),
         'details_marvel_api_title_merge': ("start", "end", "status", "api_title__title", "db_title__name"),
+        'details_marvel_api_issue_merge': ("start", "end", "status", "api_comic__title", "db_issue__name"),
     }
     ordering_set = {
         'list': ("-start",),
@@ -1465,13 +1515,14 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         'details_marvel_api_character_merge': ('-start',),
         'details_marvel_api_event_merge': ('-start',),
         'details_marvel_api_title_merge': ('-start',),
+        'details_marvel_api_issue_merge': ('-start',),
     }
 
     @action(detail=True, name="Parser run details")
     def details(self, request, pk):
         run = get_object_or_404(models.ParserRun, pk=pk)
         if run.parser in ('CLOUD_FILES', 'MARVEL_API', 'MARVEL_API_CREATOR_MERGE', 'MARVEL_API_CHARACTER_MERGE',
-                          'MARVEL_API_EVENT_MERGE', 'MARVEL_API_TITLE_MERGE'):
+                          'MARVEL_API_EVENT_MERGE', 'MARVEL_API_TITLE_MERGE', 'MARVEL_API_ISSUE_MERGE'):
             return HttpResponseRedirect(run.run_details_url)
         raise Http404
 
@@ -1554,6 +1605,15 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         details = self.filter_queryset(details)
         return self.get_response(details, True)
 
+    @action(detail=True, name="Marvel API issue merge details")
+    def details_marvel_api_issue_merge(self, request, pk):
+        run = get_object_or_404(models.ParserRun, pk=pk)
+        if run.parser != 'MARVEL_API_ISSUE_MERGE':
+            raise Http404
+        details = run.marvelapiissuemergeparserrundetails.all().select_related("api_comic", "db_issue")
+        details = self.filter_queryset(details)
+        return self.get_response(details, True)
+
 
 class MarvelAPISeriesViewSet(mixins.ListModelMixin, GenericViewSet):
     queryset = models.MarvelAPISeries.objects.all()
@@ -1607,6 +1667,12 @@ class MarvelAPITitleMergeRunDetailDetailSerializerViewSet(mixins.RetrieveModelMi
     permission_classes = (IsAdminUser,)
     queryset = models.MarvelAPITitleMergeParserRunDetail.objects.all()
     serializer_class = serializers.MarvelAPITitleMergeRunDetailDetailSerializer
+
+
+class MarvelAPIIssueMergeRunDetailDetailSerializerViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+    permission_classes = (IsAdminUser,)
+    queryset = models.MarvelAPIIssueMergeParserRunDetail.objects.all()
+    serializer_class = serializers.MarvelAPIIssueMergeRunDetailDetailSerializer
 
 
 class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin,

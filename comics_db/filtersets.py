@@ -372,6 +372,28 @@ class MarvelAPITitleMergeRunDetailFilter(ParserRunDetailFilter):
 
     )
 
+
+class MarvelAPIIssueMergeRunDetailFilter(ParserRunDetailFilter):
+    api_name = filters.CharFilter(
+        field_name="api_comic__title",
+        lookup_expr="icontains",
+    )
+    db_name = filters.CharFilter(
+        field_name="db_issue__name",
+        lookup_expr="icontains",
+    )
+    merge_result = filters.ChoiceFilter(
+        field_name="merge_result",
+        lookup_expr="iexact",
+        choices=models.MarvelAPIIssueMergeParserRunDetail.RESULT_CHOICES,
+        label="Merge_result",
+        help_text="`parser` equals (ignore_case).\n"
+                  "Possible choices are:\n{0}".format(
+            "\n".join(map(lambda x: "* `%s` - %s" % x, models.MarvelAPIIssueMergeParserRunDetail.RESULT_CHOICES)))
+
+    )
+
+
 class AppTokenFilter(filters.FilterSet):
     app_name = filters.CharFilter(
         field_name="app_name",

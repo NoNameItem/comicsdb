@@ -1162,6 +1162,7 @@ class MarvelAPITitleMergeParser(BaseParser):
                 if db_title.api_series:
                     api_series = db_title.api_series
                     db_title.name = api_series.title
+                    run_detail.merge_result = "ALREADY"
                 else:
                     possible_api_series = list(comics_models.MarvelAPISeries.objects.filter(title=db_title.name))
                     if len(possible_api_series) == 0:
@@ -1193,5 +1194,74 @@ class MarvelAPITitleMergeParser(BaseParser):
             except Error as err:
                 if run_detail:
                     run_detail.end_with_error("Error while processing title (id={0})".format(db_title.id), err)
+                has_errors = True
+        return not has_errors
+
+
+class MarvelAPIIssueMergeParser(BaseParser):
+    PARSER_CODE = "MARVEL_API_ISSUE_MERGE"
+    PARSER_NAME = "Marvel API issue merge"
+    RUN_DETAIL_MODEL = comics_models.MarvelAPIIssueMergeParserRunDetail
+
+    def __init__(self):
+        super().__init__()
+        self._db_issues = None
+
+    def _prepare(self) -> NoReturn:
+        matched_titles = comics_models.Title.objects.filter(api_series__isnull=False)
+        self._db_issues = comics_models.Issue.objects.filter(title__in=matched_titles)
+
+    @property
+    def _items_count(self) -> int:
+        return len(self._db_issues)
+
+    def _process(self) -> bool:
+        run_detail = None
+        has_errors = False
+        for db_issue in self._db_issues:
+            run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, db_issue=db_issue)
+            run_detail.save()
+            api_series = None
+            try:
+
+                if db_issue.marvel_api_comic:
+                    api_comic = db_issue.marvel_api_comic
+                    run_detail.merge_result = "ALREADY"
+                else:
+                    possible_api_comics = list(
+                        comics_models.MarvelAPIComics.objects.filter(
+                            series=db_issue.title.api_series,
+                            issue_number=db_issue.number
+                        )
+                    )
+                    if len(possible_api_comics) == 0:
+                        run_detail.merge_result = 'NOT_FOUND'
+                        db_issue.possible_matches.clear()
+                        run_detail.end_with_error(run_detail.get_merge_result_display())
+                        has_errors = True
+                        continue
+                    if len(possible_api_comics) > 1:
+                        run_detail.merge_result = 'DUPLICATES'
+                        db_issue.possible_matches.set(possible_api_comics)
+                        run_detail.end_with_error(run_detail.get_merge_result_display())
+                        has_errors = True
+                        continue
+
+                    run_detail.merge_result = 'SUCCESS'
+                    db_issue.possible_matches.clear()
+                    api_comic = possible_api_comics[0]
+                    db_issue.marvel_api_comic = api_comic
+
+                run_detail.api_comic = api_comic
+                run_detail.save()
+
+                db_issue.fill_from_marvel_api(api_series)
+
+                db_issue.save()
+                run_detail.end_with_success()
+
+            except Error as err:
+                if run_detail:
+                    run_detail.end_with_error("Error while processing title (id={0})".format(db_issue.id), err)
                 has_errors = True
         return not has_errors

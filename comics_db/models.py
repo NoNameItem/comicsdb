@@ -44,7 +44,7 @@ class ParserRun(models.Model):
         ("MARVEL_API_CHARACTER_MERGE", "Marvel API character merge"),
         ("MARVEL_API_EVENT_MERGE", "Marvel API event merge"),
         ("MARVEL_API_TITLE_MERGE", "Marvel API title merge"),
-        ("MARVEL_API_COMICS_MERGE", "Marvel API comics merge"),
+        ("MARVEL_API_ISSUE_MERGE", "Marvel API comics merge"),
     )
 
     STATUS_CHOICES = (
@@ -89,6 +89,8 @@ class ParserRun(models.Model):
             return reverse('parserrun-details-marvel-api-event-merge', args=(self.id,))
         elif self.parser == 'MARVEL_API_TITLE_MERGE':
             return reverse('parserrun-details-marvel-api-title-merge', args=(self.id,))
+        elif self.parser == 'MARVEL_API_ISSUE_MERGE':
+            return reverse('parserrun-details-marvel-api-issue-merge', args=(self.id,))
         return None
 
     @property
@@ -109,6 +111,8 @@ class ParserRun(models.Model):
             return self.marvelapieventmergeparserrundetails
         elif self.parser == 'MARVEL_API_TITLE_MERGE':
             return self.marvelapititlemergeparserrundetails
+        elif self.parser == 'MARVEL_API_ISSUE_MERGE':
+            return self.marvelapiissuemergeparserrundetails
         else:
             return None
 
@@ -267,6 +271,7 @@ class MarvelAPIEventMergeParserRunDetail(ParserRunDetail):
 
 class MarvelAPITitleMergeParserRunDetail(ParserRunDetail):
     RESULT_CHOICES = (
+        ('ALREADY', 'Already matched'),
         ('SUCCESS', 'Success'),
         ('NOT_FOUND', 'Match not found'),
         ('DUPLICATES', 'Multiple matches'),
@@ -288,6 +293,32 @@ class MarvelAPITitleMergeParserRunDetail(ParserRunDetail):
     @property
     def db_name(self):
         return str(self.db_title)
+
+
+class MarvelAPIIssueMergeParserRunDetail(ParserRunDetail):
+    RESULT_CHOICES = (
+        ('ALREADY', 'Already matched'),
+        ('SUCCESS', 'Success'),
+        ('NOT_FOUND', 'Match not found'),
+        ('DUPLICATES', 'Multiple matches'),
+        ('MANUAL', 'Manually changed')
+    )
+    api_comic = models.ForeignKey('MarvelAPIComics', on_delete=models.CASCADE, null=True)
+    db_issue = models.ForeignKey('Issue', on_delete=models.CASCADE, null=True)
+    merge_result = models.CharField(max_length=20, choices=RESULT_CHOICES, blank=True)
+
+    def merge_result_name(self):
+        return self.get_merge_result_display()
+
+    def possible_matches(self):
+        if self.merge_result == 'DUPLICATES':
+            return render_to_string("comics_db/admin/possible_api_issues.html",
+                          {'comics': self.db_issue.possible_matches.all(), 'db_issue_id': self.db_issue.id})
+        return None
+
+    @property
+    def db_name(self):
+        return str(self.db_issue)
 
 ########################################################################################################################
 # Comics Info
@@ -605,6 +636,7 @@ class Issue(models.Model):
                                             related_name="db_issue")
     marvel_detail_link = models.URLField(max_length=1000, blank=True)
     marvel_purchase_link = models.URLField(max_length=1000, blank=True)
+    possible_matches = models.ManyToManyField("MarvelAPIComics", related_name="db_possible_issues")
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -649,6 +681,67 @@ class Issue(models.Model):
     @property
     def logo(self):
         return self.title.publisher.logo
+
+    def fill_from_marvel_api(self, api_comic : 'MarvelAPIComics' = None):
+        api_comic = api_comic or self.marvel_api_comic
+
+        # Issue number
+        self.number = api_comic.issue_number
+
+        # Description
+        self.desc = api_comic.description or self.desc
+
+        # Publish Date
+        try:
+            self.publish_date = api_comic.dates.get(type="onsaleDate").date
+        except MarvelAPISiteUrl.DoesNotExist:
+            pass
+
+        # Page count
+        self.page_count = api_comic.page_count
+
+        # Creators
+        issue_creators = []
+        for api_creator in MarvelAPIComicsCreator.objects.filter(comics_fk=api_comic):
+            issue_creator = IssueCreator(issue=self, creator=api_creator.creator.creator,
+                                                       role=api_creator.role)
+            issue_creators.append(issue_creator)
+        IssueCreator.objects.filter(issue=self).delete()
+        IssueCreator.objects.bulk_create(issue_creators)
+
+        # Characters
+        issue_characters = []
+        for api_character in api_comic.characters.all():
+            issue_characters.append(api_character.character)
+        self.characters.set(issue_characters)
+
+        # Events
+        issue_events = []
+        for api_event in api_comic.events.all():
+            issue_events.append(api_event.event)
+        self.events.set(issue_events)
+
+        # Marvel URLs
+        try:
+            self.marvel_detail_link = api_comic.urls.get(type="detail").url
+        except MarvelAPISiteUrl.DoesNotExist:
+            self.marvel_detail_link = ''
+
+        try:
+            self.marvel_purchase_link = api_comic.urls.get(type="purchase").url
+        except MarvelAPISiteUrl.DoesNotExist:
+            self.marvel_purchase_link = ''
+
+        # Image
+        try:
+            api_image = api_comic.image
+            link = "{0.path}.{0.extension}".format(api_image)
+            r = requests.get(link, allow_redirects=True)
+            with tempfile.NamedTemporaryFile() as image:
+                image.write(r.content)
+                self.main_cover.save(link, image)
+        except MarvelAPIImage.DoesNotExist:
+            pass
 
     class Meta:
         unique_together = (("name", "title", "publish_date"),)

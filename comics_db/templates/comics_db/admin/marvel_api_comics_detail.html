@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Marvel API Comic: {{ api_comic.title }}
+{% endblock %}
+
+{% block page_title %}
+  {{ api_comic.title }}
+{% endblock %}
+
+{% block breadcrumb_items %}
+  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
+  <li class="breadcrumb-item"><a href="#">Marvel API</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-marvel-api-comics-list" %}">Comics</a></li>
+  <li class="breadcrumb-item active" aria-current="page"><a
+      href="{% url "site-marvel-api-comics-detail" api_comic.id %}">{{ api_comic.title }}</a></li>
+{% endblock %}
+
+{% block content %}
+  <section class="row">
+    <div class="col-3">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Cover</h4>
+          <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-content">
+          <div class="card-body">
+            <img class="card-img img-fluid mb-1" src="{{ image_link }}" alt="Issue cover">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-9">
+      <div id="comic-info" class="card">
+        <div class="card-header">
+          <h4 class="card-title">Comic info</h4>
+          <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-content">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-2">
+                <div class="form-group">
+                  <label for="template_id">ID</label>
+                  <p class="form-control-plaintext">{{ api_comic.id }}</p>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="form-group">
+                  <label for="template_id">Title</label>
+                  <p class="form-control-plaintext">{{ api_comic.title }}</p>
+                </div>
+              </div>
+              <div class="col-2">
+                <div class="form-group">
+                  <label for="template_id">Issue number</label>
+                  <p class="form-control-plaintext">{{ api_comic.issue_number|floatformat }}</p>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="form-group">
+                  <label for="template_id">Page count</label>
+                  <p class="form-control-plaintext">{{ api_comic.page_count }}</p>
+                </div>
+              </div>
+              <div class="col-2">
+                <div class="form-group">
+                  <label for="template_id">On sale date</label>
+                  <p class="form-control-plaintext">{{ publish_date|date }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <div class="form-group">
+                  <label for="template_id">Description</label>
+                  <p class="form-control-plaintext">{{ api_comic.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

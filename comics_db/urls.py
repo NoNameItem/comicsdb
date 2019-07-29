@@ -36,6 +36,7 @@ router.register(r'marvel_api_creator_merge_details', views.MarvelAPICreatorMerge
 router.register(r'marvel_api_character_merge_details', views.MarvelAPICharacterMergeRunDetailDetailSerializerViewSet)
 router.register(r'marvel_api_event_merge_details', views.MarvelAPIEventMergeRunDetailDetailSerializerViewSet)
 router.register(r'marvel_api_title_merge_details', views.MarvelAPITitleMergeRunDetailDetailSerializerViewSet)
+router.register(r'marvel_api_issue_merge_details', views.MarvelAPIIssueMergeRunDetailDetailSerializerViewSet)
 router.register(r'parser_schedule', views.ParserScheduleViewSet, base_name='parser-schedule')
 router.register(r'marvel_api/series', views.MarvelAPISeriesViewSet, base_name='marvel-api-series')
 
@@ -113,6 +114,8 @@ urlpatterns = [
     # Marvel API
     path(r'marvel-api/series/', views.MarvelAPISeriesList.as_view(), name="site-marvel-api-series-list"),
     path(r'marvel-api/series/<int:pk>', views.MarvelAPISeriesDetail.as_view(), name="site-marvel-api-series-detail"),
+    path(r'marvel-api/comics/', views.MarvelAPISeriesList.as_view(), name="site-marvel-api-comics-list"),
+    path(r'marvel-api/comics/<int:pk>', views.MarvelAPIComicsDetail.as_view(), name="site-marvel-api-comics-detail"),
 
     # API
     path('api/', include(router.urls)),
