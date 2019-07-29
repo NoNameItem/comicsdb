@@ -132,7 +132,7 @@
                     <p>{{ parser_run.error }}</p>
                   {% endif %}
                   {% if parser_run.error_detail %}
-                    <p class="text-bold-300">{{ parser_run.error_detail }}</p>
+                    <code class="text-bold-300">{{ parser_run.error_detail }}</code>
                   {% endif %}
                 {% endif %}
 
@@ -143,32 +143,32 @@
       </div>
     </div>
 
-{#    {% if parser_run.parser == 'CLOUD_FILES' %}#}
-      <div class="col-xl-8 col-12">
-        <div id="run-detail-card" class="card" style="zoom: 1;">
-          <div class="card-header card-head-inverse bg-{{ status_css }}">
-            <h2 class="card-title">Parser steps</h2>
-            <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
-            <div class="heading-elements">
-              <ul class="list-inline mb-0">
-                <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
-                <li><a onclick="$('#grid').jsGrid('clearFilter');"><i class="ft-rotate-cw"></i></a></li>
-                <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
-              </ul>
-            </div>
-          </div>
-          <div class="card-content border-{{ status_css }} collapse show">
-            <div class="card-body" style="overflow-x: auto">
-              <div id="grid"></div>
-            </div>
-          </div>
-          <div class="card-footer border-{{ status_css }}">
-            <div id="pager"></div>
+    {#    {% if parser_run.parser == 'CLOUD_FILES' %}#}
+    <div class="col-xl-8 col-12">
+      <div id="run-detail-card" class="card" style="zoom: 1;">
+        <div class="card-header card-head-inverse bg-{{ status_css }}">
+          <h2 class="card-title">Parser steps</h2>
+          <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+              <li><a onclick="$('#grid').jsGrid('loadData');"><i class="ft-rotate-cw"></i></a></li>
+              <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+            </ul>
           </div>
         </div>
+        <div class="card-content border-{{ status_css }} collapse show">
+          <div class="card-body" style="overflow-x: auto">
+            <div id="grid"></div>
+          </div>
+        </div>
+        <div class="card-footer border-{{ status_css }}">
+          <div id="pager"></div>
+        </div>
       </div>
+    </div>
 
-{#    {% endif %}#}
+    {#    {% endif %}#}
   </div>
 {% endblock %}
 
@@ -256,7 +256,7 @@
                 <div id="modal-error-block">
                   <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
                   <p id="modal-error"></p>
-                  <p class="text-bold-300" id="modal-error-detail"></p>
+                  <code class="text-bold-300" id="modal-error-detail"></code>
                 </div>
               </div>
             </form>
@@ -337,7 +337,165 @@
                 <div id="modal-error-block">
                   <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
                   <p id="modal-error"></p>
-                  <p class="text-bold-300" id="modal-error-detail"></p>
+                  <code class="text-bold-300" id="modal-error-detail"></code>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer" id="modal-footer">
+            <button id="modal-close-btn" type="button" class="btn btn-outline-success" data-dismiss="modal">Close
+            </button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+  {% endif %}
+
+  {% if parser_run.parser == 'MARVEL_API_CREATOR_MERGE' or parser_run.parser == 'MARVEL_API_CHARACTER_MERGE' or parser_run.parser == 'MARVEL_API_EVENT_MERGE' %}
+    <div class="modal fade" id="run-detail-modal">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="modal-content">
+          <div class="modal-header bg-success white" id="modal-header">
+            <h4 class="modal-title">Parser step</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+
+          </div>
+          <div class="modal-body">
+            <form class="form">
+              <div class="form-body">
+                <h4 class="form-section border-bottom-success"><i class="ft-info"></i> Main info</h4>
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label for="modal-api" class="text-bold-700">API</label>
+                      <span id="modal-api" class="form-control-plaintext">test</span>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label for="modal-db" class="text-bold-700">DB</label>
+                      <span id="modal-db" class="form-control-plaintext">test</span>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="modal-created" class="text-bold-700">Created</label>
+                      <span id="modal-created" class="form-control-plaintext"><i
+                          class="far fa-check-circle success fa-2x"></i></span>
+
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="modal-status" class="text-bold-700">Status</label>
+                      <span id="modal-status" class="form-control-plaintext">test</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <h4 class="form-section"><i class="far fa-clock"></i> Execution time</h4>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="modal-start" class="text-bold-700">Start</label>
+                      <input type="text" id="modal-start" class="form-control-plaintext"
+                             value="test">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="modal-end" class="text-bold-700">End</label>
+                      <input type="text" id="modal-end" class="form-control-plaintext"
+                             value="test">
+                    </div>
+                  </div>
+
+                </div>
+                <div id="modal-error-block">
+                  <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
+                  <p id="modal-error"></p>
+                  <code class="text-bold-300" id="modal-error-detail"></code>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer" id="modal-footer">
+            <button id="modal-close-btn" type="button" class="btn btn-outline-success" data-dismiss="modal">Close
+            </button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+  {% endif %}
+
+  {% if parser_run.parser == 'MARVEL_API_TITLE_MERGE' or parser_run.parser == 'MARVEL_API_ISSUE_MERGE' %}
+    <div class="modal fade" id="run-detail-modal">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="modal-content">
+          <div class="modal-header bg-success white" id="modal-header">
+            <h4 class="modal-title">Parser step</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+
+          </div>
+          <div class="modal-body">
+            <form class="form">
+              <div class="form-body">
+                <h4 class="form-section border-bottom-success"><i class="ft-info"></i> Main info</h4>
+                <div class="row">
+                  <div class="col-md-5">
+                    <div class="form-group">
+                      <label for="modal-db" class="text-bold-700">DB</label>
+                      <span id="modal-db" class="form-control-plaintext">test</span>
+                    </div>
+                  </div>
+                  <div class="col-md-5">
+                    <div class="form-group">
+                      <label for="modal-api" class="text-bold-700">API</label>
+                      <span id="modal-api" class="form-control-plaintext">test</span>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="modal-status" class="text-bold-700">Status</label>
+                      <span id="modal-status" class="form-control-plaintext">test</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <h4 class="form-section"><i class="far fa-clock"></i> Execution time</h4>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="modal-start" class="text-bold-700">Start</label>
+                      <input type="text" id="modal-start" class="form-control-plaintext"
+                             value="test">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="modal-end" class="text-bold-700">End</label>
+                      <input type="text" id="modal-end" class="form-control-plaintext"
+                             value="test">
+                    </div>
+                  </div>
+
+                </div>
+                <div id="modal-error-block">
+                  <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
+                  <p id="modal-error"></p>
+                  <code class="text-bold-300" id="modal-error-detail"></code>
+                </div>
+                <div id="possible-matches-outer">
+                  <h4 class="form-section"><i class="fal fa-ballot-check"></i> Possible matches</h4>
+                  <div id="possible-matches" style="overflow-x: auto"></div>
                 </div>
               </div>
             </form>
@@ -372,7 +530,14 @@
   {% if parser_run.parser == 'MARVEL_API' %}
     <script type="text/javascript" src="{% static "comics_db/js/marvel_api_parser_run.js" %}"></script>
   {% endif %}
+  {% if parser_run.parser == 'MARVEL_API_CREATOR_MERGE' or parser_run.parser == 'MARVEL_API_CHARACTER_MERGE' or parser_run.parser == 'MARVEL_API_EVENT_MERGE' %}
+    <script type="text/javascript" src="{% static "comics_db/js/marvel_api_merge.js" %}"></script>
+  {% endif %}
+  {% if parser_run.parser == 'MARVEL_API_TITLE_MERGE' or parser_run.parser == 'MARVEL_API_ISSUE_MERGE' %}
+    <script type="text/javascript" src="{% static "comics_db/js/marvel_api_title_issue_merge.js" %}"></script>
+  {% endif %}
   <script>
     let details_url = "{{ parser_run.run_details_url }}";
+    let parser = "{{ parser_run.parser }}";
   </script>
 {% endblock %}

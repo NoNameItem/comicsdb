@@ -1,5 +1,10 @@
+import tempfile
+
+import requests
 from django.db import models
 from django.db.models.aggregates import Sum
+from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import escape_uri_path
@@ -14,6 +19,18 @@ from comics_db.fields import ThumbnailImageField
 # Create your models here.
 
 
+def unique_slugify(klass, value, counter = 0, allow_unicode=True):
+    if counter:
+        slug = slugify("{0}-{1}".format(value, counter), allow_unicode)
+    else:
+        slug = slugify(value, allow_unicode)
+
+    if klass.objects.filter(slug=slug).exists():
+        return unique_slugify(klass, value, counter + 1, allow_unicode)
+    else:
+        return slug
+
+
 ########################################################################################################################
 # Parsers
 ########################################################################################################################
@@ -23,6 +40,11 @@ class ParserRun(models.Model):
         ("BASE", "Base parser"),
         ("CLOUD_FILES", "Cloud files parser"),
         ("MARVEL_API", "Marvel API parser"),
+        ("MARVEL_API_CREATOR_MERGE", "Marvel API creator merge"),
+        ("MARVEL_API_CHARACTER_MERGE", "Marvel API character merge"),
+        ("MARVEL_API_EVENT_MERGE", "Marvel API event merge"),
+        ("MARVEL_API_TITLE_MERGE", "Marvel API title merge"),
+        ("MARVEL_API_ISSUE_MERGE", "Marvel API comics merge"),
     )
 
     STATUS_CHOICES = (
@@ -32,7 +54,8 @@ class ParserRun(models.Model):
         ("ENDED_WITH_ERRORS", "Ended with errors"),
         ("API_THROTTLE", "API rate limit has been surpassed."),
         ("CRITICAL_ERROR", "Critical Error"),
-        ("INVALID_PARSER", "Invalid parser implementation")
+        ("INVALID_PARSER", "Invalid parser implementation"),
+        ("QUEUE", "In queue")
     )
 
     parser = models.CharField(max_length=30, choices=PARSER_CHOICES, default=PARSER_CHOICES[0][0])
@@ -58,6 +81,16 @@ class ParserRun(models.Model):
             return reverse('parserrun-details-cloud', args=(self.id,))
         elif self.parser == 'MARVEL_API':
             return reverse('parserrun-details-marvel-api', args=(self.id,))
+        elif self.parser == 'MARVEL_API_CREATOR_MERGE':
+            return reverse('parserrun-details-marvel-api-creator-merge', args=(self.id,))
+        elif self.parser == 'MARVEL_API_CHARACTER_MERGE':
+            return reverse('parserrun-details-marvel-api-character-merge', args=(self.id,))
+        elif self.parser == 'MARVEL_API_EVENT_MERGE':
+            return reverse('parserrun-details-marvel-api-event-merge', args=(self.id,))
+        elif self.parser == 'MARVEL_API_TITLE_MERGE':
+            return reverse('parserrun-details-marvel-api-title-merge', args=(self.id,))
+        elif self.parser == 'MARVEL_API_ISSUE_MERGE':
+            return reverse('parserrun-details-marvel-api-issue-merge', args=(self.id,))
         return None
 
     @property
@@ -70,6 +103,16 @@ class ParserRun(models.Model):
             return self.cloudfilesparserrundetails
         elif self.parser == 'MARVEL_API':
             return self.marvelapiparserrundetails
+        elif self.parser == 'MARVEL_API_CREATOR_MERGE':
+            return self.marvelapicreatormergeparserrundetails
+        elif self.parser == 'MARVEL_API_CHARACTER_MERGE':
+            return self.marvelapicharactermergeparserrundetails
+        elif self.parser == 'MARVEL_API_EVENT_MERGE':
+            return self.marvelapieventmergeparserrundetails
+        elif self.parser == 'MARVEL_API_TITLE_MERGE':
+            return self.marvelapititlemergeparserrundetails
+        elif self.parser == 'MARVEL_API_ISSUE_MERGE':
+            return self.marvelapiissuemergeparserrundetails
         else:
             return None
 
@@ -208,6 +251,75 @@ class MarvelAPIParserRunDetail(ParserRunDetail):
             return "Getting {0}".format(self.get_entity_type_display())
 
 
+class MarvelAPICreatorMergeParserRunDetail(ParserRunDetail):
+    api_creator = models.ForeignKey('MarvelAPICreator', on_delete=models.CASCADE)
+    db_creator = models.ForeignKey('Creator', on_delete=models.CASCADE, null=True)
+    created = models.BooleanField(default=False)
+
+
+class MarvelAPICharacterMergeParserRunDetail(ParserRunDetail):
+    api_character = models.ForeignKey('MarvelAPICharacter', on_delete=models.CASCADE)
+    db_character = models.ForeignKey('Character', on_delete=models.CASCADE, null=True)
+    created = models.BooleanField(default=False)
+
+
+class MarvelAPIEventMergeParserRunDetail(ParserRunDetail):
+    api_event = models.ForeignKey('MarvelAPIEvent', on_delete=models.CASCADE)
+    db_event = models.ForeignKey('Event', on_delete=models.CASCADE, null=True)
+    created = models.BooleanField(default=False)
+
+
+class MarvelAPITitleMergeParserRunDetail(ParserRunDetail):
+    RESULT_CHOICES = (
+        ('ALREADY', 'Already matched'),
+        ('SUCCESS', 'Success'),
+        ('NOT_FOUND', 'Match not found'),
+        ('DUPLICATES', 'Multiple matches'),
+        ('MANUAL', 'Manually changed')
+    )
+    api_title = models.ForeignKey('MarvelAPISeries', on_delete=models.CASCADE, null=True)
+    db_title = models.ForeignKey('Title', on_delete=models.CASCADE, null=True)
+    merge_result = models.CharField(max_length=20, choices=RESULT_CHOICES, blank=True)
+
+    def merge_result_name(self):
+        return self.get_merge_result_display()
+
+    def possible_matches(self):
+        if self.merge_result == 'DUPLICATES':
+            return render_to_string("comics_db/admin/possible_api_titles.html",
+                          {'titles': self.db_title.possible_matches.all(), 'db_title_id': self.db_title.id})
+        return None
+
+    @property
+    def db_name(self):
+        return str(self.db_title)
+
+
+class MarvelAPIIssueMergeParserRunDetail(ParserRunDetail):
+    RESULT_CHOICES = (
+        ('ALREADY', 'Already matched'),
+        ('SUCCESS', 'Success'),
+        ('NOT_FOUND', 'Match not found'),
+        ('DUPLICATES', 'Multiple matches'),
+        ('MANUAL', 'Manually changed')
+    )
+    api_comic = models.ForeignKey('MarvelAPIComics', on_delete=models.CASCADE, null=True)
+    db_issue = models.ForeignKey('Issue', on_delete=models.CASCADE, null=True)
+    merge_result = models.CharField(max_length=20, choices=RESULT_CHOICES, blank=True)
+
+    def merge_result_name(self):
+        return self.get_merge_result_display()
+
+    def possible_matches(self):
+        if self.merge_result == 'DUPLICATES':
+            return render_to_string("comics_db/admin/possible_api_issues.html",
+                          {'comics': self.db_issue.possible_matches.all(), 'db_issue_id': self.db_issue.id})
+        return None
+
+    @property
+    def db_name(self):
+        return str(self.db_issue)
+
 ########################################################################################################################
 # Comics Info
 ########################################################################################################################
@@ -261,14 +373,21 @@ class Publisher(models.Model):
         ordering = ["name"]
 
 
+def get_creator_photo_name(instance, filename):
+    return "creator/{0}_photo.{1}".format(instance.name, filename.split('.')[-1])
+
+
+def get_creator_image_name(instance, filename):
+    return "creator/{0}_image.{1}".format(instance.name, filename.split('.')[-1])
+
+
 class Creator(models.Model):
     name = models.CharField(max_length=500)
     bio = models.TextField(blank=True)
-    photo = models.ImageField(null=True)
+    photo = ThumbnailImageField(null=True, upload_to=get_creator_photo_name, thumb_width=100)
+    image = ThumbnailImageField(null=True, upload_to=get_creator_image_name, thumb_width=520)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
-
-    # Marvel-specific fields
-    marvel_api_id = models.IntegerField(null=True)
+    url = models.TextField(blank=True)
 
     # Dates
     created_dt = models.DateTimeField(auto_now_add=True)
@@ -278,7 +397,7 @@ class Creator(models.Model):
         return self.name
 
     def get_slug(self):
-        return slugify(self.name, allow_unicode=True)
+        return unique_slugify(self.__class__, self.name)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -308,7 +427,7 @@ class Universe(models.Model):
         super(Universe, self).save(force_insert, force_update, using, update_fields)
 
     def get_slug(self):
-        return slugify(str(self), allow_unicode=True)
+        return unique_slugify(self.__class__, str(self))
 
     def get_absolute_url(self):
         return reverse("site-universe-detail", args=(self.slug,))
@@ -345,7 +464,7 @@ class TitleType(models.Model):
 
 class TitleCreator(models.Model):
     creator = models.ForeignKey(Creator, on_delete=models.CASCADE)
-    issue = models.ForeignKey('Title', on_delete=models.CASCADE)
+    title = models.ForeignKey('Title', on_delete=models.CASCADE)
     role = models.CharField(max_length=100)
 
 
@@ -354,11 +473,22 @@ def get_title_image_name(instance, filename):
 
 
 class Title(models.Model):
+    MARVEL_TITLE_TYPES = {
+        'limited': 'Limited',
+        'one shot': 'One-shot',
+        'ongoing': 'Ongoing',
+        'empty': 'Ongoing'
+    }
+
     name = models.CharField(max_length=500)
     path_key = models.CharField(max_length=500)
     desc = models.TextField(blank=True)
     image = ThumbnailImageField(null=True, upload_to=get_title_image_name, thumb_width=380)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
+
+    start_year = models.IntegerField(null=True)
+    end_year = models.IntegerField(null=True)
+    rating = models.TextField(blank=True)
 
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="titles")
     universe = models.ForeignKey(Universe, on_delete=models.PROTECT, null=True, related_name="titles", blank=True)
@@ -366,8 +496,9 @@ class Title(models.Model):
     creators = models.ManyToManyField(Creator, through=TitleCreator, related_name='titles')
 
     # Marvel-specific fields
-    marvel_api_id = models.IntegerField(null=True)
-    marvel_api_status = models.CharField(default='NEW', choices=MARVEL_API_STATUS_CHOICES, max_length=30)
+    api_series = models.OneToOneField("MarvelAPISeries", null=True, on_delete=models.SET_NULL, related_name="db_title")
+    possible_matches = models.ManyToManyField("MarvelAPISeries", related_name="db_possible_matches")
+    marvel_url = models.URLField(max_length=500, blank=True)
 
     # Dates
     created_dt = models.DateTimeField(auto_now_add=True)
@@ -383,7 +514,7 @@ class Title(models.Model):
             name = "[{0.publisher.name}, {0.universe.name}, {0.title_type.name}] {0.path_key}".format(self)
         else:
             name = "[{0.publisher.name}, {0.title_type.name}] {0.path_key}".format(self)
-        return slugify(name, allow_unicode=True)
+        return unique_slugify(self.__class__, name)
 
     def __str__(self):
         if self.universe:
@@ -405,6 +536,65 @@ class Title(models.Model):
 
     def get_absolute_url(self):
         return self.site_link
+
+    def fill_from_marvel_api(self, api_series=None):
+        api_series = api_series or self.api_series
+
+        # Name
+        self.name = api_series.title
+
+        # Description
+        self.desc = api_series.description or self.desc
+
+        # Start / End Year
+        self.start_year = api_series.start_year
+        self.end_year = api_series.end_year
+
+        # Rating
+        self.rating = api_series.rating or self.rating
+
+        # Title Type
+        if api_series.series_type:
+            self.title_type = TitleType.objects.get(
+                name=self.MARVEL_TITLE_TYPES.get(api_series.series_type, 'Ongoing'))
+
+        # Creators
+        title_creators = []
+        for api_creator in MarvelAPISeriesCreator.objects.filter(series_fk=api_series):
+            title_creator = TitleCreator(title=self, creator=api_creator.creator.creator,
+                                                       role=api_creator.role)
+            title_creators.append(title_creator)
+        TitleCreator.objects.filter(title=self).delete()
+        TitleCreator.objects.bulk_create(title_creators)
+
+        # Characters
+        title_characters = []
+        for api_character in api_series.characters.all():
+            title_characters.append(api_character.character)
+        self.characters.set(title_characters)
+
+        # Events
+        title_events = []
+        for api_event in api_series.events.all():
+            title_events.append(api_event.event)
+        self.events.set(title_events)
+
+        # Marvel URL
+        try:
+            self.marvel_url = api_series.urls.get(type="detail").url
+        except MarvelAPISiteUrl.DoesNotExist:
+            self.marvel_url = ''
+
+        # Image
+        try:
+            api_image = api_series.image
+            link = "{0.path}.{0.extension}".format(api_image)
+            r = requests.get(link, allow_redirects=True)
+            with tempfile.NamedTemporaryFile() as image:
+                image.write(r.content)
+                self.image.save(link, image)
+        except MarvelAPIImage.DoesNotExist:
+            pass
 
     class Meta:
         unique_together = (("name", "publisher", "universe", "title_type"),
@@ -442,10 +632,11 @@ class Issue(models.Model):
     modified_dt = models.DateTimeField(auto_now=True)
 
     # Marvel-specific fields
-    marvel_api_id = models.IntegerField(null=True)
-    marvel_api_status = models.CharField(default='NEW', choices=MARVEL_API_STATUS_CHOICES, max_length=30)
+    marvel_api_comic = models.OneToOneField("MarvelAPIComics", null=True, on_delete=models.SET_NULL,
+                                            related_name="db_issue")
     marvel_detail_link = models.URLField(max_length=1000, blank=True)
     marvel_purchase_link = models.URLField(max_length=1000, blank=True)
+    possible_matches = models.ManyToManyField("MarvelAPIComics", related_name="db_possible_issues")
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -453,7 +644,7 @@ class Issue(models.Model):
         super(Issue, self).save(force_insert, force_update, using, update_fields)
 
     def get_slug(self):
-        return slugify(self.link.replace('/', '_').replace('.', '_')[8:-4], allow_unicode=True)
+        return unique_slugify(self.__class__, self.link.replace('/', '_').replace('.', '_')[8:-4])
 
     def __str__(self):
         return "[{0.title.publisher.name}, {0.title.universe.name}, {0.publish_date.year}] {0.name}".format(self)
@@ -491,30 +682,95 @@ class Issue(models.Model):
     def logo(self):
         return self.title.publisher.logo
 
+    def fill_from_marvel_api(self, api_comic : 'MarvelAPIComics' = None):
+        api_comic = api_comic or self.marvel_api_comic
+
+        # Issue number
+        self.number = api_comic.issue_number
+
+        # Description
+        self.desc = api_comic.description or self.desc
+
+        # Publish Date
+        try:
+            self.publish_date = api_comic.dates.get(type="onsaleDate").date
+        except MarvelAPISiteUrl.DoesNotExist:
+            pass
+
+        # Page count
+        self.page_count = api_comic.page_count
+
+        # Creators
+        issue_creators = []
+        for api_creator in MarvelAPIComicsCreator.objects.filter(comics_fk=api_comic):
+            issue_creator = IssueCreator(issue=self, creator=api_creator.creator.creator,
+                                                       role=api_creator.role)
+            issue_creators.append(issue_creator)
+        IssueCreator.objects.filter(issue=self).delete()
+        IssueCreator.objects.bulk_create(issue_creators)
+
+        # Characters
+        issue_characters = []
+        for api_character in api_comic.characters.all():
+            issue_characters.append(api_character.character)
+        self.characters.set(issue_characters)
+
+        # Events
+        issue_events = []
+        for api_event in api_comic.events.all():
+            issue_events.append(api_event.event)
+        self.events.set(issue_events)
+
+        # Marvel URLs
+        try:
+            self.marvel_detail_link = api_comic.urls.get(type="detail").url
+        except MarvelAPISiteUrl.DoesNotExist:
+            self.marvel_detail_link = ''
+
+        try:
+            self.marvel_purchase_link = api_comic.urls.get(type="purchase").url
+        except MarvelAPISiteUrl.DoesNotExist:
+            self.marvel_purchase_link = ''
+
+        # Image
+        try:
+            api_image = api_comic.image
+            link = "{0.path}.{0.extension}".format(api_image)
+            r = requests.get(link, allow_redirects=True)
+            with tempfile.NamedTemporaryFile() as image:
+                image.write(r.content)
+                self.main_cover.save(link, image)
+        except MarvelAPIImage.DoesNotExist:
+            pass
+
     class Meta:
         unique_together = (("name", "title", "publish_date"),)
         ordering = ["title", "number"]
 
 
+def get_character_image_name(instance, filename):
+    return "characters/{0}.{1}".format(instance.name, filename.split('.')[-1])
+
+
 class Character(models.Model):
-    name = models.CharField(max_length=500, unique=True)
+    name = models.CharField(max_length=500)
     desc = models.TextField(blank=True)
-    image = models.ImageField(null=True, upload_to='character')
+    image = ThumbnailImageField(null=True, upload_to=get_character_image_name, thumb_width=380)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
+    publisher = models.ForeignKey(Publisher, on_delete=models.SET_NULL, null=True, related_name="characters")
 
     titles = models.ManyToManyField(Title, related_name='characters')
     issues = models.ManyToManyField(Issue, related_name='characters')
 
     # Marvel-specific fields
-    marvel_api_id = models.IntegerField(null=True)
-    marvel_detail_link = models.URLField(max_length=1000, blank=True)
+    marvel_wiki_url = models.TextField(blank=True)
 
     # Dates
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
 
     def get_slug(self):
-        return slugify(str(self), allow_unicode=True)
+        return unique_slugify(self.__class__, str(self))
 
     def __str__(self):
         return self.name
@@ -524,27 +780,42 @@ class Character(models.Model):
         self.slug = self.get_slug()
         super(Character, self).save(force_insert, force_update, using, update_fields)
 
+    class Meta:
+        unique_together = (("publisher", "name"),)
 
-class MarvelEvent(models.Model):
-    name = models.CharField(max_length=200, unique=True)
+
+def get_event_image_name(instance, filename):
+    return "events/{0}.{1}".format(instance.name, filename.split('.')[-1])
+
+
+class EventCreator(models.Model):
+    creator = models.ForeignKey(Creator, on_delete=models.CASCADE)
+    event = models.ForeignKey('Event', on_delete=models.CASCADE)
+    role = models.CharField(max_length=50)
+
+
+class Event(models.Model):
+    name = models.CharField(max_length=200)
     desc = models.TextField(blank=True)
     image = models.ImageField(null=True, upload_to='event-image')
-    detail_link = models.URLField(max_length=1000, blank=True)
+    url = models.URLField(max_length=1000, blank=True)
     start = models.DateField(null=True)
     end = models.DateField(null=True)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
 
+    publisher = models.ForeignKey(Publisher, null=True, on_delete=models.SET_NULL, related_name="events")
+
     titles = models.ManyToManyField(Title, related_name='events')
     issues = models.ManyToManyField(Issue, related_name='events')
     characters = models.ManyToManyField(Character, related_name='events')
-    creators = models.ManyToManyField(Creator, related_name='events')
+    creators = models.ManyToManyField(Creator, related_name='events', through=EventCreator)
 
     # Dates
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
 
     def get_slug(self):
-        return slugify(str(self), allow_unicode=True)
+        return unique_slugify(self.__class__, str(self))
 
     def __str__(self):
         return self.name
@@ -552,7 +823,10 @@ class MarvelEvent(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         self.slug = self.get_slug()
-        super(MarvelEvent, self).save(force_insert, force_update, using, update_fields)
+        super(Event, self).save(force_insert, force_update, using, update_fields)
+
+    class Meta:
+        unique_together = (("publisher", "name"),)
 
 
 ########################################################################################################################
@@ -567,6 +841,8 @@ class MarvelAPICharacter(models.Model):
     modified = models.DateTimeField(null=True, help_text='The date the resource was most recently modified.')
     resource_URI = models.TextField(blank=True, help_text='The canonical URL identifier for this resource.')
 
+    character = models.ForeignKey(Character, null=True, on_delete=models.SET_NULL, related_name="marvel_api_chararcter")
+
 
 class MarvelAPICreator(models.Model):
     id = models.IntegerField(primary_key=True, help_text='The unique ID of the creator resource.')
@@ -577,6 +853,8 @@ class MarvelAPICreator(models.Model):
     full_name = models.TextField(blank=True, help_text='The full name of the creator.')
     modified = models.DateTimeField(null=True, help_text='The date the resource was most recently modified.')
     resource_URI = models.TextField(blank=True, help_text='The canonical URL identifier for this resource.')
+
+    creator = models.ForeignKey(Creator, null=True, on_delete=models.SET_NULL, related_name="marvel_api_creator")
 
 
 class MarvelAPIEventCreator(models.Model):
@@ -598,6 +876,8 @@ class MarvelAPIEvent(models.Model):
     creators = models.ManyToManyField(MarvelAPICreator, through=MarvelAPIEventCreator, related_name='events',
                                       help_text='Creators whose work appears in this event.')
 
+    event = models.ForeignKey(Event, null=True, on_delete=models.SET_NULL, related_name="marvel_api_event")
+
 
 class MarvelAPISeriesCreator(models.Model):
     creator = models.ForeignKey(MarvelAPICreator, on_delete=models.CASCADE)
@@ -615,6 +895,7 @@ class MarvelAPISeries(models.Model):
                                    help_text='The last year of publication for the series '
                                              '(conventionally, 2099 for ongoing series).')
     rating = models.TextField(blank=True, help_text='The age-appropriateness rating for the series.')
+    series_type = models.CharField(max_length=100, blank=True)
     modified = models.DateTimeField(null=True, help_text='The date the resource was most recently modified.')
     events = models.ManyToManyField(MarvelAPIEvent, related_name='series',
                                     help_text='Events which take place in comics in this series.')
@@ -622,6 +903,8 @@ class MarvelAPISeries(models.Model):
                                         help_text='Characters which appear in comics in this series.')
     creators = models.ManyToManyField(MarvelAPICreator, through=MarvelAPISeriesCreator, related_name='series',
                                       help_text='Creators whose work appears in comics in this series.')
+
+    ignore = models.BooleanField(default=False)
 
 
 class MarvelAPIComicsCreator(models.Model):
@@ -633,7 +916,7 @@ class MarvelAPIComicsCreator(models.Model):
 class MarvelAPIComics(models.Model):
     id = models.IntegerField(primary_key=True, help_text='The unique ID of the comic resource.')
     title = models.TextField(blank=True, help_text='The canonical title of the comic.')
-    issue_number = models.IntegerField(null=True,
+    issue_number = models.FloatField(null=True,
                                        help_text='The number of the issue in the series '
                                                  '(will generally be 0 for collection formats).')
     description = models.TextField(blank=True, help_text='The preferred description of the comic.')
@@ -675,11 +958,11 @@ class MarvelAPIImage(models.Model):
     path = models.URLField(max_length=500, help_text='The directory path of to the image.')
     extension = models.CharField(max_length=10, help_text='The file extension for the image.')
     character = models.OneToOneField(MarvelAPICharacter, null=True, on_delete=models.SET_NULL,
-                                     related_name='thumbnail')
-    creator = models.OneToOneField(MarvelAPICreator, null=True, on_delete=models.SET_NULL, related_name='thumbnail')
-    event = models.OneToOneField(MarvelAPIEvent, null=True, on_delete=models.SET_NULL, related_name='thumbnail')
-    comics = models.OneToOneField(MarvelAPIComics, null=True, on_delete=models.SET_NULL, related_name='thumbnail')
-    series = models.ForeignKey(MarvelAPISeries, null=True, on_delete=models.SET_NULL, related_name='thumbnail')
+                                     related_name='image')
+    creator = models.OneToOneField(MarvelAPICreator, null=True, on_delete=models.SET_NULL, related_name='image')
+    event = models.OneToOneField(MarvelAPIEvent, null=True, on_delete=models.SET_NULL, related_name='image')
+    comics = models.OneToOneField(MarvelAPIComics, null=True, on_delete=models.SET_NULL, related_name='image')
+    series = models.OneToOneField(MarvelAPISeries, null=True, on_delete=models.SET_NULL, related_name='image')
 
 
 ########################################################################################################################

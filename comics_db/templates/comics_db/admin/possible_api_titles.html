@@ -1,0 +1,22 @@
+<table class="table table-bordered">
+  <thead>
+  <tr>
+    <th scope="col"></th>
+    <th scope="col">ID</th>
+    <th scope="col">Title</th>
+    <th scope="col">Type</th>
+    <th scope="col">Issues count</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for title in titles %}
+    <tr>
+      <td align="center" valign="center"><button type="button" class="btn btn-icon btn-success" onclick="set_api_series({{ db_title_id }}, {{ title.id }})"><i class="fa fa-check"></i></button></td>
+      <td>{{ title.id }}</td>
+      <td><a href="{% url "site-marvel-api-series-detail" title.id %}" target="_blank">{{ title.title }}</a></td>
+      <td>{{ title.series_type }}</td>
+      <td>{{ title.comics.all.count }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>

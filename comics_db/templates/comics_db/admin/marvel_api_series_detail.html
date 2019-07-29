@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Marvel API Series: {{ api_series.title }}
+{% endblock %}
+
+{% block page_title %}
+  {{ api_series.title }}
+{% endblock %}
+
+{% block breadcrumb_items %}
+  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
+  <li class="breadcrumb-item"><a href="#">Marvel API</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-marvel-api-series-list" %}">Series</a></li>
+  <li class="breadcrumb-item active" aria-current="page"><a href="{% url "site-marvel-api-series-detail" api_series.id %}">{{ api_series.title }}</a></li>
+{% endblock %}
+
+{% block content %}
+  <section class="row">
+    <div class="col-12">
+      <div id="series-info" class="card">
+        <div class="card-header">
+          <h4 class="card-title">Series info</h4>
+          <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+              <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-content collapse show">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">ID</label>
+                  <p class="form-control-plaintext">{{ api_series.id }}</p>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">Title</label>
+                  <p class="form-control-plaintext">{{ api_series.title }}</p>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">Type</label>
+                  <p class="form-control-plaintext">{{ api_series.series_type }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">Start Year</label>
+                  <p class="form-control-plaintext">{{ api_series.start_year }}</p>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">End Year</label>
+                  <p class="form-control-plaintext">{{ api_series.end_year }}</p>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">Rating</label>
+                  <p class="form-control-plaintext">{{ api_series.rating }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <div class="form-group">
+                  <label for="template_id">Description</label>
+                  <p class="form-control-plaintext">{{ api_series.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Comics
+              <div class="badge badge-pill badge-primary filter-count-badge">{{ api_series.comics.all.count }}</div>
+            </h4>
+            <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+            <div class="heading-elements">
+              <ul class="list-inline mb-0">
+                <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+                <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="card-content collapse show">
+            <div class="card-body" style="overflow-x: auto">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Page count</th>
+                    <th>Description</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {% for comic in api_series.comics.all|dictsort:"issue_number" %}
+                    <tr>
+                      <td>{{ comic.id }}</td>
+                      <td>{{ comic.issue_number }}</td>
+                      <td style="min-width: 300px">{{ comic.title }}</td>
+                      <td>{{ comic.page_count }}</td>
+                      <td>{{ comic.description }}</td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

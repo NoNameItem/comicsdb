@@ -18,7 +18,12 @@ const PARSER_LOV = [
   {name : "", id : ""},
   {name : "Base parser", id : "BASE"},
   {name : "Cloud files parser", id : "CLOUD_FILES"},
-  {name : "Marvel API parser", id : "MARVEL_API"}
+  {name : "Marvel API parser", id : "MARVEL_API"},
+  {name : "Marvel API creator merge", id : "MARVEL_API_CREATOR_MERGE"},
+  {name : "Marvel API character merge", id : "MARVEL_API_CHARACTER_MERGE"},
+  {name : "Marvel API event merge", id : "MARVEL_API_EVENT_MERGE"},
+  {name : "Marvel API title merge", id : "MARVEL_API_TITLE_MERGE"},
+  {name : "Marvel API issue merge", id : "MARVEL_API_ISSUE_MERGE"},
 ];
 
 const STATUS_LOV = [
@@ -40,7 +45,6 @@ const ORDER_MAP = {
 
 let controller = {
   loadData : function (filter) {
-    console.log(filter);
     let d = $.Deferred();
     let f = {};
     if (filter.sortParams) {

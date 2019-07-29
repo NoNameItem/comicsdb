@@ -497,7 +497,7 @@ class Comic(BaseEntity):
 
                  digitalId: int = None,
                  title: str = None,
-                 issueNumber: int = None,
+                 issueNumber: float = None,
                  variantDescriptor: str = None,
                  description: str = None,
                  isbn: str = None,
@@ -616,7 +616,7 @@ class Comic(BaseEntity):
         return self._title
 
     @property
-    def issue_number(self) -> int:
+    def issue_number(self) -> float:
         return self._issue_number
 
     @property

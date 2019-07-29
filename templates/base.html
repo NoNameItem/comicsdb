@@ -8,10 +8,24 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
   <meta name="author" content="artem.vasin">
-  <meta name="Description" content="{% block meta_description %}ComicsDB - Comics collection, where you can find, read and download comics{% endblock %}">
+  <meta name="Description"
+        content="{% block meta_description %}ComicsDB - Comics collection, where you can find, read and download comics{% endblock %}">
   {% block meta %}
   {% endblock %}
-  <!-- Yandex.Metrika counter --> <script type="text/javascript" > (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)}; m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)}) (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym"); ym(53974480, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true }); </script> <noscript><div><img src="https://mc.yandex.ru/watch/53974480" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->
+  {% if not django_settings.DEBUG %}
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript"> (function (m, e, t, r, i, k, a) {
+      m[i] = m[i] || function () {
+        (m[i].a = m[i].a || []).push(arguments)
+      };
+      m[i].l = 1 * new Date();
+      k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+    })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+    ym(53974480, "init", {clickmap : true, trackLinks : true, accurateTrackBounce : true, webvisor : true}); </script>
+    <noscript>
+      <div><img src="https://mc.yandex.ru/watch/53974480" style="position:absolute; left:-9999px;" alt=""/></div>
+    </noscript> <!-- /Yandex.Metrika counter -->
+  {% endif %}
   <title>{% block title %}Yet Another Comics DB{% endblock %}</title>
   <link rel="icon" href="{% static "images/favicon.png" %}">
   <link
@@ -90,9 +104,9 @@
 <div class="main-menu menu-fixed menu-light menu-accordion menu-border" data-scroll-to-active="true"
      style="touch-action: none; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
   <!-- main menu header-->
-{#  <div class="main-menu-header">#}
-{#    <input class="menu-search form-control round" type="text" placeholder="Search"/>#}
-{#  </div>#}
+  {#  <div class="main-menu-header">#}
+  {#    <input class="menu-search form-control round" type="text" placeholder="Search"/>#}
+  {#  </div>#}
   <!-- / main menu header-->
   <!-- main menu content-->
   <div class="main-menu-content ps">
@@ -112,7 +126,7 @@
           <i class="fal fa-books"></i><span class="menu-title">Titles</span>
         </a>
       </li>
-    <li class="{% if request.resolver_match.url_name|startswith:"site-issue" %}active{% else %}nav-item{% endif %}">
+      <li class="{% if request.resolver_match.url_name|startswith:"site-issue" %}active{% else %}nav-item{% endif %}">
         <a href="{% url 'site-issue-list' %}">
           <i class="fal fa-book-open"></i><span class="menu-title">Issues</span>
         </a>
@@ -132,6 +146,14 @@
           <a href="{% url 'parser-schedule' %}">
             <i class="far fa-calendar-alt"></i><span class="menu-title">Parser schedule</span>
           </a>
+        </li>
+        <li class="nav-item has-sub"><a href="#"><i class="fal fa-project-diagram"></i><span class="menu-title" data-i18n="">Marvel API</span></a>
+          <ul class="menu-content" style="">
+            <li class="is-shown"><a class="menu-item" href="{% url "site-marvel-api-series-list" %}">Series</a>
+            </li>
+            <li class="is-shown"><a class="menu-item" href="#">Comics</a>
+            </li>
+          </ul>
         </li>
       {% endif %}
     </ul>
@@ -169,7 +191,8 @@
 <footer class="footer footer-static footer-light navbar-border">
   <p class="clearfix blue-grey lighten-2 text-sm-center mb-0 px-2"><span
       class="float-md-left d-block d-md-inline-block">Copyright  &copy; 2019 <a
-      href="{% url "site-main" %}">ComicsDB</a>, All rights reserved. You can send your problem description to <a href="mailto:nonameit@ya.ru">nonameit@ya.ru</a></span>
+      href="{% url "site-main" %}">ComicsDB</a>, All rights reserved. You can send your problem description to <a
+      href="mailto:nonameit@ya.ru">nonameit@ya.ru</a></span>
     {% if user.is_authenticated %}
       <span class="float-md-right d-block d-md-inline-block d-none d-lg-block">We build API for this shit, <a
           href="{% url "api-root" %}" target="_blank">check this out</a></span></p>{% endif %}
