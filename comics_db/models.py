@@ -404,6 +404,30 @@ class Creator(models.Model):
         self.slug = self.get_slug()
         super(Creator, self).save(force_insert, force_update, using, update_fields)
 
+    def fill_from_marvel_api(self, api_creator: 'MarvelAPICreator' = None):
+        api_creator = api_creator or self.marvel_api_creator
+
+        # Name
+        self.name = api_creator.full_name
+
+        # Marvel URL
+        try:
+            self.url = api_creator.urls.get(type="detail").url
+        except MarvelAPISiteUrl.DoesNotExist:
+            self.url = ''
+
+        # Image
+        try:
+            api_image = api_creator.image
+            link = "{0.path}.{0.extension}".format(api_image)
+            r = requests.get(link, allow_redirects=True)
+            with tempfile.NamedTemporaryFile() as image:
+                image.write(r.content)
+                self.image.save(link, image)
+
+        except MarvelAPIImage.DoesNotExist:
+            image = None
+
 
 def get_universe_poster_name(instance, filename):
     return "universe_poster/{0}_poster.{1}".format(instance.name, filename.split('.')[-1])
@@ -780,6 +804,32 @@ class Character(models.Model):
         self.slug = self.get_slug()
         super(Character, self).save(force_insert, force_update, using, update_fields)
 
+    def fill_from_marvel_api(self, api_character: 'MarvelAPICharacter' = None):
+        api_character = api_character or self.marvel_api_chararcter
+
+        # Name
+        self.name = api_character.name
+
+        # Description
+        self.desc = api_character.description or self.desc
+
+        # Marvel URL
+        try:
+            self.marvel_wiki_url = api_character.urls.get(type="wiki").url
+        except MarvelAPISiteUrl.DoesNotExist:
+            self.marvel_wiki_url = ''
+
+        # Image
+        try:
+            api_image = api_character.image
+            link = "{0.path}.{0.extension}".format(api_image)
+            r = requests.get(link, allow_redirects=True)
+            with tempfile.NamedTemporaryFile() as image:
+                image.write(r.content)
+                self.image.save(link, image)
+        except MarvelAPIImage.DoesNotExist:
+            self.image = None
+
     class Meta:
         unique_together = (("publisher", "name"),)
 
@@ -825,6 +875,56 @@ class Event(models.Model):
         self.slug = self.get_slug()
         super(Event, self).save(force_insert, force_update, using, update_fields)
 
+    def fill_from_marvel_api(self, api_event: 'MarvelAPIEvent' = None):
+        api_event = api_event or self.marvel_api_event
+
+        # Name
+        self.name = api_event.name
+
+        # Description
+        self.desc = api_event.description or self.desc
+
+        # Start / End
+        self.start = api_event.start
+        self.end = api_event.end
+
+        # Creators
+        event_creators = []
+        for api_creator in MarvelAPIEventCreator.objects.filter(event=api_event):
+            event_creator = EventCreator(event=self, creator=api_creator.creator.creator,
+                                                       role=api_creator.role)
+            event_creators.append(event_creator)
+
+        EventCreator.objects.filter(event=self).delete()
+        EventCreator.objects.bulk_create(event_creators)
+
+        # Characters
+        event_characters = []
+        for api_character in api_event.characters.all():
+            event_characters.append(api_character.character)
+
+        self.characters.set(event_characters)
+
+        # Marvel URL
+        try:
+            self.url = api_event.urls.get(type="wiki").url
+        except MarvelAPISiteUrl.DoesNotExist:
+            try:
+                self.url = api_event.urls.get(type="detail").url
+            except MarvelAPISiteUrl.DoesNotExist:
+                self.url = ''
+
+        # Image
+        try:
+            api_image = api_event.image
+            link = "{0.path}.{0.extension}".format(api_image)
+            r = requests.get(link, allow_redirects=True)
+            with tempfile.NamedTemporaryFile() as image:
+                image.write(r.content)
+                self.image.save(link, image)
+        except MarvelAPIImage.DoesNotExist:
+            self.image = None
+
     class Meta:
         unique_together = (("publisher", "name"),)
 
@@ -843,6 +943,12 @@ class MarvelAPICharacter(models.Model):
 
     character = models.ForeignKey(Character, null=True, on_delete=models.SET_NULL, related_name="marvel_api_chararcter")
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super(MarvelAPICharacter, self).save(force_insert, force_update, using, update_fields)
+        if self.character:
+            self.character.fill_from_marvel_api(self)
+
 
 class MarvelAPICreator(models.Model):
     id = models.IntegerField(primary_key=True, help_text='The unique ID of the creator resource.')
@@ -855,6 +961,12 @@ class MarvelAPICreator(models.Model):
     resource_URI = models.TextField(blank=True, help_text='The canonical URL identifier for this resource.')
 
     creator = models.ForeignKey(Creator, null=True, on_delete=models.SET_NULL, related_name="marvel_api_creator")
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super(MarvelAPICreator, self).save(force_insert, force_update, using, update_fields)
+        if self.creator:
+            self.creator.fill_from_marvel_api(self)
 
 
 class MarvelAPIEventCreator(models.Model):
@@ -877,6 +989,12 @@ class MarvelAPIEvent(models.Model):
                                       help_text='Creators whose work appears in this event.')
 
     event = models.ForeignKey(Event, null=True, on_delete=models.SET_NULL, related_name="marvel_api_event")
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super(MarvelAPIEvent, self).save(force_insert, force_update, using, update_fields)
+        if self.event:
+            self.event.fill_from_marvel_api(self)
 
 
 class MarvelAPISeriesCreator(models.Model):
@@ -906,6 +1024,12 @@ class MarvelAPISeries(models.Model):
 
     ignore = models.BooleanField(default=False)
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super(MarvelAPISeries, self).save(force_insert, force_update, using, update_fields)
+        if self.db_title:
+            self.db_title.fill_from_marvel_api(self)
+
 
 class MarvelAPIComicsCreator(models.Model):
     creator = models.ForeignKey(MarvelAPICreator, on_delete=models.CASCADE)
@@ -931,6 +1055,12 @@ class MarvelAPIComics(models.Model):
                                     help_text='Events in which this comic appears.')
     series = models.ForeignKey(MarvelAPISeries, related_name='comics', on_delete=models.CASCADE,
                                help_text='Series to which this comic belongs.')
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super(MarvelAPIComics, self).save(force_insert, force_update, using, update_fields)
+        if self.db_issue:
+            self.db_issue.fill_from_marvel_api(self)
 
 
 class MarvelAPIDate(models.Model):

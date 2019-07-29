@@ -4,6 +4,7 @@ let pagerParams = {
   totalPages       : 0
 };
 let run_detail_id;
+let db_id;
 
 const STATUS_COLORS = {
   SUCCESS : 'success',
@@ -75,6 +76,20 @@ function set_api_comics(db_issue_id, api_comic_id) {
   });
 }
 
+function setManual(){
+  let api_id = $('#modal-set-manual').val();
+  if (!api_id){
+    errorNotify("API ID not set")
+  } else {
+    if (parser === "MARVEL_API_TITLE_MERGE") {
+      set_api_series(db_id, api_id);
+    }
+    if (parser === "MARVEL_API_ISSUE_MERGE") {
+      set_api_comics(db_id, api_id);
+    }
+  }
+}
+
 function showStep(obj) {
   // Get step data
   $.ajax({
@@ -83,6 +98,7 @@ function showStep(obj) {
   })
     .done(function (response) {
       run_detail_id = response.id;
+      db_id = response.db_id;
         // Set fields
         $("#modal-api").text(response.api_name || '');
         $("#modal-db").html('<a href="'+response.site_link+'" target="_blank">'+response.db_name+'</a>');

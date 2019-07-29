@@ -929,23 +929,8 @@ class MarvelAPICreatorMergeParser(BaseParser):
                     api_creator.save()
                 run_detail.db_creator = db_creator
                 run_detail.save()
-                # Marvel URL
-                try:
-                    db_creator.url = api_creator.urls.get(type="detail").url
-                except comics_models.MarvelAPISiteUrl.DoesNotExist:
-                    db_creator.url = ''
 
-                # Image
-                try:
-                    api_image = api_creator.image
-                    link = "{0.path}.{0.extension}".format(api_image)
-                    r = requests.get(link, allow_redirects=True)
-                    with tempfile.NamedTemporaryFile() as image:
-                        image.write(r.content)
-                        db_creator.image.save(link, image)
-
-                except comics_models.MarvelAPIImage.DoesNotExist:
-                    db_creator.image = None
+                db_creator.fill_from_marvel_api(api_creator)
 
                 db_creator.save()
                 run_detail.end_with_success()
@@ -979,7 +964,6 @@ class MarvelAPICharacterMergeParser(BaseParser):
         for api_character in self._api_characters:
             run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, api_character=api_character)
             run_detail.save()
-            # Finding db creator
             try:
                 if api_character.character:
                     db_character = api_character.character
@@ -998,26 +982,7 @@ class MarvelAPICharacterMergeParser(BaseParser):
                 run_detail.db_character = db_character
                 run_detail.save()
 
-                # Description
-                db_character.desc = api_character.description or db_character.desc
-
-                # Marvel URL
-                try:
-                    db_character.marvel_wiki_url = api_character.urls.get(type="wiki").url
-                except comics_models.MarvelAPISiteUrl.DoesNotExist:
-                    db_character.marvel_wiki_url = ''
-
-                # Image
-                try:
-                    api_image = api_character.image
-                    link = "{0.path}.{0.extension}".format(api_image)
-                    r = requests.get(link, allow_redirects=True)
-                    with tempfile.NamedTemporaryFile() as image:
-                        image.write(r.content)
-                        db_character.image.save(link, image)
-
-                except comics_models.MarvelAPIImage.DoesNotExist:
-                    db_character.image = None
+                db_character.fill_from_marvel_api(api_character)
 
                 db_character.save()
                 run_detail.end_with_success()
@@ -1051,16 +1016,15 @@ class MarvelAPIEventMergeParser(BaseParser):
         for api_event in self._api_events:
             run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, api_event=api_event)
             run_detail.save()
-            # Finding db creator
             try:
                 if api_event.event:
                     db_event = api_event.event
                     db_event.name = api_event.title
 
                 else:
-                    db_event, created = comics_models.Event.objects.get_or_create(name=api_event.title,
-                                                                                  publisher=comics_models.Publisher.objects.get(
-                                                                                      slug="marvel"))
+                    db_event, created = comics_models.Event.objects.get_or_create(
+                        name=api_event.title,
+                        publisher=comics_models.Publisher.objects.get(slug="marvel"))
                     if created:
                         run_detail.created = True
                         db_event.save()
@@ -1070,50 +1034,7 @@ class MarvelAPIEventMergeParser(BaseParser):
                 run_detail.db_event = db_event
                 run_detail.save()
 
-                # Description
-                db_event.desc = api_event.description or db_event.desc
-
-                # Start / End
-                db_event.start = api_event.start
-                db_event.end = api_event.end
-
-                # Creators
-                event_creators = []
-                for api_creator in comics_models.MarvelAPIEventCreator.objects.filter(event=api_event):
-                    event_creator = comics_models.EventCreator(event=db_event, creator=api_creator.creator.creator,
-                                                               role=api_creator.role)
-                    event_creators.append(event_creator)
-
-                comics_models.EventCreator.objects.filter(event=db_event).delete()
-                comics_models.EventCreator.objects.bulk_create(event_creators)
-
-                # Characters
-                event_characters = []
-                for api_character in api_event.characters.all():
-                    event_characters.append(api_character.character)
-
-                db_event.characters.set(event_characters)
-
-                # Marvel URL
-                try:
-                    db_event.url = api_event.urls.get(type="wiki").url
-                except comics_models.MarvelAPISiteUrl.DoesNotExist:
-                    try:
-                        db_event.url = api_event.urls.get(type="detail").url
-                    except comics_models.MarvelAPISiteUrl.DoesNotExist:
-                        db_event.url = ''
-
-                # Image
-                try:
-                    api_image = api_event.image
-                    link = "{0.path}.{0.extension}".format(api_image)
-                    r = requests.get(link, allow_redirects=True)
-                    with tempfile.NamedTemporaryFile() as image:
-                        image.write(r.content)
-                        db_event.image.save(link, image)
-
-                except comics_models.MarvelAPIImage.DoesNotExist:
-                    db_event.image = None
+                db_event.fill_from_marvel_api(api_event)
 
                 db_event.save()
                 run_detail.end_with_success()

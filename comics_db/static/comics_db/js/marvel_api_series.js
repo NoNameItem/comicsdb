@@ -42,10 +42,10 @@ let controller = {
   }
 };
 
-function toggleIgnore(series_id){
+function toggleIgnore(series_id) {
   $.ajax({
-    url         : "/api/marvel_api/series/" + series_id + "/toggle_ignore",
-    type        : 'POST',
+    url  : "/api/marvel_api/series/" + series_id + "/toggle_ignore",
+    type : 'POST',
   }).done(function (data, textStatus, jqXHR) {
     successNotify("Success", "Series visibility changed");
     $('#grid').jsGrid('loadData');
@@ -88,9 +88,16 @@ $(document).ready(function () {
         type         : "control",
         width        : 25,
         itemTemplate : function (value, item) {
-          return '<a href="#" onclick="toggleIgnore('+item.id+')" title="Toggle ignore" data-toggle="tooltip"\n' +
-            '                     data-placement="bottom"><i class="fal ' + (item.ignore ? "fa-eye" : "fa-eye-slash") +'"></i></a>';
+          return '<a href="#" onclick="toggleIgnore(' + item.id + ')" title="Toggle ignore" data-toggle="tooltip"\n' +
+            '                     data-placement="bottom"><i class="fal ' + (item.ignore ? "fa-eye" : "fa-eye-slash") + '"></i></a>';
         }
+      },
+      {
+        name  : "id",
+        type  : "number",
+        title : "ID",
+        align : "center",
+        width : 40
       },
       {
         name  : "title",
