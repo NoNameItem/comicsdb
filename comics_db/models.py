@@ -320,6 +320,10 @@ class MarvelAPIIssueMergeParserRunDetail(ParserRunDetail):
     def db_name(self):
         return str(self.db_issue)
 
+    @property
+    def api_series_link(self):
+        return reverse('site-marvel-api-series-detail', args=(self.db_issue.title.api_series.id,))
+
 ########################################################################################################################
 # Comics Info
 ########################################################################################################################

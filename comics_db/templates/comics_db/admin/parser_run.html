@@ -466,6 +466,14 @@
                       <span id="modal-status" class="form-control-plaintext">test</span>
                     </div>
                   </div>
+                  {% if parser_run.parser == 'MARVEL_API_ISSUE_MERGE' %}
+                    <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="modal-status" class="text-bold-700 mr-1">Status</label>
+                      <a href="#" id="modal-api-series-link" target="_blank">test</a>
+                    </div>
+                  </div>
+                  {% endif %}
                 </div>
 
                 <h4 class="form-section border-bottom-success"><i class="ft-info"></i> Set Manual</h4>

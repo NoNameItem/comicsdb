@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
   Marvel API Series: {{ api_series.title }}
@@ -12,7 +13,18 @@
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
   <li class="breadcrumb-item"><a href="#">Marvel API</a></li>
   <li class="breadcrumb-item"><a href="{% url "site-marvel-api-series-list" %}">Series</a></li>
-  <li class="breadcrumb-item active" aria-current="page"><a href="{% url "site-marvel-api-series-detail" api_series.id %}">{{ api_series.title }}</a></li>
+  <li class="breadcrumb-item active" aria-current="page"><a
+      href="{% url "site-marvel-api-series-detail" api_series.id %}">{{ api_series.title }}</a></li>
+{% endblock %}
+
+{% block vendor_css %}
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid-theme.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/css/plugins/forms/switch.min.css" %}">
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "comics_db/css/marvel-api-series.css" %}">
 {% endblock %}
 
 {% block content %}
@@ -83,6 +95,19 @@
         </div>
       </div>
       <div>
+        <div class="row mb-1">
+          <div class="col-auto pr-0 font-medium-3 setup-label-container">
+            <label class="form-check-label ml-1" for="show-matched">
+              Show matched
+            </label>
+          </div>
+          <div class="col-auto pl-0">
+            <div class="form-check">
+              <input type="checkbox" class="switch setup" id="show-matched" name="show_matched"
+                     data-reverse>
+            </div>
+          </div>
+        </div>
         <div class="card">
           <div class="card-header">
             <h4 class="card-title">Comics
@@ -98,29 +123,8 @@
           </div>
           <div class="card-content collapse show">
             <div class="card-body" style="overflow-x: auto">
-              <div class="table-responsive">
-                <table class="table">
-                  <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>#</th>
-                    <th>Title</th>
-                    <th>Page count</th>
-                    <th>Description</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  {% for comic in api_series.comics.all|dictsort:"issue_number" %}
-                    <tr>
-                      <td>{{ comic.id }}</td>
-                      <td>{{ comic.issue_number }}</td>
-                      <td style="min-width: 300px">{{ comic.title }}</td>
-                      <td>{{ comic.page_count }}</td>
-                      <td>{{ comic.description }}</td>
-                    </tr>
-                  {% endfor %}
-                  </tbody>
-                </table>
+              <div id="grid">
+
               </div>
             </div>
 
@@ -129,4 +133,26 @@
       </div>
     </div>
   </section>
+{% endblock %}
+
+{% block vendor_js %}
+  <script src="{% static "app-assets/vendors/js/tables/jsgrid/jsgrid.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/tables/jsgrid/i18n/jsgrid-ru.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pagination/jquery.twbsPagination.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/forms/extended/inputmask/jquery.inputmask.bundle.min.js" %}"></script>
+  <script src="{% static "app-assets/vendors/js/forms/toggle/bootstrap-checkbox.min.js" %}"
+          type="text/javascript"></script>
+{% endblock %}
+
+{% block page_js %}
+  <script>
+    let series_id = {{ api_series.id }};
+  </script>
+  <script src="{% static "js/jsgrid_utils.js" %}" type="text/javascript"></script>
+  <script src="{% static "comics_db/js/marvel_api_comics.js" %}" type="text/javascript"></script>
 {% endblock %}

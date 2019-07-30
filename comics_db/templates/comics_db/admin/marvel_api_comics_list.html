@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Marvel API Series{% endblock %}
+{% block title %}Marvel API Comics{% endblock %}
 
-{% block page_title %}Marvel API Series{% endblock %}
+{% block page_title %}Marvel API Comics{% endblock %}
 
 {% block breadcrumb_items %}
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
@@ -36,17 +36,17 @@
       </div>
     </div>
 
-    <div class="col-auto pr-0 font-medium-3 setup-label-container">
-      <label class="form-check-label ml-1" for="show-ignored">
-        Show ignored
-      </label>
-    </div>
-    <div class="col-auto pl-0">
-      <div class="form-check">
-        <input type="checkbox" class="switch setup" id="show-ignored" name="show_ignored"
-               data-reverse>
-      </div>
-    </div>
+{#    <div class="col-auto pr-0 font-medium-3 setup-label-container">#}
+{#      <label class="form-check-label ml-1" for="show-ignored">#}
+{#        Show ignored#}
+{#      </label>#}
+{#    </div>#}
+{#    <div class="col-auto pl-0">#}
+{#      <div class="form-check">#}
+{#        <input type="checkbox" class="switch setup" id="show-ignored" name="show_ignored"#}
+{#               data-reverse>#}
+{#      </div>#}
+{#    </div>#}
   </div>
   <div id="grid-container" style="overflow-x: auto; width: 100%">
     <div id="grid"></div>
@@ -70,14 +70,5 @@
 
 {% block page_js %}
   <script src="{% static "js/jsgrid_utils.js" %}" type="text/javascript"></script>
-  <script src="{% static "comics_db/js/marvel_api_series.js" %}" type="text/javascript"></script>
-  <script>
-    let TYPE_LOV = [
-      {id : "", name : ""},
-      {% for TYPE_CHOICE in TYPE_CHOICES %}
-      {id : "{{ TYPE_CHOICE.0 }}", name : "{{ TYPE_CHOICE.1 }}"},
-      {% endfor %}
-
-    ];
-  </script>
+  <script src="{% static "comics_db/js/marvel_api_comics.js" %}" type="text/javascript"></script>
 {% endblock %}

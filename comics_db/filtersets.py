@@ -452,3 +452,42 @@ class MarvelAPISeriesFilter(filters.FilterSet):
         if not value:
             queryset = queryset.exclude(db_title__isnull=False)
         return queryset
+
+
+class MarvelAPIComicsFilter(filters.FilterSet):
+    id = filters.NumberFilter(
+        field_name="id",
+        label="Id",
+        help_text="`id` equals"
+    )
+    title = filters.CharFilter(
+        field_name="title",
+        lookup_expr="icontains",
+        label="Title",
+        help_text="`title` contains (ignore case)"
+    )
+    issue_number = filters.NumberFilter(
+        field_name="issue_number",
+        label="Issue number",
+        help_text="`issue_number` equals"
+    )
+    page_count = filters.NumberFilter(
+        field_name="page_count",
+        label="page_count",
+        help_text="`page_count` equals"
+    )
+    description = filters.CharFilter(
+        field_name="description",
+        label="description",
+        help_text="`description` contains (ignore case)"
+    )
+    series_id = filters.NumberFilter(
+        field_name="series_id"
+    )
+
+    show_matched = filters.BooleanFilter(method="show_matched_filter")
+
+    def show_matched_filter(self, queryset, name, value):
+        if not value:
+            queryset = queryset.exclude(db_issue__isnull=False)
+        return queryset

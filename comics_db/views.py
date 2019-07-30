@@ -1635,6 +1635,17 @@ class MarvelAPISeriesViewSet(mixins.ListModelMixin, GenericViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
+class MarvelAPIComicsViewSet(mixins.ListModelMixin, GenericViewSet):
+    queryset = models.MarvelAPIComics.objects.all()
+    permission_classes = (IsAdminUser,)
+    serializer_class = serializers.MarvelAPIComicsSerializer
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    filterset_class = filtersets.MarvelAPIComicsFilter
+    pagination_class = PaginationClass
+    ordering_fields = ("id", "title", "issue_number", "page_count", "description")
+    ordering = ("title", "issue_number")
+
+
 class CloudFilesParserRunDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     permission_classes = (IsAdminUser,)
     queryset = models.CloudFilesParserRunDetail.objects.all()
@@ -1647,31 +1658,31 @@ class MarvelAPIParserRunDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet)
     serializer_class = serializers.MarvelAPIParserRunDetailDetailSerializer
 
 
-class MarvelAPICreatorMergeRunDetailDetailSerializerViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+class MarvelAPICreatorMergeRunDetailDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     permission_classes = (IsAdminUser,)
     queryset = models.MarvelAPICreatorMergeParserRunDetail.objects.all()
     serializer_class = serializers.MarvelAPICreatorMergeRunDetailDetailSerializer
 
 
-class MarvelAPICharacterMergeRunDetailDetailSerializerViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+class MarvelAPICharacterMergeRunDetailDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     permission_classes = (IsAdminUser,)
     queryset = models.MarvelAPICharacterMergeParserRunDetail.objects.all()
     serializer_class = serializers.MarvelAPICharacterMergeRunDetailListSerializer
 
 
-class MarvelAPIEventMergeRunDetailDetailSerializerViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+class MarvelAPIEventMergeRunDetailDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     permission_classes = (IsAdminUser,)
     queryset = models.MarvelAPIEventMergeParserRunDetail.objects.all()
     serializer_class = serializers.MarvelAPIEventMergeRunDetailDetailSerializer
 
 
-class MarvelAPITitleMergeRunDetailDetailSerializerViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+class MarvelAPITitleMergeRunDetailDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     permission_classes = (IsAdminUser,)
     queryset = models.MarvelAPITitleMergeParserRunDetail.objects.all()
     serializer_class = serializers.MarvelAPITitleMergeRunDetailDetailSerializer
 
 
-class MarvelAPIIssueMergeRunDetailDetailSerializerViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+class MarvelAPIIssueMergeRunDetailDetailViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     permission_classes = (IsAdminUser,)
     queryset = models.MarvelAPIIssueMergeParserRunDetail.objects.all()
     serializer_class = serializers.MarvelAPIIssueMergeRunDetailDetailSerializer

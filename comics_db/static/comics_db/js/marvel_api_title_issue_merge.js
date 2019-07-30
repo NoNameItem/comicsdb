@@ -121,6 +121,10 @@ function showStep(obj) {
           $('#modal-error-block').hide();
         }
 
+        if (parser === 'MARVEL_API_ISSUE_MERGE'){
+          $('#modal-api-series-link').text(response.api_series_name).attr('href', response.api_series_link);
+
+        }
 
         // Change modal coloring
         let color = STATUS_COLORS[response.status];

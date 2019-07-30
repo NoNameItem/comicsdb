@@ -177,6 +177,16 @@ class MarvelAPISeriesSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+# Marvel API Comics
+
+
+class MarvelAPIComicsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MarvelAPIComics
+        fields = ("id", "title", "issue_number", "page_count", "description")
+        read_only_fields = fields
+
+
 # ParserRun
 
 
@@ -484,12 +494,16 @@ class MarvelAPIIssueMergeRunDetailDetailSerializer(serializers.HyperlinkedModelS
         read_only=True,
         source="db_issue.id"
     )
+    api_series_name = serializers.CharField(
+        read_only=True,
+        source="db_issue.title.api_series.title"
+    )
 
     class Meta:
         model = models.MarvelAPIIssueMergeParserRunDetail
         fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
                   "api_name", "db_name", "error_detail", "site_link",  "merge_result", "merge_result_name",
-                  "possible_matches", "db_id")
+                  "possible_matches", "db_id", "api_series_link", "api_series_name")
         read_only_fields = fields
 
 
