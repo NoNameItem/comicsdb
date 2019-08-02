@@ -45,3 +45,11 @@ class ReadingListForm(forms.ModelForm):
         model = models.ReadingList
         fields = ["name", "desc", "owner", "sorting"]
 
+
+class CreatorForm(forms.Form):
+    photo = forms.ImageField(required=False)
+    image = forms.ImageField(required=False)
+
+    class Meta:
+        model = models.Creator
+        fields = ["name", "bio", "photo", "image"]

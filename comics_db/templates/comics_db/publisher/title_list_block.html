@@ -21,7 +21,7 @@
         {% endif %}">
         <div class="card-body">
           <h4 class="card-title">{{ title.name }} {% if title.issue_count == title.read_issue_count %}
-              <i class="fas fa-check-circle success"></i>{% endif %}</h4>
+              <i class="fal fa-check-circle success"></i>{% endif %}</h4>
           <ul class="list-inline list-inline-pipe">
             {% if title.universe %}<li>{{ title.universe.name }}</li>{% endif %}
             <li>{{ title.title_type.name }}</li>

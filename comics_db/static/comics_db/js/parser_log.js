@@ -102,7 +102,7 @@ $('#grid').jsGrid({
       type         : "control",
       width        : 25,
       itemTemplate : function (value, item) {
-        return "<a href='" + item.page + "'><i class='fa fa-list'></i></a>";
+        return "<a href='" + item.page + "'><i class='fal fa-list'></i></a>";
       }
     },
     {

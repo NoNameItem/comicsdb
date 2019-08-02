@@ -24,7 +24,7 @@
       <div id="run-card" class="card" style="zoom: 1;">
         <div class="card-header card-head-inverse bg-{{ status_css }}">
           <h2 class="card-title">Run info</h2>
-          <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+          <a class="heading-elements-toggle"><i class="fal fa-ellipsis-v font-medium-3"></i></a>
           <div class="heading-elements">
             <ul class="list-inline mb-0">
               <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
@@ -35,7 +35,7 @@
           <div class="card-body card-dashboard">
             <form class="form">
               <div class="form-body">
-                <h4 class="form-section"><i class="fas fa-info"></i> Main info</h4>
+                <h4 class="form-section"><i class="fal fa-info"></i> Main info</h4>
                 <div class="row">
                   <div class="col-xs-6">
                     <div class="form-group">
@@ -53,7 +53,7 @@
                   </div>
                 </div>
 
-                <h4 class="form-section"><i class="fas fa-cogs"></i> Parameters</h4>
+                <h4 class="form-section"><i class="fal fa-cogs"></i> Parameters</h4>
                 {% for parameter in parser_run.parameters.all %}
                   <div class="row">
                     <div class="col-12">
@@ -69,7 +69,7 @@
                 {% endfor %}
 
 
-                <h4 class="form-section"><i class="far fa-clock"></i> Execution time</h4>
+                <h4 class="form-section"><i class="fal fa-clock"></i> Execution time</h4>
 
                 <div class="row">
                   <div class="col-xs-6">
@@ -89,7 +89,7 @@
 
                 </div>
 
-                <h4 class="form-section"><i class="fa fa-list"></i> Records</h4>
+                <h4 class="form-section"><i class="fal fa-list"></i> Records</h4>
 
                 <div class="row">
                   <div class="col-xs-6">
@@ -127,7 +127,7 @@
                 </div>
 
                 {% if parser_run.error or parser_run.error_detail %}
-                  <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
+                  <h4 class="form-section text-danger"><i class="fal fa-exclamation-triangle"></i> Error</h4>
                   {% if parser_run.error %}
                     <p>{{ parser_run.error }}</p>
                   {% endif %}
@@ -148,7 +148,7 @@
       <div id="run-detail-card" class="card" style="zoom: 1;">
         <div class="card-header card-head-inverse bg-{{ status_css }}">
           <h2 class="card-title">Parser steps</h2>
-          <a class="heading-elements-toggle"><i class="fa fa-ellipsis-v font-medium-3"></i></a>
+          <a class="heading-elements-toggle"><i class="fal fa-ellipsis-v font-medium-3"></i></a>
           <div class="heading-elements">
             <ul class="list-inline mb-0">
               <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
@@ -204,7 +204,7 @@
 
                 </div>
 
-                <h4 class="form-section"><i class="fas fa-book"></i> Issue</h4>
+                <h4 class="form-section"><i class="fal fa-book"></i> Issue</h4>
                 <div class="row">
                   <div class="col-md-10">
                     <div class="form-group">
@@ -216,13 +216,13 @@
                     <div class="form-group">
                       <label for="modal-created" class="text-bold-700">Created</label>
                       <span id="modal-created" class="form-control-plaintext"><i
-                          class="far fa-check-circle success fa-2x"></i></span>
+                          class="fal fa-check-circle success fa-2x"></i></span>
 
                     </div>
                   </div>
                 </div>
 
-                <h4 class="form-section"><i class="fas fa-book"></i> Parser detail</h4>
+                <h4 class="form-section"><i class="fal fa-book"></i> Parser detail</h4>
                 <div class="form-group">
                   <label for="modal-regex" class="text-bold-700">Regex</label>
                   <span id="modal-regex" class="form-control-plaintext">test</span>
@@ -234,7 +234,7 @@
                   </code></pre>
                 </div>
 
-                <h4 class="form-section"><i class="far fa-clock"></i> Execution time</h4>
+                <h4 class="form-section"><i class="fal fa-clock"></i> Execution time</h4>
 
                 <div class="row">
                   <div class="col-md-6">
@@ -254,7 +254,7 @@
 
                 </div>
                 <div id="modal-error-block">
-                  <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
+                  <h4 class="form-section text-danger"><i class="fal fa-exclamation-triangle"></i> Error</h4>
                   <p id="modal-error"></p>
                   <code class="text-bold-300" id="modal-error-detail"></code>
                 </div>
@@ -307,7 +307,7 @@
 
                 </div>
 
-                <h4 class="form-section"><i class="fas fa-book"></i> Parser detail</h4>
+                <h4 class="form-section"><i class="fal fa-book"></i> Parser detail</h4>
                 <div class="form-group">
                   <label for="modal-groups" class="text-bold-700">Data</label>
                   <pre><code id="modal-data" class="language-json">
@@ -315,7 +315,7 @@
                   </code></pre>
                 </div>
 
-                <h4 class="form-section"><i class="far fa-clock"></i> Execution time</h4>
+                <h4 class="form-section"><i class="fal fa-clock"></i> Execution time</h4>
 
                 <div class="row">
                   <div class="col-md-6">
@@ -335,7 +335,7 @@
 
                 </div>
                 <div id="modal-error-block">
-                  <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
+                  <h4 class="form-section text-danger"><i class="fal fa-exclamation-triangle"></i> Error</h4>
                   <p id="modal-error"></p>
                   <code class="text-bold-300" id="modal-error-detail"></code>
                 </div>
@@ -383,7 +383,7 @@
                     <div class="form-group">
                       <label for="modal-created" class="text-bold-700">Created</label>
                       <span id="modal-created" class="form-control-plaintext"><i
-                          class="far fa-check-circle success fa-2x"></i></span>
+                          class="fal fa-check-circle success fa-2x"></i></span>
 
                     </div>
                   </div>
@@ -396,7 +396,7 @@
 
                 </div>
 
-                <h4 class="form-section"><i class="far fa-clock"></i> Execution time</h4>
+                <h4 class="form-section"><i class="fal fa-clock"></i> Execution time</h4>
 
                 <div class="row">
                   <div class="col-md-6">
@@ -416,7 +416,7 @@
 
                 </div>
                 <div id="modal-error-block">
-                  <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
+                  <h4 class="form-section text-danger"><i class="fal fa-exclamation-triangle"></i> Error</h4>
                   <p id="modal-error"></p>
                   <code class="text-bold-300" id="modal-error-detail"></code>
                 </div>
@@ -489,7 +489,7 @@
                   </div>
                 </div>
 
-                <h4 class="form-section"><i class="far fa-clock"></i> Execution time</h4>
+                <h4 class="form-section"><i class="fal fa-clock"></i> Execution time</h4>
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
@@ -508,7 +508,7 @@
 
                 </div>
                 <div id="modal-error-block">
-                  <h4 class="form-section text-danger"><i class="fa fa-exclamation-triangle"></i> Error</h4>
+                  <h4 class="form-section text-danger"><i class="fal fa-exclamation-triangle"></i> Error</h4>
                   <p id="modal-error"></p>
                   <code class="text-bold-300" id="modal-error-detail"></code>
                 </div>

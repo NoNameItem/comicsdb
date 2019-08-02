@@ -47,9 +47,9 @@ function showStep(obj) {
         $("#modal-db").text(response.db_name);
         $("#modal-status").text(response.status_name);
         if (response.created) {
-          $("#modal-created").html('<i class="far fa-check-circle success fa-2x"></i>');
+          $("#modal-created").html('<i class="fal fa-check-circle success fa-2x"></i>');
         } else {
-          $("#modal-created").html('<i class="far fa-times-circle danger fa-2x"></i>');
+          $("#modal-created").html('<i class="fal fa-times-circle danger fa-2x"></i>');
         }
 
         $("#modal-data").text(response.data);

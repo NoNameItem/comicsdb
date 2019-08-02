@@ -26,6 +26,7 @@
       <div><img src="https://mc.yandex.ru/watch/53974480" style="position:absolute; left:-9999px;" alt=""/></div>
     </noscript> <!-- /Yandex.Metrika counter -->
   {% endif %}
+  <script src="https://kit.fontawesome.com/fcb1921aef.js"></script>
   <title>{% block title %}Yet Another Comics DB{% endblock %}</title>
   <link rel="icon" href="{% static "images/favicon.png" %}">
   <link
@@ -33,7 +34,7 @@
       rel="stylesheet">
   <!-- BEGIN VENDOR CSS-->
   <link rel="stylesheet" type="text/css" href="{% static "app-assets/vendors/css/vendors.min.css" %}">
-  <link type="text/css" rel="stylesheet" href="{% static "fontawesome/css/all.min.css" %}"/>
+{#  <link type="text/css" rel="stylesheet" href="{% static "fontawesome/css/all.min.css" %}"/>#}
   <link rel="stylesheet" type="text/css" href="{% static "app-assets/vendors/css/extensions/toastr.css" %}">
   {% block vendor_css %}{% endblock %}
   <!-- END VENDOR CSS-->
@@ -68,7 +69,7 @@
                                                                                        src="{% static "images/logo.png" %}">
           <h2 class="brand-text">ComicsDB</h2></a></li>
         <li class="nav-item d-md-none"><a class="nav-link open-navbar-container" data-toggle="collapse"
-                                          data-target="#navbar-mobile"><i class="fa fa-ellipsis-v"></i></a></li>
+                                          data-target="#navbar-mobile"><i class="fal fa-ellipsis-v"></i></a></li>
       </ul>
     </div>
     <div class="navbar-container content">
@@ -116,6 +117,11 @@
           <i class="fal fa-building"></i><span class="menu-title">Publishers</span>
         </a>
       </li>
+      <li class="{% if request.resolver_match.url_name|startswith:"site-creator" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-creator-list' %}">
+          <i class="fal fa-pencil-paintbrush"></i><span class="menu-title">Creators</span>
+        </a>
+      </li>
       <li class="{% if request.resolver_match.url_name|startswith:"site-universe" %}active{% else %}nav-item{% endif %}">
         <a href="{% url 'site-universe-list' %}">
           <i class="fal fa-globe-asia"></i><span class="menu-title">Universes</span>
@@ -144,10 +150,11 @@
         </li>
         <li class="{% if request.resolver_match.url_name == "parser-schedule" %}active{% else %}nav-item{% endif %}">
           <a href="{% url 'parser-schedule' %}">
-            <i class="far fa-calendar-alt"></i><span class="menu-title">Parser schedule</span>
+            <i class="fal fa-calendar-alt"></i><span class="menu-title">Parser schedule</span>
           </a>
         </li>
-        <li class="nav-item has-sub"><a href="#"><i class="fal fa-project-diagram"></i><span class="menu-title" data-i18n="">Marvel API</span></a>
+        <li class="nav-item has-sub"><a href="#"><i class="fal fa-project-diagram"></i><span class="menu-title"
+                                                                                             data-i18n="">Marvel API</span></a>
           <ul class="menu-content" style="">
             <li class="is-shown"><a class="menu-item" href="{% url "site-marvel-api-series-list" %}">Series</a>
             </li>

@@ -432,6 +432,9 @@ class Creator(models.Model):
         except MarvelAPIImage.DoesNotExist:
             image = None
 
+    class Meta:
+        ordering = ("name",)
+
 
 def get_universe_poster_name(instance, filename):
     return "universe_poster/{0}_poster.{1}".format(instance.name, filename.split('.')[-1])

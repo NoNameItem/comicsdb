@@ -63,7 +63,7 @@
                   {% if user.is_staff %}
                     <div class="btn-group d-none d-sm-inline-flex float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#title-modal">
-                        <i class="fa fa-cog"></i>
+                        <i class="fal fa-cog"></i>
                       </button>
                       <button type="button" class="btn btn-warning" data-toggle="tooltip" onclick="$('#move-issue-modal').modal('show')"
                          data-placement="bottom" title="Move issues to another title">
@@ -80,7 +80,7 @@
           </div>
           <div class="card-desc text-muted">
             <h3><strong>{{ title.name }} ({{ title.title_type.name }}) {% if read == total %}
-              <i class="fas fa-check-circle success"></i>{% endif %}</strong></h3>
+              <i class="fal fa-check-circle success"></i>{% endif %}</strong></h3>
             <em>{{ title.desc|default:"No description" }}</em>
           </div>
         </div>

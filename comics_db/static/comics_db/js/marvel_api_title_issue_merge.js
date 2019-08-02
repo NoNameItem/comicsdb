@@ -104,9 +104,9 @@ function showStep(obj) {
         $("#modal-db").html('<a href="'+response.site_link+'" target="_blank">'+response.db_name+'</a>');
         $("#modal-status").text(response.status_name);
         if (response.created) {
-          $("#modal-created").html('<i class="far fa-check-circle success fa-2x"></i>');
+          $("#modal-created").html('<i class="fal fa-check-circle success fa-2x"></i>');
         } else {
-          $("#modal-created").html('<i class="far fa-times-circle danger fa-2x"></i>');
+          $("#modal-created").html('<i class="fal fa-times-circle danger fa-2x"></i>');
         }
 
         $("#modal-data").text(response.data);
