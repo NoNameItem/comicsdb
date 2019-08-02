@@ -1001,6 +1001,7 @@ class RunParser(UserPassesTestMixin, View):
         try:
             parser = request.POST['parser_code']
             args = tuple()
+            parser_name = self.parser_dict.get(parser)
             if not parser or parser == 'BASE':
                 return JsonResponse({'status': 'error', 'message': 'Invalid parser code "%s"' % parser})
             if parser == 'CLOUD_FILES':
@@ -1013,12 +1014,10 @@ class RunParser(UserPassesTestMixin, View):
             elif parser == 'MARVEL_API':
                 incremental = request.POST['marvel-api-incremental']
                 args = (incremental,)
-            if parser == "FULL_MARVEL_API_MERGE":
-                tasks.full_marvel_api_merge_task.delay()
-                return JsonResponse({'status': 'success', 'message': 'Full Marvel API Merge started'})
-            else:
-                tasks.parser_run_task.delay(parser, args)
-                return JsonResponse({'status': 'success', 'message': '%s started' % self.parser_dict[parser]})
+            elif parser == "FULL_MARVEL_API_MERGE":
+                parser_name = "Full Marvel API Merge"
+            tasks.parser_run_task.delay(parser, args)
+            return JsonResponse({'status': 'success', 'message': '%s started' % parser_name})
         except Exception as err:
             return JsonResponse({'status': 'error', 'message': err.args[0]})
 
@@ -1718,11 +1717,23 @@ class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixi
                 full = bool(request.POST['cloud-full'])
                 load_covers = bool(request.POST['cloud-load-cover'])
                 init_args = (path_root, full, load_covers)
+                task = 'comics_db.tasks.parser_run_task'
                 task_args = json.dumps((parser, init_args))
             elif parser == 'MARVEL_API':
                 incremental = request.POST['marvel-api-incremental']
                 init_args = (incremental,)
+                task = 'comics_db.tasks.parser_run_task'
                 task_args = json.dumps((parser, init_args))
+            elif parser in ("MARVEL_API_CREATOR_MERGE",
+                            "MARVEL_API_CHARACTER_MERGE",
+                            "MARVEL_API_EVENT_MERGE",
+                            "MARVEL_API_TITLE_MERGE",
+                            "MARVEL_API_ISSUE_MERGE"):
+                task = 'comics_db.tasks.parser_run_task'
+                task_args = json.dumps((parser, []))
+            elif parser == "FULL_MARVEL_API_MERGE":
+                task = 'comics_db.tasks.parser_run_task'
+                task_args = json.dumps((parser, []))
             else:
                 return Response({'status': 'error', 'message': 'Unknown parser code "%s"' % parser})
 
@@ -1761,7 +1772,7 @@ class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixi
                 )
                 PeriodicTask.objects.create(
                     crontab=schedule,
-                    task='comics_db.tasks.parser_run_task',
+                    task=task,
                     args=task_args,
                     name=name,
                     description=desc

@@ -17,8 +17,11 @@ parsers = {
 @shared_task(bind=True)
 def parser_run_task(self, parser_name, init_args):
     logger.info(init_args)
-    p = parsers[parser_name](*init_args)
-    p.run(self.request.id)
+    if parser_name == "FULL_MARVEL_API_MERGE":
+        full_marvel_api_merge_task.delay()
+    else:
+        p = parsers[parser_name](*init_args)
+        p.run(self.request.id)
 
 
 @shared_task(bind=True)
