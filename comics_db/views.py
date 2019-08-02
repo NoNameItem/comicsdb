@@ -1010,7 +1010,8 @@ class RunParser(UserPassesTestMixin, View):
                     return JsonResponse({'status': 'error', 'message': 'Path root should be specified'})
                 full = bool(request.POST['cloud-full'])
                 load_covers = bool(request.POST['cloud-load-cover'])
-                args = (path_root, full, load_covers)
+                marvel_api_merge = bool(request.POST['cloud-marvel-api-merge'])
+                args = (path_root, full, load_covers, marvel_api_merge)
             elif parser == 'MARVEL_API':
                 incremental = request.POST['marvel-api-incremental']
                 args = (incremental,)
@@ -1716,6 +1717,7 @@ class ParserScheduleViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixi
                     return JsonResponse({'status': 'error', 'message': 'Path root should be specified'})
                 full = bool(request.POST['cloud-full'])
                 load_covers = bool(request.POST['cloud-load-cover'])
+                marvel_api_merge = bool(request.POST['cloud-marvel-api-merge'])
                 init_args = (path_root, full, load_covers)
                 task = 'comics_db.tasks.parser_run_task'
                 task_args = json.dumps((parser, init_args))

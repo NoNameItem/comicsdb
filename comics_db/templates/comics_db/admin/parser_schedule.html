@@ -89,6 +89,14 @@
                     Load covers
                   </label>
                 </div>
+                <div class="form-check parser-run-form-group parser-run-form-group-CLOUD_FILES" style="display: none">
+                  <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input parser-run-input" name="cloud-marvel-api-merge"
+                           id="cloud-marvel-api-merge"
+                           value="true">
+                    Run marvel API merge
+                  </label>
+                </div>
                 <div class="form-check parser-run-form-group parser-run-form-group-MARVEL_API" style="display: none">
                   <label class="form-check-label">
                     <input type="checkbox" class="form-check-input add-task-input" name="marvel-api-incremental"
@@ -199,8 +207,8 @@
           </div>
         </div>
         <div class="card-footer border-{{ status_css }}">
-            <div id="pager"></div>
-          </div>
+          <div id="pager"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -219,7 +227,7 @@
 {% block page_js %}
   <script src="{% static "js/jsgrid_utils.js" %}" type="text/javascript"></script>
   <script>
-  let schedule_url = "{% url "parser-schedule-list" %}";
+    let schedule_url = "{% url "parser-schedule-list" %}";
   </script>
   <script type="text/javascript" src="{% static "comics_db/js/parser_schedule.js" %}"></script>
 {% endblock %}

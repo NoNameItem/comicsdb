@@ -23,7 +23,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from requests import RequestException
 
-from comics_db import models as comics_models
+from comics_db import models as comics_models, tasks
 from comics_db.reader import ComicsReader
 from comicsdb import settings
 from marvel_api_wrapper import entities
@@ -320,11 +320,12 @@ class CloudFilesParser(BaseParser):
                         re.IGNORECASE)
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
-    def __init__(self, path_prefix, queue=False, parser_run=None, full=False, load_covers=False):
+    def __init__(self, path_prefix, queue=False, parser_run=None, full=False, load_covers=False, marvel_api_merge=False):
         super().__init__(queue=queue, parser_run=parser_run)
         self._params['path_prefix'] = path_prefix
         self._params['full'] = full
         self._params['load_covers'] = load_covers
+        self._params['marvel_api_merge'] = marvel_api_merge
         self._publishers = set()
         self._universes = set()
         self._titles = set()
@@ -533,6 +534,8 @@ class CloudFilesParser(BaseParser):
                                 t.save()
                             except Exception:
                                 pass
+            if self._params.get('marvel_api_merge'):
+                tasks.full_marvel_api_merge_task.delay()
         except Error as err:
             raise RuntimeParserError("Error while performing postprocessing", err.args[0])
 
@@ -936,6 +939,7 @@ class MarvelAPIParser(BaseParser):
     def _postprocessing(self) -> NoReturn:
         self._series_link()
         self._events_link()
+        tasks.full_marvel_api_merge_task.delay()
 
 
 class MarvelAPICreatorMergeParser(BaseParser):
