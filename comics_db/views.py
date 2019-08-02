@@ -6,6 +6,7 @@ from zipfile import ZIP_DEFLATED
 
 import boto3
 import zipstream
+from celery import group
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import IntegrityError
@@ -35,7 +36,7 @@ from knox.settings import CONSTANTS, knox_settings
 from el_pagination.views import AjaxListView
 from smart_open import open as sm_open
 
-from comics_db import models, serializers, filtersets, tasks, forms
+from comics_db import models, serializers, filtersets, tasks, forms, parsers
 
 ########################################################################################################################
 # Site
@@ -1012,8 +1013,12 @@ class RunParser(UserPassesTestMixin, View):
             elif parser == 'MARVEL_API':
                 incremental = request.POST['marvel-api-incremental']
                 args = (incremental,)
-            tasks.parser_run_task.delay(parser, args)
-            return JsonResponse({'status': 'success', 'message': '%s started' % self.parser_dict[parser]})
+            if parser == "FULL_MARVEL_API_MERGE":
+                tasks.full_marvel_api_merge_task.delay()
+                return JsonResponse({'status': 'success', 'message': 'Full Marvel API Merge started'})
+            else:
+                tasks.parser_run_task.delay(parser, args)
+                return JsonResponse({'status': 'success', 'message': '%s started' % self.parser_dict[parser]})
         except Exception as err:
             return JsonResponse({'status': 'error', 'message': err.args[0]})
 

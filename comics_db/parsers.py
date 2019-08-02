@@ -65,10 +65,12 @@ class BaseParser:
     PARSER_NAME = 'Base parser'
     RUN_DETAIL_MODEL = comics_models.ParserRunDetail  # Model for saving parser detail logs
 
-    def __init__(self):
-        self._parser_run = None
+    def __init__(self, queue=False, parser_run=None):
+        self._parser_run = parser_run
         self._data = None
         self._params = {}
+        if not self._parser_run:
+            self.initialize_run(queue)
 
     @property
     def _items_count(self) -> int:
@@ -77,6 +79,10 @@ class BaseParser:
         :return: items count
         """
         return 0
+
+    @property
+    def parser_run(self) -> comics_models.ParserRun:
+        return self._parser_run
 
     def _prepare(self) -> NoReturn:
         """
@@ -170,6 +176,45 @@ class BaseParser:
         message_html = render_to_string("comics_db/admin/notifications/parser_error.html", data)
         self._notify_staff(message_html, message_txt, subject)
 
+    def initialize_run(self, queue):
+        if queue:
+            self._parser_run = comics_models.ParserRun(status="QUEUE")
+        else:
+            self._parser_run = comics_models.ParserRun()
+        # Checking parser code
+        # Parser code is overridden
+        if self.PARSER_CODE == BaseParser.PARSER_CODE:
+            raise InvalidParserImplementationError(
+                '{0.__class__} Parser code should be overridden in implementation'.format(self.PARSER_CODE))
+
+        # Parser code in valid parser codes list
+        if self.PARSER_CODE not in (x[0] for x in comics_models.ParserRun.PARSER_CHOICES):
+            raise InvalidParserImplementationError(
+                '{0.__class__} Parser code "{0.PARSER_CODE}" not in ParserRun.PARSER_CHOICES'.format(self))
+
+        self._parser_run.parser = self.PARSER_CODE
+
+        # Checking Run Detail Model
+        # Run Detail Model is a class
+        if not inspect.isclass(self.RUN_DETAIL_MODEL):
+            raise InvalidParserImplementationError(
+                '{0.__class__} Run Detail Model should be a class'.format(self))
+
+        # Run Detail Model is overridden
+        if self.RUN_DETAIL_MODEL == comics_models.ParserRunDetail:
+            raise InvalidParserImplementationError(
+                '{0.__class__} Run Detail Model should be overridden in implementation'.format(self))
+
+        # Run Detail Model is a subclass of BaseParser.RUN_DETAIL_MODEL
+        if not issubclass(self.RUN_DETAIL_MODEL, BaseParser.RUN_DETAIL_MODEL):
+            raise InvalidParserImplementationError(
+                '{0.__class__} Run Detail Model should be a subclass of BaseParser.RUN_DETAIL_MODEL'.format(self))
+        self._parser_run.save()
+
+        for k, v in self._params.items():
+            run_param = comics_models.ParserRunParams(parser_run=self._parser_run, name=k, val=str(v))
+            run_param.save()
+
     def run(self, celery_task_id: int = None) -> bool:
         """
         Main method for running parser.
@@ -179,43 +224,44 @@ class BaseParser:
         :return: Run result boolean (True - success, False - error)
         """
         try:
-            # Initializing Run
-            self._parser_run = comics_models.ParserRun()
+            # # Initializing Run
+            # if not self._parser_run:
+            #     self._parser_run = comics_models.ParserRun()
             self._parser_run.celery_task_id = celery_task_id
 
-            # Checking parser code
-            # Parser code is overridden
-            if self.PARSER_CODE == BaseParser.PARSER_CODE:
-                raise InvalidParserImplementationError(
-                    '{0.__class__} Parser code should be overridden in implementation'.format(self.PARSER_CODE))
-
-            # Parser code in valid parser codes list
-            if self.PARSER_CODE not in (x[0] for x in comics_models.ParserRun.PARSER_CHOICES):
-                raise InvalidParserImplementationError(
-                    '{0.__class__} Parser code "{0.PARSER_CODE}" not in ParserRun.PARSER_CHOICES'.format(self))
-
-            self._parser_run.parser = self.PARSER_CODE
-
-            # Checking Run Detail Model
-            # Run Detail Model is a class
-            if not inspect.isclass(self.RUN_DETAIL_MODEL):
-                raise InvalidParserImplementationError(
-                    '{0.__class__} Run Detail Model should be a class'.format(self))
-
-            # Run Detail Model is overridden
-            if self.RUN_DETAIL_MODEL == comics_models.ParserRunDetail:
-                raise InvalidParserImplementationError(
-                    '{0.__class__} Run Detail Model should be overridden in implementation'.format(self))
-
-            # Run Detail Model is a subclass of BaseParser.RUN_DETAIL_MODEL
-            if not issubclass(self.RUN_DETAIL_MODEL, BaseParser.RUN_DETAIL_MODEL):
-                raise InvalidParserImplementationError(
-                    '{0.__class__} Run Detail Model should be a subclass of BaseParser.RUN_DETAIL_MODEL'.format(self))
-            self._parser_run.save()
-
-            for k, v in self._params.items():
-                run_param = comics_models.ParserRunParams(parser_run=self._parser_run, name=k, val=str(v))
-                run_param.save()
+            # # Checking parser code
+            # # Parser code is overridden
+            # if self.PARSER_CODE == BaseParser.PARSER_CODE:
+            #     raise InvalidParserImplementationError(
+            #         '{0.__class__} Parser code should be overridden in implementation'.format(self.PARSER_CODE))
+            #
+            # # Parser code in valid parser codes list
+            # if self.PARSER_CODE not in (x[0] for x in comics_models.ParserRun.PARSER_CHOICES):
+            #     raise InvalidParserImplementationError(
+            #         '{0.__class__} Parser code "{0.PARSER_CODE}" not in ParserRun.PARSER_CHOICES'.format(self))
+            #
+            # self._parser_run.parser = self.PARSER_CODE
+            #
+            # # Checking Run Detail Model
+            # # Run Detail Model is a class
+            # if not inspect.isclass(self.RUN_DETAIL_MODEL):
+            #     raise InvalidParserImplementationError(
+            #         '{0.__class__} Run Detail Model should be a class'.format(self))
+            #
+            # # Run Detail Model is overridden
+            # if self.RUN_DETAIL_MODEL == comics_models.ParserRunDetail:
+            #     raise InvalidParserImplementationError(
+            #         '{0.__class__} Run Detail Model should be overridden in implementation'.format(self))
+            #
+            # # Run Detail Model is a subclass of BaseParser.RUN_DETAIL_MODEL
+            # if not issubclass(self.RUN_DETAIL_MODEL, BaseParser.RUN_DETAIL_MODEL):
+            #     raise InvalidParserImplementationError(
+            #         '{0.__class__} Run Detail Model should be a subclass of BaseParser.RUN_DETAIL_MODEL'.format(self))
+            # self._parser_run.save()
+            #
+            # for k, v in self._params.items():
+            #     run_param = comics_models.ParserRunParams(parser_run=self._parser_run, name=k, val=str(v))
+            #     run_param.save()
             self._notify_staff_start()
 
             # Preparing data, filling items count and saving Run log record to table
@@ -274,8 +320,8 @@ class CloudFilesParser(BaseParser):
                         re.IGNORECASE)
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
-    def __init__(self, path_prefix, full=False, load_covers=False):
-        super().__init__()
+    def __init__(self, path_prefix, queue=False, parser_run=None, full=False, load_covers=False):
+        super().__init__(queue=queue, parser_run=parser_run)
         self._params['path_prefix'] = path_prefix
         self._params['full'] = full
         self._params['load_covers'] = load_covers
@@ -504,8 +550,8 @@ class MarvelAPIParser(BaseParser):
         "SERIES": comics_models.MarvelAPISeries
     }
 
-    def __init__(self, incremental=False):
-        super().__init__()
+    def __init__(self, queue=False, parser_run=None, incremental=False):
+        super().__init__(queue=queue, parser_run=parser_run)
         self._params['incremental'] = incremental
         f = EndpointFabric.get_instance(public_key=settings.MARVEL_PUBLIC_KEY, private_key=settings.MARVEL_PRIVATE_KEY)
         self._creators_endpoint = f.get_endpoint(CreatorsListEndpoint)
@@ -897,8 +943,8 @@ class MarvelAPICreatorMergeParser(BaseParser):
     PARSER_NAME = "Marvel API creator merge"
     RUN_DETAIL_MODEL = comics_models.MarvelAPICreatorMergeParserRunDetail
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run)
         self._api_creators = None
 
     def _prepare(self) -> NoReturn:
@@ -947,8 +993,8 @@ class MarvelAPICharacterMergeParser(BaseParser):
     PARSER_NAME = "Marvel API character merge"
     RUN_DETAIL_MODEL = comics_models.MarvelAPICharacterMergeParserRunDetail
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run)
         self._api_characters = None
 
     def _prepare(self) -> NoReturn:
@@ -999,8 +1045,8 @@ class MarvelAPIEventMergeParser(BaseParser):
     PARSER_NAME = "Marvel API event merge"
     RUN_DETAIL_MODEL = comics_models.MarvelAPIEventMergeParserRunDetail
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run)
         self._api_events = None
 
     def _prepare(self) -> NoReturn:
@@ -1058,8 +1104,8 @@ class MarvelAPITitleMergeParser(BaseParser):
         'empty': 'Ongoing'
     }
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run)
         self._db_titles = None
 
     def _prepare(self) -> NoReturn:
@@ -1124,8 +1170,8 @@ class MarvelAPIIssueMergeParser(BaseParser):
     PARSER_NAME = "Marvel API issue merge"
     RUN_DETAIL_MODEL = comics_models.MarvelAPIIssueMergeParserRunDetail
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run)
         self._db_issues = None
 
     def _prepare(self) -> NoReturn:

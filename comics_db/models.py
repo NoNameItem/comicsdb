@@ -883,7 +883,7 @@ class Event(models.Model):
         api_event = api_event or self.marvel_api_event
 
         # Name
-        self.name = api_event.name
+        self.name = api_event.title
 
         # Description
         self.desc = api_event.description or self.desc
