@@ -367,12 +367,16 @@ class Publisher(models.Model):
     def __str__(self):
         return self.name
 
-    def get_absolute_url(self):
-        return reverse("site-publisher-detail", args=(self.slug,))
-
     @property
     def issue_count(self):
         return self.titles.aggregate(models.Count('issues'))['issues__count']
+
+    @property
+    def site_link(self):
+        return reverse('site-publisher-detail', args=(self.slug,))
+
+    def get_absolute_url(self):
+        return self.site_link
 
     class Meta:
         ordering = ["name"]
@@ -467,8 +471,12 @@ class Universe(models.Model):
     def get_slug(self):
         return unique_slugify(self.__class__, str(self), self.pk)
 
+    @property
+    def site_link(self):
+        return reverse('site-universe-detail', args=(self.slug,))
+
     def get_absolute_url(self):
-        return reverse("site-universe-detail", args=(self.slug,))
+        return self.site_link
 
     @property
     def logo(self):

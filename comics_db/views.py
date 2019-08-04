@@ -1,4 +1,5 @@
 import datetime
+import inspect
 import json
 import math
 import os
@@ -7,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import IntegrityError
 from django.db.models import Count, Q, Max, Case, When, F
+from django.forms import ModelForm
 from django.http import Http404, HttpResponseRedirect, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -53,6 +55,30 @@ class BreadcrumbMixin:
             return self.breadcrumb
         else:
             return []
+
+
+class FormUpdateMixin:
+    form_class = None
+
+    def perm_check(self):
+        return self.request.user.is_staff
+
+    def success_redirect(self, obj, **kwargs):
+        return HttpResponseRedirect(self.object.site_link)
+
+    def post(self, request, **kwargs):
+        if not self.form_class:
+            raise RuntimeError("Attribute form_class should be set")
+        if not self.perm_check():
+            raise PermissionDenied
+        self.object = self.get_object()
+        form = self.form_class(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            self.object = form.save()
+            return self.success_redirect(self.object, **kwargs)
+        context = self.get_context_data(object=self.object)
+        context['form'] = form
+        return self.render_to_response(context)
 
 
 class SearchMixin:
@@ -128,10 +154,12 @@ class CharacterListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     ]
 
 
-class CharacterDetailView(BreadcrumbMixin, DetailView):
+class CharacterDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
     template_name = "comics_db/character/detail.html"
     model = models.Character
     context_object_name = "character"
+    extra_context = {'publishers': models.Publisher.objects.all()}
+    form_class = forms.CharacterForm
 
     def get_breadcrumb(self):
         character = self.get_object()
@@ -139,23 +167,6 @@ class CharacterDetailView(BreadcrumbMixin, DetailView):
             {'url': reverse_lazy("site-character-list"), 'text': 'Characters'},
             {'url': reverse_lazy("site-character-detail", args=(character.slug,)), 'text': character.name}
         ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['publishers'] = models.Publisher.objects.all()
-        return context
-
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.CharacterForm(request.POST, request.FILES, instance=self.object)
-        if form.is_valid():
-            self.object = form.save()
-            return HttpResponseRedirect(self.object.site_link)
-        context = self.get_context_data(object=self.object)
-        context['form'] = form
-        return self.render_to_response(context)
 
 
 ########################################################################################################################
@@ -177,10 +188,11 @@ class CreatorListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     ]
 
 
-class CreatorDetailView(BreadcrumbMixin, DetailView):
+class CreatorDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
     template_name = "comics_db/creator/detail.html"
     model = models.Creator
     context_object_name = "creator"
+    form_class = forms.CreatorForm
 
     def get_breadcrumb(self):
         creator = self.get_object()
@@ -188,22 +200,6 @@ class CreatorDetailView(BreadcrumbMixin, DetailView):
             {'url': reverse_lazy("site-creator-list"), 'text': 'Creators'},
             {'url': reverse_lazy("site-creator-detail", args=(creator.slug,)), 'text': creator.name}
         ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
-
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.CreatorForm(request.POST, request.FILES, instance=self.object)
-        if form.is_valid():
-            self.object = form.save()
-            return HttpResponseRedirect(self.object.site_link)
-        context = self.get_context_data(object=self.object)
-        context['form'] = form
-        return self.render_to_response(context)
 
 
 ########################################################################################################################
@@ -225,10 +221,12 @@ class EventListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     ]
 
 
-class EventDetailView(BreadcrumbMixin, DetailView):
+class EventDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
     template_name = "comics_db/event/detail.html"
     model = models.Event
     context_object_name = "event"
+    form_class = forms.EventForm
+    extra_context = {'publishers': models.Publisher.objects.all()}
 
     def get_breadcrumb(self):
         event = self.get_object()
@@ -236,23 +234,6 @@ class EventDetailView(BreadcrumbMixin, DetailView):
             {'url': reverse_lazy("site-event-list"), 'text': 'Events'},
             {'url': reverse_lazy("site-event-detail", args=(event.slug,)), 'text': event.name}
         ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['publishers'] = models.Publisher.objects.all()
-        return context
-
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.EventForm(request.POST, request.FILES, instance=self.object)
-        if form.is_valid():
-            self.object = form.save()
-            return HttpResponseRedirect(self.object.site_link)
-        context = self.get_context_data(object=self.object)
-        context['form'] = form
-        return self.render_to_response(context)
 
 
 ########################################################################################################################
@@ -291,10 +272,11 @@ class IssueListView(BreadcrumbMixin, SearchMixin, AjaxListView):
         return context
 
 
-class IssueDetailView(BreadcrumbMixin, DetailView):
+class IssueDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
     template_name = "comics_db/issue/detail.html"
     model = models.Issue
     context_object_name = "issue"
+    form_class = forms.IssueForm
 
     def get_breadcrumb(self):
         issue = self.get_object()
@@ -316,17 +298,6 @@ class IssueDetailView(BreadcrumbMixin, DetailView):
             read_date = None
         context['read_date'] = read_date
         return context
-
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.IssueForm(request.POST, request.FILES, instance=self.object)
-        if form.is_valid():
-            self.object = form.save()
-            return HttpResponseRedirect(self.object.site_link)
-        context = self.get_context_data(object=self.object, form=form)
-        return self.render_to_response(context)
 
 
 class IssueDelete(View, UserPassesTestMixin):
@@ -394,10 +365,6 @@ class MarvelAPIComicsList(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
     def test_func(self):
         return self.request.user.is_staff
 
-    def get_context_data(self, **kwargs):
-        context = super(MarvelAPIComicsList, self).get_context_data(**kwargs)
-        return context
-
 
 class MarvelAPIComicsDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
     model = models.MarvelAPIComics
@@ -439,14 +406,10 @@ class MarvelAPISeriesList(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
         {'url': "", 'text': 'Marvel API'},
         {'url': reverse_lazy("site-marvel-api-series-list"), 'text': 'Series'},
     ]
+    extra_context = {'TYPE_CHOICES': filtersets.MARVEL_API_SERIES_TYPE_CHOICES}
 
     def test_func(self):
         return self.request.user.is_staff
-
-    def get_context_data(self, **kwargs):
-        context = super(MarvelAPISeriesList, self).get_context_data(**kwargs)
-        context["TYPE_CHOICES"] = filtersets.MARVEL_API_SERIES_TYPE_CHOICES
-        return context
 
 
 class MarvelAPISeriesDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
@@ -575,10 +538,11 @@ class PublisherListView(BreadcrumbMixin, SearchMixin, ListView):
     ]
 
 
-class PublisherDetailView(BreadcrumbMixin, DetailView):
+class PublisherDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
     template_name = "comics_db/publisher/detail.html"
     model = models.Publisher
     context_object_name = "publisher"
+    form_class = forms.PublisherForm
 
     def get_breadcrumb(self):
         publisher = self.get_object()
@@ -600,19 +564,6 @@ class PublisherDetailView(BreadcrumbMixin, DetailView):
                 context['total'] = 0
                 context['read_total_ratio'] = 0
         return context
-
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.PublisherForm(request.POST, request.FILES)
-        if form.is_valid():
-            self.object.logo = form.cleaned_data['logo'] or self.object.logo
-            self.object.poster = form.cleaned_data['poster'] or self.object.poster
-            self.object.desc = form.cleaned_data['desc']
-            self.object.save()
-        context = self.get_context_data(object=self.object, form=form)
-        return self.render_to_response(context)
 
 
 ########################################################################################################################
@@ -649,13 +600,14 @@ class ReadingListListView(BreadcrumbMixin, ListView, LoginRequiredMixin):
         return self.render_to_response(context)
 
 
-class ReadingListDetailView(BreadcrumbMixin, AjaxListView):
+class ReadingListDetailView(BreadcrumbMixin, FormUpdateMixin, AjaxListView):
     template_name = "comics_db/profile/issue_list.html"
     context_object_name = "issues"
     page_template = "comics_db/profile/issue_list_block.html"
     search_fields = (
         'issue__name__icontains', 'issue__title__name__icontains', 'issue__title__title_type__name__icontains',
         'issue__title__publisher__name__icontains', 'issue__title__universe__name__icontains')
+    form_class = forms.ReadingListForm
 
     def get_breadcrumb(self):
         breadcrumb = []
@@ -730,18 +682,12 @@ class ReadingListDetailView(BreadcrumbMixin, AjaxListView):
         context['sorting_choices'] = models.ReadingList.SORTING_CHOICES
         return context
 
-    def post(self, request, slug):
-        if not self.request.user.is_authenticated:
-            raise PermissionDenied
-        self.object = self.request.user.profile.reading_lists.get(slug=slug)
-        if not self.object.owner == self.request.user.profile:
-            raise PermissionDenied
-        form = forms.ReadingListForm(request.POST, instance=self.object)
-        if form.is_valid():
-            self.object = form.save()
-            return HttpResponseRedirect(self.object.site_link)
-        context = self.get_context_data(object=self.object, form=form)
-        return self.render_to_response(context)
+    def perm_check(self):
+        rl = get_object_or_404(models.ReadingList, slug=self.kwargs.get('slug'))
+        return self.request.user.is_authenticated and rl.owner == self.request.user.profile
+
+    def get_object(self):
+        return get_object_or_404(models.ReadingList, slug=self.kwargs.get('slug'))
 
 
 class ReadingListDelete(View, LoginRequiredMixin):
@@ -807,9 +753,10 @@ class ReadingListDeleteIssue(View, LoginRequiredMixin):
                                                                'Error message: %s' % err.args[0]})
 
 
-class ReadingListIssueDetailView(BreadcrumbMixin, DetailView):
+class ReadingListIssueDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
     template_name = "comics_db/profile/reading_list_issue.html"
     context_object_name = "issue"
+    form_class = forms.IssueForm
 
     def get_breadcrumb(self):
         breadcrumb = []
@@ -876,16 +823,8 @@ class ReadingListIssueDetailView(BreadcrumbMixin, DetailView):
 
         return context
 
-    def post(self, request, slug, list_slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.IssueForm(request.POST, request.FILES, instance=self.object)
-        if form.is_valid():
-            self.object = form.save()
-            return HttpResponseRedirect(reverse('site-reading-list-issue', args=(list_slug, slug)))
-        context = self.get_context_data(object=self.object, form=form)
-        return self.render_to_response(context)
+    def success_redirect(self, obj, **kwargs):
+        return HttpResponseRedirect(reverse('site-reading-list-issue', args=(kwargs['list_slug'], kwargs['slug'])))
 
 
 class ReadingListDownload(View):
@@ -929,8 +868,6 @@ class ReadingListDownload(View):
 
         response = StreamingHttpResponse(z, content_type="application/zip")
         response['Content-Disposition'] = "attachment; filename=\"{0}.zip\"".format(rl)
-        # response['Content-Length'] = size
-
         return response
 
 
@@ -978,10 +915,11 @@ class TitleListView(BreadcrumbMixin, SearchMixin, AjaxListView):
         return self.render_to_response(context)
 
 
-class TitleDetailView(BreadcrumbMixin, DetailView):
+class TitleDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
     template_name = "comics_db/title/detail.html"
     model = models.Title
     context_object_name = "title"
+    form_class = forms.TitleForm
 
     def get_breadcrumb(self):
         title = self.get_object()
@@ -1012,18 +950,6 @@ class TitleDetailView(BreadcrumbMixin, DetailView):
                 context['read_total_ratio'] = 0
                 context['read_date'] = None
         return context
-
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.TitleForm(request.POST, request.FILES, instance=self.object)
-        if form.is_valid():
-            self.object = form.save()
-            return HttpResponseRedirect(self.object.site_link)
-        context = self.get_context_data(object=self.object)
-        context['form'] = form
-        return self.render_to_response(context)
 
 
 class TitleDelete(View, UserPassesTestMixin):
@@ -1118,10 +1044,11 @@ class UniverseListView(BreadcrumbMixin, SearchMixin, ListView):
     ]
 
 
-class UniverseDetailView(BreadcrumbMixin, DetailView):
+class UniverseDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
     template_name = "comics_db/universe/detail.html"
     model = models.Universe
     context_object_name = "universe"
+    form_class = forms.UniverseForm
 
     def get_breadcrumb(self):
         universe = self.get_object()
@@ -1144,17 +1071,17 @@ class UniverseDetailView(BreadcrumbMixin, DetailView):
                 context['read_total_ratio'] = 0
         return context
 
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.UniverseForm(request.POST, request.FILES)
-        if form.is_valid():
-            self.object.poster = form.cleaned_data['poster'] or self.object.poster
-            self.object.desc = form.cleaned_data['desc']
-            self.object.save()
-        context = self.get_context_data(object=self.object, form=form)
-        return self.render_to_response(context)
+    # def post(self, request, slug):
+    #     if not self.request.user.is_staff:
+    #         raise PermissionDenied
+    #     self.object = self.get_object()
+    #     form = forms.UniverseForm(request.POST, request.FILES)
+    #     if form.is_valid():
+    #         self.object.poster = form.cleaned_data['poster'] or self.object.poster
+    #         self.object.desc = form.cleaned_data['desc']
+    #         self.object.save()
+    #     context = self.get_context_data(object=self.object, form=form)
+    #     return self.render_to_response(context)
 
 
 ########################################################################################################################

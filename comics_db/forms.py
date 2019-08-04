@@ -3,15 +3,26 @@ from django import forms
 from comics_db import models
 
 
-class PublisherForm(forms.Form):
+class PublisherForm(forms.ModelForm):
     logo = forms.ImageField(required=False)
     poster = forms.ImageField(required=False)
-    desc = forms.CharField(required=False)
+
+    class Meta:
+        model = models.Publisher
+        fields = ["logo", "poster", "desc"]
+
+#
+# class UniverseForm(forms.Form):
+#     poster = forms.ImageField(required=False)
+#     desc = forms.CharField(required=False)
 
 
-class UniverseForm(forms.Form):
+class UniverseForm(forms.ModelForm):
     poster = forms.ImageField(required=False)
-    desc = forms.CharField(required=False)
+
+    class Meta:
+        model = models.Universe
+        fields = ["poster", "desc"]
 
 
 class TitleForm(forms.ModelForm):
