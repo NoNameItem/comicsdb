@@ -5,13 +5,6 @@
 
 {% block page_title %}{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-character-list" %}">Characters</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-character-detail" character.slug %}">{{ character.name }}</a>
-  </li>
-{% endblock %}
-
 {% block vendor_css %}
 {% endblock %}
 

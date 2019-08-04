@@ -115,20 +115,12 @@ urlpatterns = [
          name="site-reading-list-issue"),
 
     # Parser log
-    path('parser_log', views.ParserLogView.as_view(template_name="comics_db/admin/parser_log.html",
-                                                   extra_context={'parser_choices': models.ParserRun.PARSER_CHOICES}),
-         name="site-parser-log"),
+    path('parser_log', views.ParserLogView.as_view(), name="site-parser-log"),
     path('parser_log/<int:pk>', views.ParserRunDetail.as_view(), name="parser-log-detail"),
     path('run_parser', views.RunParser.as_view(), name="run-parser"),
 
     # Parser schedule
-    path('parser_schedule', TemplateView.as_view(template_name="comics_db/admin/parser_schedule.html",
-                                                 extra_context={
-                                                     'parser_choices': models.ParserRun.PARSER_CHOICES,
-                                                     'period_choices': IntervalSchedule.PERIOD_CHOICES,
-                                                 }),
-
-         name="parser-schedule"),
+    path('parser_schedule', views.ParserScheduleView.as_view(), name="parser-schedule"),
 
     # Marvel API
     path(r'marvel-api/series/', views.MarvelAPISeriesList.as_view(), name="site-marvel-api-series-list"),

@@ -5,12 +5,6 @@
 
 {% block page_title %}{{ parser_run.parser_name }}: {{ parser_run.start|date:"d.m.Y H:i:s" }}{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item" aria-current="page"><a href="{% url "site-parser-log" %}">Parsers log</a></li>
-  <li class="breadcrumb-item active" aria-current="page">Parser run details</li>
-{% endblock %}
-
 {% block vendor_css %}
   <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid.min.css" %}">
   <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid-theme.min.css" %}">

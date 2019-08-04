@@ -5,11 +5,6 @@
 
 {% block page_title %}Issues{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-issue-list" %}">Issues</a></li>
-{% endblock %}
-
 {% block vendor_css %}
   <link rel="stylesheet" href="{% static "app-assets/css/plugins/forms/switch.min.css" %}">
 {% endblock %}

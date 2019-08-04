@@ -5,13 +5,6 @@
 
 {% block page_title %}Marvel API Comics{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="#">Marvel API</a></li>
-  <li class="breadcrumb-item active" aria-current="page"><a href="{% url "site-marvel-api-comics-list" %}">Comics</a>
-  </li>
-{% endblock %}
-
 {% block vendor_css %}
   <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid.min.css" %}">
   <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid-theme.min.css" %}">
@@ -69,6 +62,9 @@
 {% endblock %}
 
 {% block page_js %}
+  <script>
+    let series_id;
+  </script>
   <script src="{% static "js/jsgrid_utils.js" %}" type="text/javascript"></script>
   <script src="{% static "comics_db/js/marvel_api_comics.js" %}" type="text/javascript"></script>
 {% endblock %}

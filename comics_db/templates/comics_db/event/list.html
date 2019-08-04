@@ -5,11 +5,6 @@
 
 {% block page_title %}Events{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-event-list" %}">Events</a></li>
-{% endblock %}
-
 {% block vendor_css %}
 {% endblock %}
 
@@ -30,7 +25,6 @@
 {% endblock %}
 
 {% block page_js %}
-
   <script>
     $.endlessPaginate({
       paginateOnScroll : true,

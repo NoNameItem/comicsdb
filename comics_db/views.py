@@ -2,19 +2,14 @@ import datetime
 import json
 import math
 import os
-from zipfile import ZIP_DEFLATED
 
-import boto3
-import zipstream
-from celery import group
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import IntegrityError
-from django.db.models import Count, Q, Max, Case, When, F, Window, QuerySet
-from django.db.models.functions import RowNumber
+from django.db.models import Count, Q, Max, Case, When, F
 from django.http import Http404, HttpResponseRedirect, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import formats
 from django.views.generic import DetailView, ListView
 from django.views.generic.base import View, TemplateView
@@ -30,13 +25,14 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from knox.settings import CONSTANTS, knox_settings
 from el_pagination.views import AjaxListView
-from smart_open import open as sm_open
 
-from comics_db import models, serializers, filtersets, tasks, forms, parsers
+from comics_db import models, serializers, filtersets, tasks, forms
+# from comics_db.models import ReadingListIssue
+from comics_db.issue_archive import S3FileWrapper, construct_archive
+from comicsdb import settings
 
 
 ########################################################################################################################
@@ -49,8 +45,14 @@ class BreadcrumbMixin:
 
     def get_context_data(self, **kwargs):
         context = super(BreadcrumbMixin, self).get_context_data(**kwargs)
-        context['breadcrumb'] = self.breadcrumb
+        context['breadcrumb'] = self.get_breadcrumb()
         return context
+
+    def get_breadcrumb(self):
+        if self.breadcrumb:
+            return self.breadcrumb
+        else:
+            return []
 
 
 class SearchMixin:
@@ -76,13 +78,9 @@ class SearchMixin:
         return queryset
 
 
-
 ########################################################################################################################
 # Main Page
 ########################################################################################################################
-from comics_db.models import ReadingListIssue
-from comics_db.issue_archive import S3FileWrapper, construct_archive
-from comicsdb import settings
 
 
 class MainPageView(BreadcrumbMixin, TemplateView):
@@ -111,7 +109,7 @@ class MainPageView(BreadcrumbMixin, TemplateView):
 ########################################################################################################################
 
 
-class EventListView(SearchMixin, AjaxListView):
+class EventListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     template_name = "comics_db/event/list.html"
     context_object_name = "events"
     page_template = "comics_db/event/list_block.html"
@@ -120,12 +118,22 @@ class EventListView(SearchMixin, AjaxListView):
         annotate(issue_count=Count('issues', distinct=True),
                  title_count=Count("titles", distinct=True)). \
         select_related("publisher")
+    breadcrumb = [
+        {'url': reverse_lazy("site-event-list"), 'text': 'Events'}
+    ]
 
 
-class EventDetailView(DetailView):
+class EventDetailView(BreadcrumbMixin, DetailView):
     template_name = "comics_db/event/detail.html"
     model = models.Event
     context_object_name = "event"
+
+    def get_breadcrumb(self):
+        event = self.get_object()
+        return [
+            {'url': reverse_lazy("site-event-list"), 'text': 'Events'},
+            {'url': reverse_lazy("site-event-detail", args=(event.slug,)), 'text': event.name}
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -213,7 +221,7 @@ class EventIssueListView(AjaxListView):
 ########################################################################################################################
 
 
-class CreatorListView(SearchMixin, AjaxListView):
+class CreatorListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     template_name = "comics_db/creator/list.html"
     context_object_name = "creators"
     page_template = "comics_db/creator/list_block.html"
@@ -222,12 +230,22 @@ class CreatorListView(SearchMixin, AjaxListView):
         annotate(issue_count=Count('issues', distinct=True),
                  title_count=Count("titles", distinct=True),
                  event_count=Count("events", distinct=True))
+    breadcrumb = [
+        {'url': reverse_lazy("site-creator-list"), 'text': 'Creators'}
+    ]
 
 
-class CreatorDetailView(DetailView):
+class CreatorDetailView(BreadcrumbMixin, DetailView):
     template_name = "comics_db/creator/detail.html"
     model = models.Creator
     context_object_name = "creator"
+
+    def get_breadcrumb(self):
+        creator = self.get_object()
+        return [
+            {'url': reverse_lazy("site-creator-list"), 'text': 'Creators'},
+            {'url': reverse_lazy("site-creator-detail", args=(creator.slug,)), 'text': creator.name}
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -314,7 +332,7 @@ class CreatorIssueListView(AjaxListView):
 ########################################################################################################################
 
 
-class CharacterListView(SearchMixin, AjaxListView):
+class CharacterListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     template_name = "comics_db/character/list.html"
     context_object_name = "characters"
     page_template = "comics_db/character/list_block.html"
@@ -324,12 +342,22 @@ class CharacterListView(SearchMixin, AjaxListView):
                  title_count=Count("titles", distinct=True),
                  event_count=Count("events", distinct=True)). \
         select_related("publisher")
+    breadcrumb = [
+        {'url': reverse_lazy("site-character-list"), 'text': 'Characters'}
+    ]
 
 
-class CharacterDetailView(DetailView):
+class CharacterDetailView(BreadcrumbMixin, DetailView):
     template_name = "comics_db/character/detail.html"
     model = models.Character
     context_object_name = "character"
+
+    def get_breadcrumb(self):
+        character = self.get_object()
+        return [
+            {'url': reverse_lazy("site-character-list"), 'text': 'Characters'},
+            {'url': reverse_lazy("site-character-detail", args=(character.slug,)), 'text': character.name}
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -417,17 +445,27 @@ class CharacterIssueListView(AjaxListView):
 ########################################################################################################################
 
 
-class PublisherListView(SearchMixin, ListView):
+class PublisherListView(BreadcrumbMixin, SearchMixin, ListView):
     template_name = "comics_db/publisher/list.html"
     context_object_name = "publishers"
     search_fields = ('name__icontains',)
     queryset = models.Publisher.objects.all()
+    breadcrumb = [
+        {'url': reverse_lazy("site-publisher-list"), 'text': 'Publishers'}
+    ]
 
 
-class PublisherDetailView(DetailView):
+class PublisherDetailView(BreadcrumbMixin, DetailView):
     template_name = "comics_db/publisher/detail.html"
     model = models.Publisher
     context_object_name = "publisher"
+
+    def get_breadcrumb(self):
+        publisher = self.get_object()
+        return [
+            {'url': reverse_lazy("site-publisher-list"), 'text': 'Publishers'},
+            {'url': reverse_lazy("site-publisher-detail", args=(publisher.slug,)), 'text': publisher.name}
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -538,17 +576,27 @@ class PublisherIssueListView(AjaxListView):
 ########################################################################################################################
 
 
-class UniverseListView(SearchMixin, ListView):
+class UniverseListView(BreadcrumbMixin, SearchMixin, ListView):
     template_name = "comics_db/universe/list.html"
     queryset = models.Universe.objects.all()
     context_object_name = "universes"
     search_fields = ('name__icontains', "publisher__name__icontains")
+    breadcrumb = [
+        {'url': reverse_lazy("site-universe-list"), 'text': 'Universes'}
+    ]
 
 
-class UniverseDetailView(DetailView):
+class UniverseDetailView(BreadcrumbMixin, DetailView):
     template_name = "comics_db/universe/detail.html"
     model = models.Universe
     context_object_name = "universe"
+
+    def get_breadcrumb(self):
+        universe = self.get_object()
+        return [
+            {'url': reverse_lazy("site-universe-list"), 'text': 'Universes'},
+            {'url': reverse_lazy("site-universe-detail", args=(universe.slug,)), 'text': universe.name}
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -641,7 +689,7 @@ class UniverseIssueListView(AjaxListView):
 ########################################################################################################################
 
 
-class TitleListView(SearchMixin, AjaxListView):
+class TitleListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     template_name = "comics_db/title/list.html"
     context_object_name = "titles"
     page_template = "comics_db/title/list_block.html"
@@ -649,6 +697,9 @@ class TitleListView(SearchMixin, AjaxListView):
                      'universe__name__icontains')
     queryset = models.Title.objects.annotate(issue_count=Count('issues')).select_related("publisher", "universe",
                                                                                          "title_type")
+    breadcrumb = [
+        {'url': reverse_lazy("site-title-list"), 'text': 'Titles'}
+    ]
 
     def get_queryset(self):
         queryset = super(TitleListView, self).get_queryset()
@@ -677,10 +728,17 @@ class TitleListView(SearchMixin, AjaxListView):
         return self.render_to_response(context)
 
 
-class TitleDetailView(DetailView):
+class TitleDetailView(BreadcrumbMixin, DetailView):
     template_name = "comics_db/title/detail.html"
     model = models.Title
     context_object_name = "title"
+
+    def get_breadcrumb(self):
+        title = self.get_object()
+        return [
+            {'url': reverse_lazy("site-title-list"), 'text': 'Titles'},
+            {'url': reverse_lazy("site-title-detail", args=(title.slug,)), 'text': title.name}
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -788,17 +846,17 @@ class AddTitleToReadingList(View, LoginRequiredMixin):
             if number_to:
                 issues = issues.filter(number__lte=number_to)
             issues.order_by('number')
-            order = ReadingListIssue.objects.filter(reading_list=reading_list).aggregate(max_order=Max('order'))[
+            order = models.ReadingListIssue.objects.filter(reading_list=reading_list).aggregate(max_order=Max('order'))[
                         'max_order'] or 0
             rl_issues = []
             for issue in issues:
                 order += 1
 
                 if issue not in added_issues:
-                    rl_issue = ReadingListIssue(reading_list=reading_list, issue=issue, order=order)
+                    rl_issue = models.ReadingListIssue(reading_list=reading_list, issue=issue, order=order)
                     rl_issues.append(rl_issue)
 
-            ReadingListIssue.objects.bulk_create(rl_issues)
+            models.ReadingListIssue.objects.bulk_create(rl_issues)
             return JsonResponse({'status': "success", 'issue_count': len(rl_issues),
                                  'list_name': reading_list.name})
         except models.Title.DoesNotExist:
@@ -831,7 +889,7 @@ class DownloadTitle(View):
 ########################################################################################################################
 
 
-class IssueListView(SearchMixin, AjaxListView):
+class IssueListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     template_name = "comics_db/issue/list.html"
     context_object_name = "issues"
     page_template = "comics_db/issue/list_block.html"
@@ -839,6 +897,9 @@ class IssueListView(SearchMixin, AjaxListView):
                      'title__publisher__name__icontains', 'title__universe__name__icontains')
     queryset = models.Issue.objects.all().select_related("title__publisher", "title__universe",
                                                          "title__title_type")
+    breadcrumb = [
+        {'url': reverse_lazy("site-issue-list"), 'text': 'Issues'}
+    ]
 
     def get_queryset(self):
         queryset = super(IssueListView, self).get_queryset()
@@ -859,10 +920,17 @@ class IssueListView(SearchMixin, AjaxListView):
         return context
 
 
-class IssueDetailView(DetailView):
+class IssueDetailView(BreadcrumbMixin, DetailView):
     template_name = "comics_db/issue/detail.html"
     model = models.Issue
     context_object_name = "issue"
+
+    def get_breadcrumb(self):
+        issue = self.get_object()
+        return [
+            {'url': reverse_lazy("site-issue-list"), 'text': 'Issues'},
+            {'url': reverse_lazy("site-issue-detail", args=(issue.slug,)), 'text': issue.name}
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -924,7 +992,7 @@ class AddToReadingList(View, LoginRequiredMixin):
         try:
             issue = models.Issue.objects.get(slug=slug)
             reading_list = self.request.user.profile.reading_lists.get(pk=request.POST.get('list_id'))
-            order = ReadingListIssue.objects.filter(reading_list=reading_list).aggregate(max_order=Max('order'))[
+            order = models.ReadingListIssue.objects.filter(reading_list=reading_list).aggregate(max_order=Max('order'))[
                         'max_order'] \
                     or 0
             reading_list.issues.add(issue, through_defaults={'order': order + 1})
@@ -945,9 +1013,12 @@ class AddToReadingList(View, LoginRequiredMixin):
 ########################################################################################################################
 
 
-class ReadingListListView(ListView, LoginRequiredMixin):
+class ReadingListListView(BreadcrumbMixin, ListView, LoginRequiredMixin):
     template_name = "comics_db/profile/list.html"
     context_object_name = "reading_lists"
+    breadcrumb = [
+        {'url': reverse_lazy("site-user-reading-lists"), 'text': 'My reading lists'}
+    ]
 
     def get_queryset(self):
         return self.request.user.profile.reading_lists.all().annotate(total=Count('issues', distinct=True)) \
@@ -971,14 +1042,23 @@ class ReadingListListView(ListView, LoginRequiredMixin):
         return self.render_to_response(context)
 
 
-class ReadingListDetailView(AjaxListView):
+class ReadingListDetailView(BreadcrumbMixin, AjaxListView):
     template_name = "comics_db/profile/issue_list.html"
     context_object_name = "issues"
     page_template = "comics_db/profile/issue_list_block.html"
-
     search_fields = (
         'issue__name__icontains', 'issue__title__name__icontains', 'issue__title__title_type__name__icontains',
         'issue__title__publisher__name__icontains', 'issue__title__universe__name__icontains')
+
+    def get_breadcrumb(self):
+        breadcrumb = []
+        if self.request.user.is_authenticated and self.reading_list.owner == self.request.user.profile:
+            breadcrumb.append({'url': reverse_lazy("site-user-reading-lists"), 'text': 'My reading lists'})
+        else:
+            breadcrumb.append({'url': '', 'text': 'Reading lists'})
+        breadcrumb.append({'url': reverse_lazy("site-user-reading-list", args=(self.reading_list.slug,)),
+                           'text': self.reading_list.name})
+        return breadcrumb
 
     def get_queryset(self):
         # Get all reading list
@@ -998,7 +1078,7 @@ class ReadingListDetailView(AjaxListView):
         # queryset = self.reading_list.issues.select_related("title__publisher", "title__universe",
         #                                                    "title__title_type")
 
-        queryset = ReadingListIssue.objects.filter(
+        queryset = models.ReadingListIssue.objects.filter(
             reading_list=self.reading_list).select_related(
             "issue",
             "issue__title",
@@ -1077,13 +1157,13 @@ class ChangeReadingOrder(View, LoginRequiredMixin):
             issue_id = int(self.request.POST['issueID'])
 
             if old_pos < new_pos:
-                ReadingListIssue.objects.filter(reading_list=reading_list, order__gt=old_pos, order__lte=new_pos) \
+                models.ReadingListIssue.objects.filter(reading_list=reading_list, order__gt=old_pos, order__lte=new_pos) \
                     .update(order=F('order') - 1)
             else:
-                ReadingListIssue.objects.filter(reading_list=reading_list, order__gte=new_pos, order__lt=old_pos) \
+                models.ReadingListIssue.objects.filter(reading_list=reading_list, order__gte=new_pos, order__lt=old_pos) \
                     .update(order=F('order') + 1)
 
-            rl_issue = ReadingListIssue.objects.get(reading_list=reading_list, issue_id=issue_id)
+            rl_issue = models.ReadingListIssue.objects.get(reading_list=reading_list, issue_id=issue_id)
             rl_issue.order = new_pos
             rl_issue.save()
 
@@ -1097,9 +1177,10 @@ class DeleteFromReadingList(View, LoginRequiredMixin):
         try:
             reading_list = request.user.profile.reading_lists.get(slug=slug)
             issue = reading_list.issues.get(pk=request.POST.get('issue_id'))
-            rl_issue = ReadingListIssue.objects.get(reading_list=reading_list, issue=issue)
+            rl_issue = models.ReadingListIssue.objects.get(reading_list=reading_list, issue=issue)
             order = rl_issue.order
-            ReadingListIssue.objects.filter(reading_list=reading_list, order__gt=order).update(order=F("order") - 1)
+            models.ReadingListIssue.objects.filter(reading_list=reading_list, order__gt=order).update(
+                order=F("order") - 1)
             reading_list.issues.remove(issue)
             reading_list.save()
             reading_list = request.user.profile.reading_lists.annotate(
@@ -1119,9 +1200,21 @@ class DeleteFromReadingList(View, LoginRequiredMixin):
                                                                'Error message: %s' % err.args[0]})
 
 
-class ReadingListIssueDetailView(DetailView):
+class ReadingListIssueDetailView(BreadcrumbMixin, DetailView):
     template_name = "comics_db/profile/reading_list_issue.html"
     context_object_name = "issue"
+
+    def get_breadcrumb(self):
+        breadcrumb = []
+        if self.request.user.is_authenticated and self.reading_list.owner == self.request.user.profile:
+            breadcrumb.append({'url': reverse_lazy("site-user-reading-lists"), 'text': 'My reading lists'})
+        else:
+            breadcrumb.append({'url': '', 'text': 'Reading lists'})
+        breadcrumb.append({'url': reverse_lazy("site-user-reading-list", args=(self.reading_list.slug,)),
+                           'text': self.reading_list.name})
+        breadcrumb.append({'url': reverse_lazy("site-reading-list-issue", args=(self.reading_list.slug, self.object.slug)),
+                           'text': self.object.name})
+        return breadcrumb
 
     def get_queryset(self):
         self.reading_list = models.ReadingList.objects.all()
@@ -1153,17 +1246,17 @@ class ReadingListIssueDetailView(DetailView):
         context['edit'] = self.request.user.is_authenticated and self.reading_list.owner == self.request.user.profile
 
         if self.reading_list.sorting == "MANUAL":
-            rl_issue = ReadingListIssue.objects.get(reading_list=self.reading_list, issue=issue)
+            rl_issue = models.ReadingListIssue.objects.get(reading_list=self.reading_list, issue=issue)
             try:
-                context['previous_issue'] = ReadingListIssue.objects.get(reading_list=self.reading_list,
-                                                                         order=rl_issue.order - 1).issue
-            except ReadingListIssue.DoesNotExist:
+                context['previous_issue'] = models.ReadingListIssue.objects.get(reading_list=self.reading_list,
+                                                                                order=rl_issue.order - 1).issue
+            except models.ReadingListIssue.DoesNotExist:
                 context['previous_issue'] = None
 
             try:
-                context['next_issue'] = ReadingListIssue.objects.get(reading_list=self.reading_list,
-                                                                     order=rl_issue.order + 1).issue
-            except ReadingListIssue.DoesNotExist:
+                context['next_issue'] = models.ReadingListIssue.objects.get(reading_list=self.reading_list,
+                                                                            order=rl_issue.order + 1).issue
+            except models.ReadingListIssue.DoesNotExist:
                 context['next_issue'] = None
 
         else:
@@ -1192,7 +1285,7 @@ class DownloadReadingList(View):
     def get(self, request, slug):
         rl = get_object_or_404(models.ReadingList, slug=slug)
 
-        queryset = ReadingListIssue.objects.filter(reading_list=rl).select_related('issue', 'issue__title')
+        queryset = models.ReadingListIssue.objects.filter(reading_list=rl).select_related('issue', 'issue__title')
 
         if rl.sorting == 'MANUAL':
             queryset = queryset.order_by('order')
@@ -1239,15 +1332,25 @@ class DownloadReadingList(View):
 ########################################################################################################################
 
 
-class ParserLogView(UserPassesTestMixin, TemplateView):
+class ParserLogView(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
+    template_name = "comics_db/admin/parser_log.html"
+    extra_context = {'parser_choices': models.ParserRun.PARSER_CHOICES}
+    breadcrumb = [
+        {'url': reverse_lazy("site-parser-log"), 'text': 'Parsers log'}
+    ]
+
     def test_func(self):
         return self.request.user.is_staff
 
 
-class ParserRunDetail(UserPassesTestMixin, DetailView):
+class ParserRunDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
     model = models.ParserRun
     context_object_name = 'parser_run'
     template_name = "comics_db/admin/parser_run.html"
+    breadcrumb = [
+        {'url': reverse_lazy("site-parser-log"), 'text': 'Parsers log'},
+        {'url': "", 'text': 'Parser run details'},
+    ]
 
     def test_func(self):
         return self.request.user.is_staff
@@ -1267,8 +1370,12 @@ class ParserRunDetail(UserPassesTestMixin, DetailView):
         return context
 
 
-class MarvelAPISeriesList(UserPassesTestMixin, TemplateView):
+class MarvelAPISeriesList(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
     template_name = "comics_db/admin/marvel_api_series_list.html"
+    breadcrumb = [
+        {'url': "", 'text': 'Marvel API'},
+        {'url': reverse_lazy("site-marvel-api-series-list"), 'text': 'Series'},
+    ]
 
     def test_func(self):
         return self.request.user.is_staff
@@ -1279,17 +1386,29 @@ class MarvelAPISeriesList(UserPassesTestMixin, TemplateView):
         return context
 
 
-class MarvelAPISeriesDetail(UserPassesTestMixin, DetailView):
+class MarvelAPISeriesDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
     model = models.MarvelAPISeries
     context_object_name = 'api_series'
     template_name = "comics_db/admin/marvel_api_series_detail.html"
+
+    def get_breadcrumb(self):
+        series = self.get_object()
+        return [
+            {'url': "", 'text': 'Marvel API'},
+            {'url': reverse_lazy("site-marvel-api-series-list"), 'text': 'Series'},
+            {'url': reverse_lazy("site-marvel-api-series-detail", args=(series.id,)), 'text': series.title},
+        ]
 
     def test_func(self):
         return self.request.user.is_staff
 
 
-class MarvelAPIComicsList(UserPassesTestMixin, TemplateView):
+class MarvelAPIComicsList(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
     template_name = "comics_db/admin/marvel_api_comics_list.html"
+    breadcrumb = [
+        {'url': "", 'text': 'Marvel API'},
+        {'url': reverse_lazy("site-marvel-api-comics-list"), 'text': 'Comics'},
+    ]
 
     def test_func(self):
         return self.request.user.is_staff
@@ -1299,10 +1418,18 @@ class MarvelAPIComicsList(UserPassesTestMixin, TemplateView):
         return context
 
 
-class MarvelAPIComicsDetail(UserPassesTestMixin, DetailView):
+class MarvelAPIComicsDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
     model = models.MarvelAPIComics
     context_object_name = 'api_comic'
     template_name = "comics_db/admin/marvel_api_comics_detail.html"
+
+    def get_breadcrumb(self):
+        comic = self.get_object()
+        return [
+            {'url': "", 'text': 'Marvel API'},
+            {'url': reverse_lazy("site-marvel-api-comics-list"), 'text': 'Comics'},
+            {'url': reverse_lazy("site-marvel-api-comics-detail", args=(comic.id,)), 'text': comic.title},
+        ]
 
     def test_func(self):
         return self.request.user.is_staff
@@ -1350,6 +1477,20 @@ class RunParser(UserPassesTestMixin, View):
             return JsonResponse({'status': 'success', 'message': '%s started' % parser_name})
         except Exception as err:
             return JsonResponse({'status': 'error', 'message': err.args[0]})
+
+
+class ParserScheduleView(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
+    template_name = "comics_db/admin/parser_schedule.html"
+    extra_context = {
+        'parser_choices': models.ParserRun.PARSER_CHOICES,
+        'period_choices': IntervalSchedule.PERIOD_CHOICES,
+    }
+    breadcrumb = [
+        {'url': reverse_lazy("parser-schedule"), 'text': 'Parsers schedule'}
+    ]
+
+    def test_func(self):
+        return self.request.user.is_staff
 
 
 ########################################################################################################################

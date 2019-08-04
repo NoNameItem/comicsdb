@@ -1,18 +1,5 @@
 {% extends "comics_db/issue/detail.html" %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  {% if edit %}
-    <li class="breadcrumb-item"><a href="{% url "site-user-reading-lists" %}">My reading lists</a></li>
-  {% else %}
-    <li class="breadcrumb-item"><a href="#">Reading lists</a></li>
-  {% endif %}
-  <li class="breadcrumb-item active"><a
-      href="{% url "site-user-reading-list" reading_list.slug %}">{{ reading_list.name }}</a>
-  <li class="breadcrumb-item active"><a href="{% url "site-issue-detail" issue.slug %}">{{ issue.name }}</a>
-  </li>
-{% endblock %}
-
 {% block prev_link %}
   {% if previous_issue %}
     <a role="button" class="btn btn-secondary"

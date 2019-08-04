@@ -188,7 +188,10 @@
       <div class="content-header-right breadcrumbs-right breadcrumbs-top col-md col-12">
         <div class="breadcrumb-wrapper col-12">
           <ol class="breadcrumb">
-            {% block breadcrumb_items %}{% endblock %}
+            <li class="breadcrumb-item {% if request.resolver_match.url_name == "site-main" %}active{% endif %}"><a href="{% url "site-main" %}">Home</a></li>
+            {% for item in breadcrumb %}
+              <li class="breadcrumb-item {% if forloop.last %}active{% endif %}"><a href="{{ item.url }}">{{ item.text }}</a></li>
+            {% endfor %}
           </ol>
         </div>
       </div>

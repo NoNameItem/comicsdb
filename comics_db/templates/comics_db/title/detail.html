@@ -8,13 +8,6 @@
 
 {% block meta_description %}{{ title.name }}{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-title-list" %}">Titles</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-title-detail" title.slug %}">{{ title.name }}</a>
-  </li>
-{% endblock %}
-
 {% block vendor_css %}
   <link rel="stylesheet" href="{% static "app-assets/vendors/css/forms/selects/select2.min.css" %}">
 {% endblock %}

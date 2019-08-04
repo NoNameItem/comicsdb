@@ -8,14 +8,6 @@
   {{ api_comic.title }}
 {% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="#">Marvel API</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-marvel-api-comics-list" %}">Comics</a></li>
-  <li class="breadcrumb-item active" aria-current="page"><a
-      href="{% url "site-marvel-api-comics-detail" api_comic.id %}">{{ api_comic.title }}</a></li>
-{% endblock %}
-
 {% block content %}
   <section class="row">
     <div class="col-3">
