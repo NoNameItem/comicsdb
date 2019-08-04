@@ -105,227 +105,8 @@ class MainPageView(BreadcrumbMixin, TemplateView):
 
 
 ########################################################################################################################
-# Event
+# GLOBAL LISTS AND DETAIL PAGES
 ########################################################################################################################
-
-
-class EventListView(BreadcrumbMixin, SearchMixin, AjaxListView):
-    template_name = "comics_db/event/list.html"
-    context_object_name = "events"
-    page_template = "comics_db/event/list_block.html"
-    search_fields = ('name__icontains',)
-    queryset = models.Event.objects. \
-        annotate(issue_count=Count('issues', distinct=True),
-                 title_count=Count("titles", distinct=True)). \
-        select_related("publisher")
-    breadcrumb = [
-        {'url': reverse_lazy("site-event-list"), 'text': 'Events'}
-    ]
-
-
-class EventDetailView(BreadcrumbMixin, DetailView):
-    template_name = "comics_db/event/detail.html"
-    model = models.Event
-    context_object_name = "event"
-
-    def get_breadcrumb(self):
-        event = self.get_object()
-        return [
-            {'url': reverse_lazy("site-event-list"), 'text': 'Events'},
-            {'url': reverse_lazy("site-event-detail", args=(event.slug,)), 'text': event.name}
-        ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['publishers'] = models.Publisher.objects.all()
-        return context
-
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.EventForm(request.POST, request.FILES, instance=self.object)
-        if form.is_valid():
-            self.object = form.save()
-            return HttpResponseRedirect(self.object.site_link)
-        context = self.get_context_data(object=self.object)
-        context['form'] = form
-        return self.render_to_response(context)
-
-
-class EventTitleListView(AjaxListView):
-    template_name = "comics_db/event/title_list.html"
-    context_object_name = "titles"
-    page_template = "comics_db/event/title_list_block.html"
-    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains',
-                     'publisher__name__icontains')
-
-    def get_queryset(self):
-        self.event = models.Event.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Title.objects.filter(events=self.event).annotate(issue_count=Count('issues')). \
-            select_related("universe", "title_type", "publisher")
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(
-                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['event'] = self.event
-        context['search'] = self.request.GET.get('search', "")
-        return context
-
-
-class EventIssueListView(AjaxListView):
-    template_name = "comics_db/event/issue_list.html"
-    page_template = "comics_db/event/issue_list_block.html"
-    context_object_name = "issues"
-
-    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
-                     'title__universe__name__icontains', 'title__publisher__name__icontains')
-
-    def get_queryset(self):
-        self.event = models.Event.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Issue.objects.filter(events=self.event).select_related("title__universe",
-                                                                                 "title__title_type",
-                                                                                 "title__publisher")
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        hide_read = self.request.GET.get('hide-read')
-        if hide_read == 'on':
-            queryset = queryset.exclude(read=1)
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['event'] = self.event
-        context['search'] = self.request.GET.get('search', "")
-        context['hide_read'] = self.request.GET.get('hide-read')
-        return context
-
-
-########################################################################################################################
-# Creator
-########################################################################################################################
-
-
-class CreatorListView(BreadcrumbMixin, SearchMixin, AjaxListView):
-    template_name = "comics_db/creator/list.html"
-    context_object_name = "creators"
-    page_template = "comics_db/creator/list_block.html"
-    search_fields = ('name__icontains',)
-    queryset = models.Creator.objects.filter(slug__isnull=False).exclude(slug=""). \
-        annotate(issue_count=Count('issues', distinct=True),
-                 title_count=Count("titles", distinct=True),
-                 event_count=Count("events", distinct=True))
-    breadcrumb = [
-        {'url': reverse_lazy("site-creator-list"), 'text': 'Creators'}
-    ]
-
-
-class CreatorDetailView(BreadcrumbMixin, DetailView):
-    template_name = "comics_db/creator/detail.html"
-    model = models.Creator
-    context_object_name = "creator"
-
-    def get_breadcrumb(self):
-        creator = self.get_object()
-        return [
-            {'url': reverse_lazy("site-creator-list"), 'text': 'Creators'},
-            {'url': reverse_lazy("site-creator-detail", args=(creator.slug,)), 'text': creator.name}
-        ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
-
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.CreatorForm(request.POST, request.FILES, instance=self.object)
-        if form.is_valid():
-            self.object = form.save()
-            return HttpResponseRedirect(self.object.site_link)
-        context = self.get_context_data(object=self.object)
-        context['form'] = form
-        return self.render_to_response(context)
-
-
-class CreatorTitleListView(AjaxListView):
-    template_name = "comics_db/creator/title_list.html"
-    context_object_name = "titles"
-    page_template = "comics_db/creator/title_list_block.html"
-    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains',
-                     'publisher__name__icontains')
-
-    def get_queryset(self):
-        self.creator = models.Creator.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Title.objects.filter(creators=self.creator).annotate(issue_count=Count('issues')). \
-            select_related("universe", "title_type", "publisher")
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(
-                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['creator'] = self.creator
-        context['search'] = self.request.GET.get('search', "")
-        return context
-
-
-class CreatorIssueListView(AjaxListView):
-    template_name = "comics_db/creator/issue_list.html"
-    page_template = "comics_db/creator/issue_list_block.html"
-    context_object_name = "issues"
-
-    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
-                     'title__universe__name__icontains', 'title__publisher__name__icontains')
-
-    def get_queryset(self):
-        self.creator = models.Creator.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Issue.objects.filter(creators=self.creator).select_related("title__universe",
-                                                                                     "title__title_type",
-                                                                                     "title__publisher")
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        hide_read = self.request.GET.get('hide-read')
-        if hide_read == 'on':
-            queryset = queryset.exclude(read=1)
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['creator'] = self.creator
-        context['search'] = self.request.GET.get('search', "")
-        context['hide_read'] = self.request.GET.get('hide-read')
-        return context
-
 
 ########################################################################################################################
 # Character
@@ -377,397 +158,46 @@ class CharacterDetailView(BreadcrumbMixin, DetailView):
         return self.render_to_response(context)
 
 
-class CharacterTitleListView(AjaxListView):
-    template_name = "comics_db/character/title_list.html"
-    context_object_name = "titles"
-    page_template = "comics_db/character/title_list_block.html"
-    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains',
-                     'publisher__name__icontains')
-
-    def get_queryset(self):
-        self.character = models.Character.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Title.objects.filter(characters=self.character).annotate(issue_count=Count('issues')). \
-            select_related("universe", "title_type", "publisher")
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(
-                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['character'] = self.character
-        context['search'] = self.request.GET.get('search', "")
-        return context
-
-
-class CharacterIssueListView(AjaxListView):
-    template_name = "comics_db/character/issue_list.html"
-    page_template = "comics_db/character/issue_list_block.html"
-    context_object_name = "issues"
-
-    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
-                     'title__universe__name__icontains', 'title__publisher__name__icontains')
-
-    def get_queryset(self):
-        self.character = models.Character.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Issue.objects.filter(characters=self.character).select_related("title__universe",
-                                                                                         "title__title_type",
-                                                                                         "title__publisher")
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        hide_read = self.request.GET.get('hide-read')
-        if hide_read == 'on':
-            queryset = queryset.exclude(read=1)
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['character'] = self.character
-        context['search'] = self.request.GET.get('search', "")
-        context['hide_read'] = self.request.GET.get('hide-read')
-        return context
-
-
 ########################################################################################################################
-# Publisher
+# Creator
 ########################################################################################################################
 
 
-class PublisherListView(BreadcrumbMixin, SearchMixin, ListView):
-    template_name = "comics_db/publisher/list.html"
-    context_object_name = "publishers"
+class CreatorListView(BreadcrumbMixin, SearchMixin, AjaxListView):
+    template_name = "comics_db/creator/list.html"
+    context_object_name = "creators"
+    page_template = "comics_db/creator/list_block.html"
     search_fields = ('name__icontains',)
-    queryset = models.Publisher.objects.all()
+    queryset = models.Creator.objects.filter(slug__isnull=False).exclude(slug=""). \
+        annotate(issue_count=Count('issues', distinct=True),
+                 title_count=Count("titles", distinct=True),
+                 event_count=Count("events", distinct=True))
     breadcrumb = [
-        {'url': reverse_lazy("site-publisher-list"), 'text': 'Publishers'}
+        {'url': reverse_lazy("site-creator-list"), 'text': 'Creators'}
     ]
 
 
-class PublisherDetailView(BreadcrumbMixin, DetailView):
-    template_name = "comics_db/publisher/detail.html"
-    model = models.Publisher
-    context_object_name = "publisher"
+class CreatorDetailView(BreadcrumbMixin, DetailView):
+    template_name = "comics_db/creator/detail.html"
+    model = models.Creator
+    context_object_name = "creator"
 
     def get_breadcrumb(self):
-        publisher = self.get_object()
+        creator = self.get_object()
         return [
-            {'url': reverse_lazy("site-publisher-list"), 'text': 'Publishers'},
-            {'url': reverse_lazy("site-publisher-detail", args=(publisher.slug,)), 'text': publisher.name}
+            {'url': reverse_lazy("site-creator-list"), 'text': 'Creators'},
+            {'url': reverse_lazy("site-creator-detail", args=(creator.slug,)), 'text': creator.name}
         ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            try:
-                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
-                                                              title__publisher=self.get_object()).count()
-                context['total'] = models.Issue.objects.filter(title__publisher=self.get_object()).count()
-                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
-            except ZeroDivisionError:
-                context['read'] = 0
-                context['total'] = 0
-                context['read_total_ratio'] = 0
         return context
 
     def post(self, request, slug):
         if not self.request.user.is_staff:
             raise PermissionDenied
         self.object = self.get_object()
-        form = forms.PublisherForm(request.POST, request.FILES)
-        if form.is_valid():
-            self.object.logo = form.cleaned_data['logo'] or self.object.logo
-            self.object.poster = form.cleaned_data['poster'] or self.object.poster
-            self.object.desc = form.cleaned_data['desc']
-            self.object.save()
-        context = self.get_context_data(object=self.object, form=form)
-        return self.render_to_response(context)
-
-
-class PublisherUniverseListView(AjaxListView):
-    template_name = "comics_db/publisher/universe_list.html"
-    context_object_name = "universes"
-    page_template = "comics_db/publisher/universe_list_block.html"
-
-    def get_queryset(self):
-        self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
-        return models.Universe.objects.filter(publisher=self.publisher)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['publisher'] = self.publisher
-        return context
-
-
-class PublisherTitleListView(AjaxListView):
-    template_name = "comics_db/publisher/title_list.html"
-    context_object_name = "titles"
-    page_template = "comics_db/publisher/title_list_block.html"
-    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains')
-
-    def get_queryset(self):
-        self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Title.objects.filter(publisher=self.publisher).annotate(issue_count=Count('issues')). \
-            select_related("universe", "title_type")
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(
-                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['publisher'] = self.publisher
-        context['search'] = self.request.GET.get('search', "")
-        return context
-
-
-class PublisherIssueListView(AjaxListView):
-    template_name = "comics_db/publisher/issue_list.html"
-    page_template = "comics_db/publisher/issue_list_block.html"
-    context_object_name = "issues"
-
-    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
-                     'title__universe__name__icontains')
-
-    def get_queryset(self):
-        self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Issue.objects.filter(title__publisher=self.publisher).select_related("title__universe",
-                                                                                               "title__title_type")
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        hide_read = self.request.GET.get('hide-read')
-        if hide_read == 'on':
-            queryset = queryset.exclude(read=1)
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['publisher'] = self.publisher
-        context['search'] = self.request.GET.get('search', "")
-        context['hide_read'] = self.request.GET.get('hide-read')
-        return context
-
-
-########################################################################################################################
-# Universe
-########################################################################################################################
-
-
-class UniverseListView(BreadcrumbMixin, SearchMixin, ListView):
-    template_name = "comics_db/universe/list.html"
-    queryset = models.Universe.objects.all()
-    context_object_name = "universes"
-    search_fields = ('name__icontains', "publisher__name__icontains")
-    breadcrumb = [
-        {'url': reverse_lazy("site-universe-list"), 'text': 'Universes'}
-    ]
-
-
-class UniverseDetailView(BreadcrumbMixin, DetailView):
-    template_name = "comics_db/universe/detail.html"
-    model = models.Universe
-    context_object_name = "universe"
-
-    def get_breadcrumb(self):
-        universe = self.get_object()
-        return [
-            {'url': reverse_lazy("site-universe-list"), 'text': 'Universes'},
-            {'url': reverse_lazy("site-universe-detail", args=(universe.slug,)), 'text': universe.name}
-        ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            try:
-                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
-                                                              title__universe=self.get_object()).count()
-                context['total'] = models.Issue.objects.filter(title__universe=self.get_object()).count()
-                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
-            except ZeroDivisionError:
-                context['read'] = 0
-                context['total'] = 0
-                context['read_total_ratio'] = 0
-        return context
-
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.UniverseForm(request.POST, request.FILES)
-        if form.is_valid():
-            self.object.poster = form.cleaned_data['poster'] or self.object.poster
-            self.object.desc = form.cleaned_data['desc']
-            self.object.save()
-        context = self.get_context_data(object=self.object, form=form)
-        return self.render_to_response(context)
-
-
-class UniverseTitleListView(AjaxListView):
-    template_name = "comics_db/universe/title_list.html"
-    context_object_name = "titles"
-    page_template = "comics_db/universe/title_list_block.html"
-    search_fields = ('name__icontains', 'title_type__name__icontains')
-
-    def get_queryset(self):
-        self.universe = models.Universe.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Title.objects.filter(universe=self.universe).annotate(issue_count=Count('issues')). \
-            select_related("title_type")
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(
-                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['universe'] = self.universe
-        context['search'] = self.request.GET.get('search', "")
-        return context
-
-
-class UniverseIssueListView(AjaxListView):
-    template_name = "comics_db/universe/issue_list.html"
-    page_template = "comics_db/universe/issue_list_block.html"
-    context_object_name = "issues"
-
-    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',)
-
-    def get_queryset(self):
-        self.universe = models.Universe.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Issue.objects.filter(title__universe=self.universe).select_related("title__title_type")
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        hide_read = self.request.GET.get('hide-read')
-        if hide_read == 'on':
-            queryset = queryset.exclude(read=1)
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['universe'] = self.universe
-        context['search'] = self.request.GET.get('search', "")
-        context['hide_read'] = self.request.GET.get('hide-read')
-        return context
-
-
-########################################################################################################################
-# Title
-########################################################################################################################
-
-
-class TitleListView(BreadcrumbMixin, SearchMixin, AjaxListView):
-    template_name = "comics_db/title/list.html"
-    context_object_name = "titles"
-    page_template = "comics_db/title/list_block.html"
-    search_fields = ('name__icontains', 'title_type__name__icontains', 'publisher__name__icontains',
-                     'universe__name__icontains')
-    queryset = models.Title.objects.annotate(issue_count=Count('issues')).select_related("publisher", "universe",
-                                                                                         "title_type")
-    breadcrumb = [
-        {'url': reverse_lazy("site-title-list"), 'text': 'Titles'}
-    ]
-
-    def get_queryset(self):
-        queryset = super(TitleListView, self).get_queryset()
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(
-                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title_types'] = models.TitleType.objects.all()
-        context['publishers'] = models.Publisher.objects.all()
-        context['universes'] = models.Universe.objects.all()
-        return context
-
-    def post(self, request):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object_list = self.get_queryset()
-        context = self.get_context_data(object_list=self.object_list, page_template=self.page_template)
-        form = forms.TitleCreateForm(request.POST, request.FILES)
-        if form.is_valid():
-            title = form.save()
-        else:
-            context['form'] = form
-        return self.render_to_response(context)
-
-
-class TitleDetailView(BreadcrumbMixin, DetailView):
-    template_name = "comics_db/title/detail.html"
-    model = models.Title
-    context_object_name = "title"
-
-    def get_breadcrumb(self):
-        title = self.get_object()
-        return [
-            {'url': reverse_lazy("site-title-list"), 'text': 'Titles'},
-            {'url': reverse_lazy("site-title-detail", args=(title.slug,)), 'text': title.name}
-        ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title_types'] = models.TitleType.objects.all()
-        context['list_link'] = self.request.META.get('HTTP_REFERER', reverse('site-title-list'))
-        if self.request.user.is_authenticated:
-            context['reading_lists'] = self.request.user.profile.reading_lists.order_by('name')
-            try:
-                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
-                                                              title=self.object).count()
-                context['total'] = models.Issue.objects.filter(title=self.object).count()
-                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
-                if context['read'] == context['total']:
-                    issues = self.object.issues.all()
-                    context['read_date'] = models.ReadIssue.objects.filter(issue__in=issues,
-                                                                           profile=self.request.user.profile) \
-                        .aggregate(Max('read_date'))['read_date__max']
-            except ZeroDivisionError:
-                context['read'] = 0
-                context['total'] = 0
-                context['read_total_ratio'] = 0
-                context['read_date'] = None
-        return context
-
-    def post(self, request, slug):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        self.object = self.get_object()
-        form = forms.TitleForm(request.POST, request.FILES, instance=self.object)
+        form = forms.CreatorForm(request.POST, request.FILES, instance=self.object)
         if form.is_valid():
             self.object = form.save()
             return HttpResponseRedirect(self.object.site_link)
@@ -776,112 +206,53 @@ class TitleDetailView(BreadcrumbMixin, DetailView):
         return self.render_to_response(context)
 
 
-class DeleteTitle(View, UserPassesTestMixin):
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def post(self, request, slug):
-        redirect_url = request.POST.get('delete-redirect-url')
-        title = models.Title.objects.get(slug=slug)
-        title.delete()
-        return HttpResponseRedirect(redirect_url)
+########################################################################################################################
+# Event
+########################################################################################################################
 
 
-class MoveTitleIssues(View, UserPassesTestMixin):
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def post(self, request, slug):
-        target_title_id = request.POST.get('target-title-id')
-        target_title = get_object_or_404(models.Title, id=target_title_id)
-        source_title = get_object_or_404(models.Title, slug=slug)
-        source_title.issues.update(title=target_title)
-        if target_title != source_title:
-            source_title.delete()
-        return HttpResponseRedirect(target_title.site_link)
-
-
-class TitleIssueListView(AjaxListView):
-    template_name = "comics_db/title/issue_list.html"
-    page_template = "comics_db/title/issue_list_block.html"
-    context_object_name = "issues"
-
+class EventListView(BreadcrumbMixin, SearchMixin, AjaxListView):
+    template_name = "comics_db/event/list.html"
+    context_object_name = "events"
+    page_template = "comics_db/event/list_block.html"
     search_fields = ('name__icontains',)
+    queryset = models.Event.objects. \
+        annotate(issue_count=Count('issues', distinct=True),
+                 title_count=Count("titles", distinct=True)). \
+        select_related("publisher")
+    breadcrumb = [
+        {'url': reverse_lazy("site-event-list"), 'text': 'Events'}
+    ]
 
-    def get_queryset(self):
-        self.title = models.Title.objects.get(slug=self.kwargs['slug'])
-        queryset = models.Issue.objects.filter(title=self.title)
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        hide_read = self.request.GET.get('hide-read')
-        if hide_read == 'on':
-            queryset = queryset.exclude(read=1)
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
-        return queryset
+
+class EventDetailView(BreadcrumbMixin, DetailView):
+    template_name = "comics_db/event/detail.html"
+    model = models.Event
+    context_object_name = "event"
+
+    def get_breadcrumb(self):
+        event = self.get_object()
+        return [
+            {'url': reverse_lazy("site-event-list"), 'text': 'Events'},
+            {'url': reverse_lazy("site-event-detail", args=(event.slug,)), 'text': event.name}
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = self.title
-        context['search'] = self.request.GET.get('search', "")
-        context['hide_read'] = self.request.GET.get('hide-read')
+        context['publishers'] = models.Publisher.objects.all()
         return context
 
-
-class AddTitleToReadingList(View, LoginRequiredMixin):
     def post(self, request, slug):
-        try:
-            title = models.Title.objects.get(slug=slug)
-            reading_list = self.request.user.profile.reading_lists.get(pk=request.POST.get('list_id'))
-            added_issues = list(reading_list.issues.filter(title=title))
-            issues = title.issues.all()
-            number_from = request.POST.get('number_from')
-            number_to = request.POST.get('number_to')
-            if number_from:
-                issues = issues.filter(number__gte=number_from)
-            if number_to:
-                issues = issues.filter(number__lte=number_to)
-            issues.order_by('number')
-            order = models.ReadingListIssue.objects.filter(reading_list=reading_list).aggregate(max_order=Max('order'))[
-                        'max_order'] or 0
-            rl_issues = []
-            for issue in issues:
-                order += 1
-
-                if issue not in added_issues:
-                    rl_issue = models.ReadingListIssue(reading_list=reading_list, issue=issue, order=order)
-                    rl_issues.append(rl_issue)
-
-            models.ReadingListIssue.objects.bulk_create(rl_issues)
-            return JsonResponse({'status': "success", 'issue_count': len(rl_issues),
-                                 'list_name': reading_list.name})
-        except models.Title.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': "Title not found."})
-        except models.ReadingList.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': "Reading list not found. Please refresh page."})
-        except Exception as err:
-            return JsonResponse({'status': 'error', 'message': 'Unknown error, please contact administrator. \n'
-                                                               'Error message: %s' % err.args[0]})
-
-
-class DownloadTitle(View):
-    def get(self, request, slug):
-        title = get_object_or_404(models.Title, slug=slug)
-
-        issues = list(
-            map(lambda x: ("{0}/[{0.name}] {1}.{2}".format(title, x.name, os.path.splitext(x.link)[1]), x.link),
-                title.issues.all()))
-
-        z = construct_archive(issues)
-
-        response = StreamingHttpResponse(z, content_type="application/zip")
-        response['Content-Disposition'] = "attachment; filename=\"{0}.zip\"".format(title)
-
-        return response
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        self.object = self.get_object()
+        form = forms.EventForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            self.object = form.save()
+            return HttpResponseRedirect(self.object.site_link)
+        context = self.get_context_data(object=self.object)
+        context['form'] = form
+        return self.render_to_response(context)
 
 
 ########################################################################################################################
@@ -958,7 +329,7 @@ class IssueDetailView(BreadcrumbMixin, DetailView):
         return self.render_to_response(context)
 
 
-class DeleteIssue(View, UserPassesTestMixin):
+class IssueDelete(View, UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_staff
 
@@ -969,7 +340,7 @@ class DeleteIssue(View, UserPassesTestMixin):
         return HttpResponseRedirect(redirect_url)
 
 
-class ReadIssue(View, LoginRequiredMixin):
+class IssueMarkRead(View, LoginRequiredMixin):
     def post(self, request, slug):
         try:
             issue = models.Issue.objects.get(slug=slug)
@@ -987,7 +358,7 @@ class ReadIssue(View, LoginRequiredMixin):
                                                                'Error message: %s' % err.args[0]})
 
 
-class AddToReadingList(View, LoginRequiredMixin):
+class IssueAddToReadingList(View, LoginRequiredMixin):
     def post(self, request, slug):
         try:
             issue = models.Issue.objects.get(slug=slug)
@@ -1006,6 +377,242 @@ class AddToReadingList(View, LoginRequiredMixin):
         except Exception as err:
             return JsonResponse({'status': 'error', 'message': 'Unknown error, please contact administrator. \n'
                                                                'Error message: %s' % err.args[0]})
+
+
+########################################################################################################################
+# Marvel API Comics
+########################################################################################################################
+
+
+class MarvelAPIComicsList(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
+    template_name = "comics_db/admin/marvel_api_comics_list.html"
+    breadcrumb = [
+        {'url': "", 'text': 'Marvel API'},
+        {'url': reverse_lazy("site-marvel-api-comics-list"), 'text': 'Comics'},
+    ]
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super(MarvelAPIComicsList, self).get_context_data(**kwargs)
+        return context
+
+
+class MarvelAPIComicsDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
+    model = models.MarvelAPIComics
+    context_object_name = 'api_comic'
+    template_name = "comics_db/admin/marvel_api_comics_detail.html"
+
+    def get_breadcrumb(self):
+        comic = self.get_object()
+        return [
+            {'url': "", 'text': 'Marvel API'},
+            {'url': reverse_lazy("site-marvel-api-comics-list"), 'text': 'Comics'},
+            {'url': reverse_lazy("site-marvel-api-comics-detail", args=(comic.id,)), 'text': comic.title},
+        ]
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super(MarvelAPIComicsDetail, self).get_context_data(**kwargs)
+        api_comic = context['api_comic']
+        api_image = api_comic.image
+        link = "{0.path}.{0.extension}".format(api_image)
+        context['image_link'] = link
+        try:
+            context['publish_date'] = api_comic.dates.get(type="onsaleDate").date
+        except models.MarvelAPISiteUrl.DoesNotExist:
+            pass
+        return context
+
+
+########################################################################################################################
+# Marvel API Series
+########################################################################################################################
+
+
+class MarvelAPISeriesList(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
+    template_name = "comics_db/admin/marvel_api_series_list.html"
+    breadcrumb = [
+        {'url': "", 'text': 'Marvel API'},
+        {'url': reverse_lazy("site-marvel-api-series-list"), 'text': 'Series'},
+    ]
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super(MarvelAPISeriesList, self).get_context_data(**kwargs)
+        context["TYPE_CHOICES"] = filtersets.MARVEL_API_SERIES_TYPE_CHOICES
+        return context
+
+
+class MarvelAPISeriesDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
+    model = models.MarvelAPISeries
+    context_object_name = 'api_series'
+    template_name = "comics_db/admin/marvel_api_series_detail.html"
+
+    def get_breadcrumb(self):
+        series = self.get_object()
+        return [
+            {'url': "", 'text': 'Marvel API'},
+            {'url': reverse_lazy("site-marvel-api-series-list"), 'text': 'Series'},
+            {'url': reverse_lazy("site-marvel-api-series-detail", args=(series.id,)), 'text': series.title},
+        ]
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+
+########################################################################################################################
+# Parser log
+########################################################################################################################
+
+
+class ParserLogView(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
+    template_name = "comics_db/admin/parser_log.html"
+    extra_context = {'parser_choices': models.ParserRun.PARSER_CHOICES}
+    breadcrumb = [
+        {'url': reverse_lazy("site-parser-log"), 'text': 'Parsers log'}
+    ]
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+
+class ParserRunDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
+    model = models.ParserRun
+    context_object_name = 'parser_run'
+    template_name = "comics_db/admin/parser_run.html"
+    breadcrumb = [
+        {'url': reverse_lazy("site-parser-log"), 'text': 'Parsers log'},
+        {'url': "", 'text': 'Parser run details'},
+    ]
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        status_css = None
+        if self.object.status in ("RUNNING", "COLLECTING"):
+            status_css = 'info'
+        elif self.object.status == "SUCCESS":
+            status_css = 'success'
+        elif self.object.status == "ENDED_WITH_ERRORS":
+            status_css = 'warning'
+        elif self.object.status in ("CRITICAL_ERROR", "INVALID_PARSER"):
+            status_css = 'danger'
+        context['status_css'] = status_css
+        return context
+
+
+class ParserRun(UserPassesTestMixin, View):
+    parser_dict = dict(models.ParserRun.PARSER_CHOICES)
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def post(self, request):
+        try:
+            parser = request.POST['parser_code']
+            args = tuple()
+            parser_name = self.parser_dict.get(parser)
+            if not parser or parser == 'BASE':
+                return JsonResponse({'status': 'error', 'message': 'Invalid parser code "%s"' % parser})
+            if parser == 'CLOUD_FILES':
+                path_root = request.POST['cloud-path-root']
+                if not path_root:
+                    return JsonResponse({'status': 'error', 'message': 'Path root should be specified'})
+                full = bool(request.POST['cloud-full'])
+                load_covers = bool(request.POST['cloud-load-cover'])
+                marvel_api_merge = bool(request.POST['cloud-marvel-api-merge'])
+                args = (path_root, full, load_covers, marvel_api_merge)
+            elif parser == 'MARVEL_API':
+                incremental = request.POST['marvel-api-incremental']
+                args = (incremental,)
+            elif parser == "FULL_MARVEL_API_MERGE":
+                parser_name = "Full Marvel API Merge"
+            tasks.parser_run_task.delay(parser, args)
+            return JsonResponse({'status': 'success', 'message': '%s started' % parser_name})
+        except Exception as err:
+            return JsonResponse({'status': 'error', 'message': err.args[0]})
+
+
+########################################################################################################################
+# Parser Schedule
+########################################################################################################################
+
+
+class ParserScheduleView(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
+    template_name = "comics_db/admin/parser_schedule.html"
+    extra_context = {
+        'parser_choices': models.ParserRun.PARSER_CHOICES,
+        'period_choices': IntervalSchedule.PERIOD_CHOICES,
+    }
+    breadcrumb = [
+        {'url': reverse_lazy("parser-schedule"), 'text': 'Parsers schedule'}
+    ]
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+
+########################################################################################################################
+# Publisher
+########################################################################################################################
+
+
+class PublisherListView(BreadcrumbMixin, SearchMixin, ListView):
+    template_name = "comics_db/publisher/list.html"
+    context_object_name = "publishers"
+    search_fields = ('name__icontains',)
+    queryset = models.Publisher.objects.all()
+    breadcrumb = [
+        {'url': reverse_lazy("site-publisher-list"), 'text': 'Publishers'}
+    ]
+
+
+class PublisherDetailView(BreadcrumbMixin, DetailView):
+    template_name = "comics_db/publisher/detail.html"
+    model = models.Publisher
+    context_object_name = "publisher"
+
+    def get_breadcrumb(self):
+        publisher = self.get_object()
+        return [
+            {'url': reverse_lazy("site-publisher-list"), 'text': 'Publishers'},
+            {'url': reverse_lazy("site-publisher-detail", args=(publisher.slug,)), 'text': publisher.name}
+        ]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                              title__publisher=self.get_object()).count()
+                context['total'] = models.Issue.objects.filter(title__publisher=self.get_object()).count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
+        return context
+
+    def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        self.object = self.get_object()
+        form = forms.PublisherForm(request.POST, request.FILES)
+        if form.is_valid():
+            self.object.logo = form.cleaned_data['logo'] or self.object.logo
+            self.object.poster = form.cleaned_data['poster'] or self.object.poster
+            self.object.desc = form.cleaned_data['desc']
+            self.object.save()
+        context = self.get_context_data(object=self.object, form=form)
+        return self.render_to_response(context)
 
 
 ########################################################################################################################
@@ -1137,7 +744,7 @@ class ReadingListDetailView(BreadcrumbMixin, AjaxListView):
         return self.render_to_response(context)
 
 
-class DeleteReadingList(View, LoginRequiredMixin):
+class ReadingListDelete(View, LoginRequiredMixin):
     def post(self, request, slug):
         if not request.user.is_authenticated:
             raise PermissionError
@@ -1146,7 +753,7 @@ class DeleteReadingList(View, LoginRequiredMixin):
         return JsonResponse({'status': 'success'})
 
 
-class ChangeReadingOrder(View, LoginRequiredMixin):
+class ReadingListChangeOrder(View, LoginRequiredMixin):
     def post(self, request, slug):
         if not request.user.is_authenticated:
             raise PermissionError
@@ -1172,7 +779,7 @@ class ChangeReadingOrder(View, LoginRequiredMixin):
             return JsonResponse({'status': "error", 'message': "Can't get new order."})
 
 
-class DeleteFromReadingList(View, LoginRequiredMixin):
+class ReadingListDeleteIssue(View, LoginRequiredMixin):
     def post(self, request, slug):
         try:
             reading_list = request.user.profile.reading_lists.get(slug=slug)
@@ -1281,7 +888,7 @@ class ReadingListIssueDetailView(BreadcrumbMixin, DetailView):
         return self.render_to_response(context)
 
 
-class DownloadReadingList(View):
+class ReadingListDownload(View):
     def get(self, request, slug):
         rl = get_object_or_404(models.ReadingList, slug=slug)
 
@@ -1328,169 +935,635 @@ class DownloadReadingList(View):
 
 
 ########################################################################################################################
-# Parser log
+# Title
 ########################################################################################################################
 
 
-class ParserLogView(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
-    template_name = "comics_db/admin/parser_log.html"
-    extra_context = {'parser_choices': models.ParserRun.PARSER_CHOICES}
+class TitleListView(BreadcrumbMixin, SearchMixin, AjaxListView):
+    template_name = "comics_db/title/list.html"
+    context_object_name = "titles"
+    page_template = "comics_db/title/list_block.html"
+    search_fields = ('name__icontains', 'title_type__name__icontains', 'publisher__name__icontains',
+                     'universe__name__icontains')
+    queryset = models.Title.objects.annotate(issue_count=Count('issues')).select_related("publisher", "universe",
+                                                                                         "title_type")
     breadcrumb = [
-        {'url': reverse_lazy("site-parser-log"), 'text': 'Parsers log'}
+        {'url': reverse_lazy("site-title-list"), 'text': 'Titles'}
     ]
 
-    def test_func(self):
-        return self.request.user.is_staff
-
-
-class ParserRunDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
-    model = models.ParserRun
-    context_object_name = 'parser_run'
-    template_name = "comics_db/admin/parser_run.html"
-    breadcrumb = [
-        {'url': reverse_lazy("site-parser-log"), 'text': 'Parsers log'},
-        {'url': "", 'text': 'Parser run details'},
-    ]
-
-    def test_func(self):
-        return self.request.user.is_staff
+    def get_queryset(self):
+        queryset = super(TitleListView, self).get_queryset()
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        status_css = None
-        if self.object.status in ("RUNNING", "COLLECTING"):
-            status_css = 'info'
-        elif self.object.status == "SUCCESS":
-            status_css = 'success'
-        elif self.object.status == "ENDED_WITH_ERRORS":
-            status_css = 'warning'
-        elif self.object.status in ("CRITICAL_ERROR", "INVALID_PARSER"):
-            status_css = 'danger'
-        context['status_css'] = status_css
+        context['title_types'] = models.TitleType.objects.all()
+        context['publishers'] = models.Publisher.objects.all()
+        context['universes'] = models.Universe.objects.all()
         return context
-
-
-class MarvelAPISeriesList(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
-    template_name = "comics_db/admin/marvel_api_series_list.html"
-    breadcrumb = [
-        {'url': "", 'text': 'Marvel API'},
-        {'url': reverse_lazy("site-marvel-api-series-list"), 'text': 'Series'},
-    ]
-
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def get_context_data(self, **kwargs):
-        context = super(MarvelAPISeriesList, self).get_context_data(**kwargs)
-        context["TYPE_CHOICES"] = filtersets.MARVEL_API_SERIES_TYPE_CHOICES
-        return context
-
-
-class MarvelAPISeriesDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
-    model = models.MarvelAPISeries
-    context_object_name = 'api_series'
-    template_name = "comics_db/admin/marvel_api_series_detail.html"
-
-    def get_breadcrumb(self):
-        series = self.get_object()
-        return [
-            {'url': "", 'text': 'Marvel API'},
-            {'url': reverse_lazy("site-marvel-api-series-list"), 'text': 'Series'},
-            {'url': reverse_lazy("site-marvel-api-series-detail", args=(series.id,)), 'text': series.title},
-        ]
-
-    def test_func(self):
-        return self.request.user.is_staff
-
-
-class MarvelAPIComicsList(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
-    template_name = "comics_db/admin/marvel_api_comics_list.html"
-    breadcrumb = [
-        {'url': "", 'text': 'Marvel API'},
-        {'url': reverse_lazy("site-marvel-api-comics-list"), 'text': 'Comics'},
-    ]
-
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def get_context_data(self, **kwargs):
-        context = super(MarvelAPIComicsList, self).get_context_data(**kwargs)
-        return context
-
-
-class MarvelAPIComicsDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
-    model = models.MarvelAPIComics
-    context_object_name = 'api_comic'
-    template_name = "comics_db/admin/marvel_api_comics_detail.html"
-
-    def get_breadcrumb(self):
-        comic = self.get_object()
-        return [
-            {'url': "", 'text': 'Marvel API'},
-            {'url': reverse_lazy("site-marvel-api-comics-list"), 'text': 'Comics'},
-            {'url': reverse_lazy("site-marvel-api-comics-detail", args=(comic.id,)), 'text': comic.title},
-        ]
-
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def get_context_data(self, **kwargs):
-        context = super(MarvelAPIComicsDetail, self).get_context_data(**kwargs)
-        api_comic = context['api_comic']
-        api_image = api_comic.image
-        link = "{0.path}.{0.extension}".format(api_image)
-        context['image_link'] = link
-        try:
-            context['publish_date'] = api_comic.dates.get(type="onsaleDate").date
-        except models.MarvelAPISiteUrl.DoesNotExist:
-            pass
-        return context
-
-
-class RunParser(UserPassesTestMixin, View):
-    parser_dict = dict(models.ParserRun.PARSER_CHOICES)
-
-    def test_func(self):
-        return self.request.user.is_staff
 
     def post(self, request):
-        try:
-            parser = request.POST['parser_code']
-            args = tuple()
-            parser_name = self.parser_dict.get(parser)
-            if not parser or parser == 'BASE':
-                return JsonResponse({'status': 'error', 'message': 'Invalid parser code "%s"' % parser})
-            if parser == 'CLOUD_FILES':
-                path_root = request.POST['cloud-path-root']
-                if not path_root:
-                    return JsonResponse({'status': 'error', 'message': 'Path root should be specified'})
-                full = bool(request.POST['cloud-full'])
-                load_covers = bool(request.POST['cloud-load-cover'])
-                marvel_api_merge = bool(request.POST['cloud-marvel-api-merge'])
-                args = (path_root, full, load_covers, marvel_api_merge)
-            elif parser == 'MARVEL_API':
-                incremental = request.POST['marvel-api-incremental']
-                args = (incremental,)
-            elif parser == "FULL_MARVEL_API_MERGE":
-                parser_name = "Full Marvel API Merge"
-            tasks.parser_run_task.delay(parser, args)
-            return JsonResponse({'status': 'success', 'message': '%s started' % parser_name})
-        except Exception as err:
-            return JsonResponse({'status': 'error', 'message': err.args[0]})
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        self.object_list = self.get_queryset()
+        context = self.get_context_data(object_list=self.object_list, page_template=self.page_template)
+        form = forms.TitleCreateForm(request.POST, request.FILES)
+        if form.is_valid():
+            title = form.save()
+        else:
+            context['form'] = form
+        return self.render_to_response(context)
 
 
-class ParserScheduleView(BreadcrumbMixin, UserPassesTestMixin, TemplateView):
-    template_name = "comics_db/admin/parser_schedule.html"
-    extra_context = {
-        'parser_choices': models.ParserRun.PARSER_CHOICES,
-        'period_choices': IntervalSchedule.PERIOD_CHOICES,
-    }
-    breadcrumb = [
-        {'url': reverse_lazy("parser-schedule"), 'text': 'Parsers schedule'}
-    ]
+class TitleDetailView(BreadcrumbMixin, DetailView):
+    template_name = "comics_db/title/detail.html"
+    model = models.Title
+    context_object_name = "title"
 
+    def get_breadcrumb(self):
+        title = self.get_object()
+        return [
+            {'url': reverse_lazy("site-title-list"), 'text': 'Titles'},
+            {'url': reverse_lazy("site-title-detail", args=(title.slug,)), 'text': title.name}
+        ]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title_types'] = models.TitleType.objects.all()
+        context['list_link'] = self.request.META.get('HTTP_REFERER', reverse('site-title-list'))
+        if self.request.user.is_authenticated:
+            context['reading_lists'] = self.request.user.profile.reading_lists.order_by('name')
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                              title=self.object).count()
+                context['total'] = models.Issue.objects.filter(title=self.object).count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+                if context['read'] == context['total']:
+                    issues = self.object.issues.all()
+                    context['read_date'] = models.ReadIssue.objects.filter(issue__in=issues,
+                                                                           profile=self.request.user.profile) \
+                        .aggregate(Max('read_date'))['read_date__max']
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
+                context['read_date'] = None
+        return context
+
+    def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        self.object = self.get_object()
+        form = forms.TitleForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            self.object = form.save()
+            return HttpResponseRedirect(self.object.site_link)
+        context = self.get_context_data(object=self.object)
+        context['form'] = form
+        return self.render_to_response(context)
+
+
+class TitleDelete(View, UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_staff
+
+    def post(self, request, slug):
+        redirect_url = request.POST.get('delete-redirect-url')
+        title = models.Title.objects.get(slug=slug)
+        title.delete()
+        return HttpResponseRedirect(redirect_url)
+
+
+class TitleMoveIssues(View, UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def post(self, request, slug):
+        target_title_id = request.POST.get('target-title-id')
+        target_title = get_object_or_404(models.Title, id=target_title_id)
+        source_title = get_object_or_404(models.Title, slug=slug)
+        source_title.issues.update(title=target_title)
+        if target_title != source_title:
+            source_title.delete()
+        return HttpResponseRedirect(target_title.site_link)
+
+
+class TitleAddToReadingList(View, LoginRequiredMixin):
+    def post(self, request, slug):
+        try:
+            title = models.Title.objects.get(slug=slug)
+            reading_list = self.request.user.profile.reading_lists.get(pk=request.POST.get('list_id'))
+            added_issues = list(reading_list.issues.filter(title=title))
+            issues = title.issues.all()
+            number_from = request.POST.get('number_from')
+            number_to = request.POST.get('number_to')
+            if number_from:
+                issues = issues.filter(number__gte=number_from)
+            if number_to:
+                issues = issues.filter(number__lte=number_to)
+            issues.order_by('number')
+            order = models.ReadingListIssue.objects.filter(reading_list=reading_list).aggregate(max_order=Max('order'))[
+                        'max_order'] or 0
+            rl_issues = []
+            for issue in issues:
+                order += 1
+
+                if issue not in added_issues:
+                    rl_issue = models.ReadingListIssue(reading_list=reading_list, issue=issue, order=order)
+                    rl_issues.append(rl_issue)
+
+            models.ReadingListIssue.objects.bulk_create(rl_issues)
+            return JsonResponse({'status': "success", 'issue_count': len(rl_issues),
+                                 'list_name': reading_list.name})
+        except models.Title.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': "Title not found."})
+        except models.ReadingList.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': "Reading list not found. Please refresh page."})
+        except Exception as err:
+            return JsonResponse({'status': 'error', 'message': 'Unknown error, please contact administrator. \n'
+                                                               'Error message: %s' % err.args[0]})
+
+
+class TitleDownload(View):
+    def get(self, request, slug):
+        title = get_object_or_404(models.Title, slug=slug)
+
+        issues = list(
+            map(lambda x: ("{0}/[{0.name}] {1}.{2}".format(title, x.name, os.path.splitext(x.link)[1]), x.link),
+                title.issues.all()))
+
+        z = construct_archive(issues)
+
+        response = StreamingHttpResponse(z, content_type="application/zip")
+        response['Content-Disposition'] = "attachment; filename=\"{0}.zip\"".format(title)
+
+        return response
+
+
+########################################################################################################################
+# Universe
+########################################################################################################################
+
+
+class UniverseListView(BreadcrumbMixin, SearchMixin, ListView):
+    template_name = "comics_db/universe/list.html"
+    queryset = models.Universe.objects.all()
+    context_object_name = "universes"
+    search_fields = ('name__icontains', "publisher__name__icontains")
+    breadcrumb = [
+        {'url': reverse_lazy("site-universe-list"), 'text': 'Universes'}
+    ]
+
+
+class UniverseDetailView(BreadcrumbMixin, DetailView):
+    template_name = "comics_db/universe/detail.html"
+    model = models.Universe
+    context_object_name = "universe"
+
+    def get_breadcrumb(self):
+        universe = self.get_object()
+        return [
+            {'url': reverse_lazy("site-universe-list"), 'text': 'Universes'},
+            {'url': reverse_lazy("site-universe-detail", args=(universe.slug,)), 'text': universe.name}
+        ]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            try:
+                context['read'] = models.Issue.objects.filter(readers=self.request.user.profile,
+                                                              title__universe=self.get_object()).count()
+                context['total'] = models.Issue.objects.filter(title__universe=self.get_object()).count()
+                context['read_total_ratio'] = round(context['read'] / context['total'] * 100)
+            except ZeroDivisionError:
+                context['read'] = 0
+                context['total'] = 0
+                context['read_total_ratio'] = 0
+        return context
+
+    def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        self.object = self.get_object()
+        form = forms.UniverseForm(request.POST, request.FILES)
+        if form.is_valid():
+            self.object.poster = form.cleaned_data['poster'] or self.object.poster
+            self.object.desc = form.cleaned_data['desc']
+            self.object.save()
+        context = self.get_context_data(object=self.object, form=form)
+        return self.render_to_response(context)
+
+
+########################################################################################################################
+# SUBLISTS
+########################################################################################################################
+########################################################################################################################
+# Character
+########################################################################################################################
+
+
+class CharacterTitleListView(AjaxListView):
+    template_name = "comics_db/character/title_list.html"
+    context_object_name = "titles"
+    page_template = "comics_db/character/title_list_block.html"
+    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains',
+                     'publisher__name__icontains')
+
+    def get_queryset(self):
+        self.character = models.Character.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Title.objects.filter(characters=self.character).annotate(issue_count=Count('issues')). \
+            select_related("universe", "title_type", "publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['character'] = self.character
+        context['search'] = self.request.GET.get('search', "")
+        return context
+
+
+class CharacterIssueListView(AjaxListView):
+    template_name = "comics_db/character/issue_list.html"
+    page_template = "comics_db/character/issue_list_block.html"
+    context_object_name = "issues"
+
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
+                     'title__universe__name__icontains', 'title__publisher__name__icontains')
+
+    def get_queryset(self):
+        self.character = models.Character.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Issue.objects.filter(characters=self.character).select_related("title__universe",
+                                                                                         "title__title_type",
+                                                                                         "title__publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['character'] = self.character
+        context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
+        return context
+
+
+########################################################################################################################
+# Creator
+########################################################################################################################
+
+
+class CreatorTitleListView(AjaxListView):
+    template_name = "comics_db/creator/title_list.html"
+    context_object_name = "titles"
+    page_template = "comics_db/creator/title_list_block.html"
+    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains',
+                     'publisher__name__icontains')
+
+    def get_queryset(self):
+        self.creator = models.Creator.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Title.objects.filter(creators=self.creator).annotate(issue_count=Count('issues')). \
+            select_related("universe", "title_type", "publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['creator'] = self.creator
+        context['search'] = self.request.GET.get('search', "")
+        return context
+
+
+class CreatorIssueListView(AjaxListView):
+    template_name = "comics_db/creator/issue_list.html"
+    page_template = "comics_db/creator/issue_list_block.html"
+    context_object_name = "issues"
+
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
+                     'title__universe__name__icontains', 'title__publisher__name__icontains')
+
+    def get_queryset(self):
+        self.creator = models.Creator.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Issue.objects.filter(creators=self.creator).select_related("title__universe",
+                                                                                     "title__title_type",
+                                                                                     "title__publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['creator'] = self.creator
+        context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
+        return context
+
+
+########################################################################################################################
+# Event
+########################################################################################################################
+
+
+class EventTitleListView(AjaxListView):
+    template_name = "comics_db/event/title_list.html"
+    context_object_name = "titles"
+    page_template = "comics_db/event/title_list_block.html"
+    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains',
+                     'publisher__name__icontains')
+
+    def get_queryset(self):
+        self.event = models.Event.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Title.objects.filter(events=self.event).annotate(issue_count=Count('issues')). \
+            select_related("universe", "title_type", "publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['event'] = self.event
+        context['search'] = self.request.GET.get('search', "")
+        return context
+
+
+class EventIssueListView(AjaxListView):
+    template_name = "comics_db/event/issue_list.html"
+    page_template = "comics_db/event/issue_list_block.html"
+    context_object_name = "issues"
+
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
+                     'title__universe__name__icontains', 'title__publisher__name__icontains')
+
+    def get_queryset(self):
+        self.event = models.Event.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Issue.objects.filter(events=self.event).select_related("title__universe",
+                                                                                 "title__title_type",
+                                                                                 "title__publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['event'] = self.event
+        context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
+        return context
+
+
+########################################################################################################################
+# Issue
+########################################################################################################################
+########################################################################################################################
+# Publisher
+########################################################################################################################
+
+
+class PublisherUniverseListView(AjaxListView):
+    template_name = "comics_db/publisher/universe_list.html"
+    context_object_name = "universes"
+    page_template = "comics_db/publisher/universe_list_block.html"
+
+    def get_queryset(self):
+        self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
+        return models.Universe.objects.filter(publisher=self.publisher)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['publisher'] = self.publisher
+        return context
+
+
+class PublisherTitleListView(AjaxListView):
+    template_name = "comics_db/publisher/title_list.html"
+    context_object_name = "titles"
+    page_template = "comics_db/publisher/title_list_block.html"
+    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains')
+
+    def get_queryset(self):
+        self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Title.objects.filter(publisher=self.publisher).annotate(issue_count=Count('issues')). \
+            select_related("universe", "title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['publisher'] = self.publisher
+        context['search'] = self.request.GET.get('search', "")
+        return context
+
+
+class PublisherIssueListView(AjaxListView):
+    template_name = "comics_db/publisher/issue_list.html"
+    page_template = "comics_db/publisher/issue_list_block.html"
+    context_object_name = "issues"
+
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
+                     'title__universe__name__icontains')
+
+    def get_queryset(self):
+        self.publisher = models.Publisher.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Issue.objects.filter(title__publisher=self.publisher).select_related("title__universe",
+                                                                                               "title__title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['publisher'] = self.publisher
+        context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
+        return context
+
+
+########################################################################################################################
+# Title
+########################################################################################################################
+
+
+class TitleIssueListView(AjaxListView):
+    template_name = "comics_db/title/issue_list.html"
+    page_template = "comics_db/title/issue_list_block.html"
+    context_object_name = "issues"
+
+    search_fields = ('name__icontains',)
+
+    def get_queryset(self):
+        self.title = models.Title.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Issue.objects.filter(title=self.title)
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = self.title
+        context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
+        return context
+
+
+########################################################################################################################
+# Universe
+########################################################################################################################
+
+
+class UniverseTitleListView(AjaxListView):
+    template_name = "comics_db/universe/title_list.html"
+    context_object_name = "titles"
+    page_template = "comics_db/universe/title_list_block.html"
+    search_fields = ('name__icontains', 'title_type__name__icontains')
+
+    def get_queryset(self):
+        self.universe = models.Universe.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Title.objects.filter(universe=self.universe).annotate(issue_count=Count('issues')). \
+            select_related("title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['universe'] = self.universe
+        context['search'] = self.request.GET.get('search', "")
+        return context
+
+
+class UniverseIssueListView(AjaxListView):
+    template_name = "comics_db/universe/issue_list.html"
+    page_template = "comics_db/universe/issue_list_block.html"
+    context_object_name = "issues"
+
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',)
+
+    def get_queryset(self):
+        self.universe = models.Universe.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Issue.objects.filter(title__universe=self.universe).select_related("title__title_type")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['universe'] = self.universe
+        context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
+        return context
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ########################################################################################################################
