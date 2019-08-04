@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ creator.name }} titles{% endblock %}
+{% block title %}{{ event.name }} titles{% endblock %}
 
-{% block page_title %}{{ creator.name }} titles{% endblock %}
+{% block page_title %}{{ event.name }} titles{% endblock %}
 
 {% block breadcrumb_items %}
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-creator-list" %}">Creators</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-creator-detail" creator.slug %}">{{ creator.name }}</a>
-  <li class="breadcrumb-item active"><a href="{% url "site-creator-titles" creator.slug %}">Titles</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-event-list" %}">Events</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-event-detail" event.slug %}">{{ event.name }}</a>
+  <li class="breadcrumb-item active"><a href="{% url "site-event-titles" event.slug %}">Titles</a></li>
 {% endblock %}
 
 {% block vendor_css %}
@@ -34,7 +34,7 @@
     </div>
   </div>
   <div class="row">
-    {% include "comics_db/creator/title_list_block.html" %}
+    {% include "comics_db/event/title_list_block.html" %}
   </div>
 {% endblock %}
 

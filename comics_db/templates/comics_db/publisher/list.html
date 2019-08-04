@@ -18,6 +18,7 @@
 {% endblock %}
 
 {% block content %}
+  {% include "comics_db/elements/search_form.html" with show_hide_read=False placeholder="Search for publisher..." %}
   <div class="row">
     {% include "comics_db/publisher/list_block.html" %}
   </div>

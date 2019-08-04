@@ -38,9 +38,43 @@ from smart_open import open as sm_open
 
 from comics_db import models, serializers, filtersets, tasks, forms, parsers
 
+
 ########################################################################################################################
 # Site
 ########################################################################################################################
+
+
+class BreadcrumbMixin:
+    breadcrumb = []
+
+    def get_context_data(self, **kwargs):
+        context = super(BreadcrumbMixin, self).get_context_data(**kwargs)
+        context['breadcrumb'] = self.breadcrumb
+        return context
+
+
+class SearchMixin:
+    search_fields = tuple()
+
+    def search(self, queryset):
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q |= Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(SearchMixin, self).get_context_data(**kwargs)
+        context['search'] = self.request.GET.get('search', "")
+        return context
+
+    def get_queryset(self):
+        queryset = super(SearchMixin, self).get_queryset()
+        queryset = self.search(queryset)
+        return queryset
+
 
 
 ########################################################################################################################
@@ -51,7 +85,7 @@ from comics_db.issue_archive import S3FileWrapper, construct_archive
 from comicsdb import settings
 
 
-class MainPageView(TemplateView):
+class MainPageView(BreadcrumbMixin, TemplateView):
     template_name = "comics_db/main_page.html"
 
     def get_context_data(self, **kwargs):
@@ -73,14 +107,309 @@ class MainPageView(TemplateView):
 
 
 ########################################################################################################################
+# Event
+########################################################################################################################
+
+
+class EventListView(SearchMixin, AjaxListView):
+    template_name = "comics_db/event/list.html"
+    context_object_name = "events"
+    page_template = "comics_db/event/list_block.html"
+    search_fields = ('name__icontains',)
+    queryset = models.Event.objects. \
+        annotate(issue_count=Count('issues', distinct=True),
+                 title_count=Count("titles", distinct=True)). \
+        select_related("publisher")
+
+
+class EventDetailView(DetailView):
+    template_name = "comics_db/event/detail.html"
+    model = models.Event
+    context_object_name = "event"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['publishers'] = models.Publisher.objects.all()
+        return context
+
+    def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        self.object = self.get_object()
+        form = forms.EventForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            self.object = form.save()
+            return HttpResponseRedirect(self.object.site_link)
+        context = self.get_context_data(object=self.object)
+        context['form'] = form
+        return self.render_to_response(context)
+
+
+class EventTitleListView(AjaxListView):
+    template_name = "comics_db/event/title_list.html"
+    context_object_name = "titles"
+    page_template = "comics_db/event/title_list_block.html"
+    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains',
+                     'publisher__name__icontains')
+
+    def get_queryset(self):
+        self.event = models.Event.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Title.objects.filter(events=self.event).annotate(issue_count=Count('issues')). \
+            select_related("universe", "title_type", "publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['event'] = self.event
+        context['search'] = self.request.GET.get('search', "")
+        return context
+
+
+class EventIssueListView(AjaxListView):
+    template_name = "comics_db/event/issue_list.html"
+    page_template = "comics_db/event/issue_list_block.html"
+    context_object_name = "issues"
+
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
+                     'title__universe__name__icontains', 'title__publisher__name__icontains')
+
+    def get_queryset(self):
+        self.event = models.Event.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Issue.objects.filter(events=self.event).select_related("title__universe",
+                                                                                 "title__title_type",
+                                                                                 "title__publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['event'] = self.event
+        context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
+        return context
+
+
+########################################################################################################################
 # Creator
 ########################################################################################################################
 
 
-class CreatorListView(ListView):
+class CreatorListView(SearchMixin, AjaxListView):
     template_name = "comics_db/creator/list.html"
-    queryset = models.Creator.objects.all()
     context_object_name = "creators"
+    page_template = "comics_db/creator/list_block.html"
+    search_fields = ('name__icontains',)
+    queryset = models.Creator.objects.filter(slug__isnull=False).exclude(slug=""). \
+        annotate(issue_count=Count('issues', distinct=True),
+                 title_count=Count("titles", distinct=True),
+                 event_count=Count("events", distinct=True))
+
+
+class CreatorDetailView(DetailView):
+    template_name = "comics_db/creator/detail.html"
+    model = models.Creator
+    context_object_name = "creator"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+    def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        self.object = self.get_object()
+        form = forms.CreatorForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            self.object = form.save()
+            return HttpResponseRedirect(self.object.site_link)
+        context = self.get_context_data(object=self.object)
+        context['form'] = form
+        return self.render_to_response(context)
+
+
+class CreatorTitleListView(AjaxListView):
+    template_name = "comics_db/creator/title_list.html"
+    context_object_name = "titles"
+    page_template = "comics_db/creator/title_list_block.html"
+    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains',
+                     'publisher__name__icontains')
+
+    def get_queryset(self):
+        self.creator = models.Creator.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Title.objects.filter(creators=self.creator).annotate(issue_count=Count('issues')). \
+            select_related("universe", "title_type", "publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['creator'] = self.creator
+        context['search'] = self.request.GET.get('search', "")
+        return context
+
+
+class CreatorIssueListView(AjaxListView):
+    template_name = "comics_db/creator/issue_list.html"
+    page_template = "comics_db/creator/issue_list_block.html"
+    context_object_name = "issues"
+
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
+                     'title__universe__name__icontains', 'title__publisher__name__icontains')
+
+    def get_queryset(self):
+        self.creator = models.Creator.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Issue.objects.filter(creators=self.creator).select_related("title__universe",
+                                                                                     "title__title_type",
+                                                                                     "title__publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['creator'] = self.creator
+        context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
+        return context
+
+
+########################################################################################################################
+# Character
+########################################################################################################################
+
+
+class CharacterListView(SearchMixin, AjaxListView):
+    template_name = "comics_db/character/list.html"
+    context_object_name = "characters"
+    page_template = "comics_db/character/list_block.html"
+    search_fields = ('name__icontains',)
+    queryset = models.Character.objects.filter(slug__isnull=False).exclude(slug=""). \
+        annotate(issue_count=Count('issues', distinct=True),
+                 title_count=Count("titles", distinct=True),
+                 event_count=Count("events", distinct=True)). \
+        select_related("publisher")
+
+
+class CharacterDetailView(DetailView):
+    template_name = "comics_db/character/detail.html"
+    model = models.Character
+    context_object_name = "character"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['publishers'] = models.Publisher.objects.all()
+        return context
+
+    def post(self, request, slug):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        self.object = self.get_object()
+        form = forms.CharacterForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            self.object = form.save()
+            return HttpResponseRedirect(self.object.site_link)
+        context = self.get_context_data(object=self.object)
+        context['form'] = form
+        return self.render_to_response(context)
+
+
+class CharacterTitleListView(AjaxListView):
+    template_name = "comics_db/character/title_list.html"
+    context_object_name = "titles"
+    page_template = "comics_db/character/title_list_block.html"
+    search_fields = ('name__icontains', 'title_type__name__icontains', 'universe__name__icontains',
+                     'publisher__name__icontains')
+
+    def get_queryset(self):
+        self.character = models.Character.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Title.objects.filter(characters=self.character).annotate(issue_count=Count('issues')). \
+            select_related("universe", "title_type", "publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['character'] = self.character
+        context['search'] = self.request.GET.get('search', "")
+        return context
+
+
+class CharacterIssueListView(AjaxListView):
+    template_name = "comics_db/character/issue_list.html"
+    page_template = "comics_db/character/issue_list_block.html"
+    context_object_name = "issues"
+
+    search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
+                     'title__universe__name__icontains', 'title__publisher__name__icontains')
+
+    def get_queryset(self):
+        self.character = models.Character.objects.get(slug=self.kwargs['slug'])
+        queryset = models.Issue.objects.filter(characters=self.character).select_related("title__universe",
+                                                                                         "title__title_type",
+                                                                                         "title__publisher")
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(read=Count('readers', filter=Q(readers=self.request.user.profile)))
+        search = self.request.GET.get('search', "")
+        hide_read = self.request.GET.get('hide-read')
+        if hide_read == 'on':
+            queryset = queryset.exclude(read=1)
+        if search:
+            q = Q()
+            for field in self.search_fields:
+                q = q | Q(**{field: search})
+            queryset = queryset.filter(q)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['character'] = self.character
+        context['search'] = self.request.GET.get('search', "")
+        context['hide_read'] = self.request.GET.get('hide-read')
+        return context
 
 
 ########################################################################################################################
@@ -88,10 +417,11 @@ class CreatorListView(ListView):
 ########################################################################################################################
 
 
-class PublisherListView(ListView):
+class PublisherListView(SearchMixin, ListView):
     template_name = "comics_db/publisher/list.html"
-    queryset = models.Publisher.objects.all()
     context_object_name = "publishers"
+    search_fields = ('name__icontains',)
+    queryset = models.Publisher.objects.all()
 
 
 class PublisherDetailView(DetailView):
@@ -208,10 +538,11 @@ class PublisherIssueListView(AjaxListView):
 ########################################################################################################################
 
 
-class UniverseListView(ListView):
+class UniverseListView(SearchMixin, ListView):
     template_name = "comics_db/universe/list.html"
     queryset = models.Universe.objects.all()
     context_object_name = "universes"
+    search_fields = ('name__icontains', "publisher__name__icontains")
 
 
 class UniverseDetailView(DetailView):
@@ -310,31 +641,24 @@ class UniverseIssueListView(AjaxListView):
 ########################################################################################################################
 
 
-class TitleListView(AjaxListView):
+class TitleListView(SearchMixin, AjaxListView):
     template_name = "comics_db/title/list.html"
     context_object_name = "titles"
     page_template = "comics_db/title/list_block.html"
-
     search_fields = ('name__icontains', 'title_type__name__icontains', 'publisher__name__icontains',
                      'universe__name__icontains')
+    queryset = models.Title.objects.annotate(issue_count=Count('issues')).select_related("publisher", "universe",
+                                                                                         "title_type")
 
     def get_queryset(self):
-        queryset = models.Title.objects.annotate(issue_count=Count('issues')).select_related("publisher", "universe",
-                                                                                             "title_type")
+        queryset = super(TitleListView, self).get_queryset()
         if self.request.user.is_authenticated:
             queryset = queryset.annotate(
                 read_issue_count=Count('issues', filter=Q(issues__readers=self.request.user.profile)))
-        search = self.request.GET.get('search', "")
-        if search:
-            q = Q()
-            for field in self.search_fields:
-                q = q | Q(**{field: search})
-            queryset = queryset.filter(q)
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['search'] = self.request.GET.get('search', "")
         context['title_types'] = models.TitleType.objects.all()
         context['publishers'] = models.Publisher.objects.all()
         context['universes'] = models.Universe.objects.all()
@@ -490,8 +814,9 @@ class DownloadTitle(View):
     def get(self, request, slug):
         title = get_object_or_404(models.Title, slug=slug)
 
-        issues = list(map(lambda x: ("{0}/[{0.name}] {1}.{2}".format(title, x.name, os.path.splitext(x.link)[1]), x.link),
-                          title.issues.all()))
+        issues = list(
+            map(lambda x: ("{0}/[{0.name}] {1}.{2}".format(title, x.name, os.path.splitext(x.link)[1]), x.link),
+                title.issues.all()))
 
         z = construct_archive(issues)
 
@@ -506,37 +831,30 @@ class DownloadTitle(View):
 ########################################################################################################################
 
 
-class IssueListView(AjaxListView):
+class IssueListView(SearchMixin, AjaxListView):
     template_name = "comics_db/issue/list.html"
     context_object_name = "issues"
     page_template = "comics_db/issue/list_block.html"
-
     search_fields = ('name__icontains', 'title__name__icontains', 'title__title_type__name__icontains',
                      'title__publisher__name__icontains', 'title__universe__name__icontains')
+    queryset = models.Issue.objects.all().select_related("title__publisher", "title__universe",
+                                                         "title__title_type")
 
     def get_queryset(self):
-        queryset = models.Issue.objects.all().select_related("title__publisher", "title__universe",
-                                                             "title__title_type")
+        queryset = super(IssueListView, self).get_queryset()
         if self.request.user.is_authenticated:
             queryset = queryset.annotate(read=Count('readers', distinct=True,
                                                     filter=Q(readers=self.request.user.profile)))
         try:
-            search = self.request.GET.get('search', None)
             hide_read = self.request.GET.get('hide-read')
             if hide_read == 'on':
                 queryset = queryset.exclude(read=1)
-            if search:
-                q = Q()
-                for field in self.search_fields:
-                    q = q | Q(**{field: search})
-                return queryset.filter(q)
             return queryset
         except KeyError:
             return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['search'] = self.request.GET.get('search', "")
         context['hide_read'] = self.request.GET.get('hide-read')
         return context
 
@@ -1494,7 +1812,7 @@ class ParserRunViewSet(ComicsDBBaseViewSet):
         'retrieve': serializers.ParserRunDetailSerializer,
         'details_cloud': serializers.CloudFilesParserRunDetailListSerializer,
         'details_marvel_api': serializers.MarvelAPIParserRunDetailListSerializer,
-        'details_marvel_api_creator_merge' : serializers.MarvelAPICreatorMergeRunDetailListSerializer,
+        'details_marvel_api_creator_merge': serializers.MarvelAPICreatorMergeRunDetailListSerializer,
         'details_marvel_api_character_merge': serializers.MarvelAPICharacterMergeRunDetailListSerializer,
         'details_marvel_api_event_merge': serializers.MarvelAPIEventMergeRunDetailListSerializer,
         'details_marvel_api_title_merge': serializers.MarvelAPITitleMergeRunDetailListSerializer,

@@ -1,7 +1,7 @@
 {% load static %}
 {% load el_pagination_tags_customized %}
 
-{% lazy_paginate 1,20 issues %}
+{% lazy_paginate issues %}
 {% for issue in issues %}
   {% ifchanged issue.title %}
     {% if forloop.first %}

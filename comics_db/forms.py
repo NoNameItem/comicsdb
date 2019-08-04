@@ -46,10 +46,28 @@ class ReadingListForm(forms.ModelForm):
         fields = ["name", "desc", "owner", "sorting"]
 
 
-class CreatorForm(forms.Form):
+class CreatorForm(forms.ModelForm):
     photo = forms.ImageField(required=False)
     image = forms.ImageField(required=False)
 
     class Meta:
         model = models.Creator
         fields = ["name", "bio", "photo", "image"]
+
+
+class CharacterForm(forms.ModelForm):
+    image = forms.ImageField(required=False)
+
+    class Meta:
+        model = models.Character
+        fields = ["name", "desc", "image", "publisher"]
+
+
+class EventForm(forms.ModelForm):
+    image = forms.ImageField(required=False)
+    start = forms.DateField(input_formats=['%d.%m.%Y'], required=False)
+    end = forms.DateField(input_formats=['%d.%m.%Y'], required=False)
+
+    class Meta:
+        model = models.Event
+        fields = ["name", "desc", "image", "publisher", "start", "end"]

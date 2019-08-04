@@ -31,7 +31,7 @@
   {% include "comics_db/elements/reading_list_info.html" %}
   {% endif %}
 
-  {% include "comics_db/elements/issue_search_form.html" %}
+  {% include "comics_db/elements/search_form.html" with show_hide_read=True placeholder="Search for issue..." %}
   <div class="row" id="draggable-container">
     {% include "comics_db/profile/issue_list_block.html" %}
   </div>

@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block content %}
-  {% include "comics_db/elements/issue_search_form.html" %}
+  {% include "comics_db/elements/search_form.html" with show_hide_read=True placeholder="Search for issue..." %}
   <div class="row">
     {% include "comics_db/issue/list_block.html" %}
   </div>

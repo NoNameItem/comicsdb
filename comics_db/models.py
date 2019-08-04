@@ -19,13 +19,13 @@ from comics_db.fields import ThumbnailImageField
 # Create your models here.
 
 
-def unique_slugify(klass, value, counter = 0, allow_unicode=True):
-    if counter:
+def unique_slugify(klass, value, pk, counter=0, allow_unicode=True):
+    if counter > 0:
         slug = slugify("{0}-{1}".format(value, counter), allow_unicode)
     else:
         slug = slugify(value, allow_unicode)
 
-    if klass.objects.filter(slug=slug).exists():
+    if klass.objects.filter(slug=slug).exclude(pk=pk).exists():
         return unique_slugify(klass, value, counter + 1, allow_unicode)
     else:
         return slug
@@ -287,7 +287,7 @@ class MarvelAPITitleMergeParserRunDetail(ParserRunDetail):
     def possible_matches(self):
         if self.merge_result == 'DUPLICATES':
             return render_to_string("comics_db/admin/possible_api_titles.html",
-                          {'titles': self.db_title.possible_matches.all(), 'db_title_id': self.db_title.id})
+                                    {'titles': self.db_title.possible_matches.all(), 'db_title_id': self.db_title.id})
         return None
 
     @property
@@ -313,7 +313,7 @@ class MarvelAPIIssueMergeParserRunDetail(ParserRunDetail):
     def possible_matches(self):
         if self.merge_result == 'DUPLICATES':
             return render_to_string("comics_db/admin/possible_api_issues.html",
-                          {'comics': self.db_issue.possible_matches.all(), 'db_issue_id': self.db_issue.id})
+                                    {'comics': self.db_issue.possible_matches.all(), 'db_issue_id': self.db_issue.id})
         return None
 
     @property
@@ -323,6 +323,7 @@ class MarvelAPIIssueMergeParserRunDetail(ParserRunDetail):
     @property
     def api_series_link(self):
         return reverse('site-marvel-api-series-detail', args=(self.db_issue.title.api_series.id,))
+
 
 ########################################################################################################################
 # Comics Info
@@ -386,12 +387,12 @@ def get_creator_image_name(instance, filename):
 
 
 class Creator(models.Model):
-    name = models.CharField(max_length=500)
+    name = models.CharField(max_length=500, unique=True)
     bio = models.TextField(blank=True)
     photo = ThumbnailImageField(null=True, upload_to=get_creator_photo_name, thumb_width=100)
     image = ThumbnailImageField(null=True, upload_to=get_creator_image_name, thumb_width=520)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
-    url = models.TextField(blank=True)
+    marvel_url = models.TextField(blank=True)
 
     # Dates
     created_dt = models.DateTimeField(auto_now_add=True)
@@ -401,7 +402,7 @@ class Creator(models.Model):
         return self.name
 
     def get_slug(self):
-        return unique_slugify(self.__class__, self.name)
+        return unique_slugify(self.__class__, self.name, self.pk)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -416,9 +417,9 @@ class Creator(models.Model):
 
         # Marvel URL
         try:
-            self.url = api_creator.urls.get(type="detail").url
+            self.marvel_url = api_creator.urls.get(type="detail").url
         except MarvelAPISiteUrl.DoesNotExist:
-            self.url = ''
+            self.marvel_url = ''
 
         # Image
         try:
@@ -428,9 +429,15 @@ class Creator(models.Model):
             with tempfile.NamedTemporaryFile() as image:
                 image.write(r.content)
                 self.image.save(link, image)
-
         except MarvelAPIImage.DoesNotExist:
-            image = None
+            pass
+
+    @property
+    def site_link(self):
+        return reverse('site-creator-detail', args=(self.slug,))
+
+    def get_absolute_url(self):
+        return self.site_link
 
     class Meta:
         ordering = ("name",)
@@ -458,7 +465,7 @@ class Universe(models.Model):
         super(Universe, self).save(force_insert, force_update, using, update_fields)
 
     def get_slug(self):
-        return unique_slugify(self.__class__, str(self))
+        return unique_slugify(self.__class__, str(self), self.pk)
 
     def get_absolute_url(self):
         return reverse("site-universe-detail", args=(self.slug,))
@@ -545,7 +552,7 @@ class Title(models.Model):
             name = "[{0.publisher.name}, {0.universe.name}, {0.title_type.name}] {0.path_key}".format(self)
         else:
             name = "[{0.publisher.name}, {0.title_type.name}] {0.path_key}".format(self)
-        return unique_slugify(self.__class__, name)
+        return unique_slugify(self.__class__, name, self.pk)
 
     def __str__(self):
         if self.universe:
@@ -593,7 +600,7 @@ class Title(models.Model):
         title_creators = []
         for api_creator in MarvelAPISeriesCreator.objects.filter(series_fk=api_series):
             title_creator = TitleCreator(title=self, creator=api_creator.creator.creator,
-                                                       role=api_creator.role)
+                                         role=api_creator.role)
             title_creators.append(title_creator)
         TitleCreator.objects.filter(title=self).delete()
         TitleCreator.objects.bulk_create(title_creators)
@@ -675,7 +682,7 @@ class Issue(models.Model):
         super(Issue, self).save(force_insert, force_update, using, update_fields)
 
     def get_slug(self):
-        return unique_slugify(self.__class__, self.link.replace('/', '_').replace('.', '_')[8:-4])
+        return unique_slugify(self.__class__, self.link.replace('/', '_').replace('.', '_')[8:-4], self.pk)
 
     def __str__(self):
         return "[{0.title.publisher.name}, {0.title.universe.name}, {0.publish_date.year}] {0.name}".format(self)
@@ -704,7 +711,7 @@ class Issue(models.Model):
 
     @property
     def site_link(self):
-        return reverse('site-issue-detail', args=(self.slug, ))
+        return reverse('site-issue-detail', args=(self.slug,))
 
     def get_absolute_url(self):
         return self.site_link
@@ -713,7 +720,7 @@ class Issue(models.Model):
     def logo(self):
         return self.title.publisher.logo
 
-    def fill_from_marvel_api(self, api_comic : 'MarvelAPIComics' = None):
+    def fill_from_marvel_api(self, api_comic: 'MarvelAPIComics' = None):
         api_comic = api_comic or self.marvel_api_comic
 
         # Issue number
@@ -735,7 +742,7 @@ class Issue(models.Model):
         issue_creators = []
         for api_creator in MarvelAPIComicsCreator.objects.filter(comics_fk=api_comic):
             issue_creator = IssueCreator(issue=self, creator=api_creator.creator.creator,
-                                                       role=api_creator.role)
+                                         role=api_creator.role)
             issue_creators.append(issue_creator)
         IssueCreator.objects.filter(issue=self).delete()
         IssueCreator.objects.bulk_create(issue_creators)
@@ -794,14 +801,14 @@ class Character(models.Model):
     issues = models.ManyToManyField(Issue, related_name='characters')
 
     # Marvel-specific fields
-    marvel_wiki_url = models.TextField(blank=True)
+    marvel_url = models.TextField(blank=True)
 
     # Dates
     created_dt = models.DateTimeField(auto_now_add=True)
     modified_dt = models.DateTimeField(auto_now=True)
 
     def get_slug(self):
-        return unique_slugify(self.__class__, str(self))
+        return unique_slugify(self.__class__, str(self), self.pk)
 
     def __str__(self):
         return self.name
@@ -810,6 +817,13 @@ class Character(models.Model):
              update_fields=None):
         self.slug = self.get_slug()
         super(Character, self).save(force_insert, force_update, using, update_fields)
+
+    @property
+    def site_link(self):
+        return reverse('site-character-detail', args=(self.slug,))
+
+    def get_absolute_url(self):
+        return self.site_link
 
     def fill_from_marvel_api(self, api_character: 'MarvelAPICharacter' = None):
         api_character = api_character or self.marvel_api_chararcter
@@ -822,9 +836,9 @@ class Character(models.Model):
 
         # Marvel URL
         try:
-            self.marvel_wiki_url = api_character.urls.get(type="wiki").url
+            self.marvel_url = api_character.urls.get(type="wiki").url
         except MarvelAPISiteUrl.DoesNotExist:
-            self.marvel_wiki_url = ''
+            self.marvel_url = ''
 
         # Image
         try:
@@ -854,8 +868,8 @@ class EventCreator(models.Model):
 class Event(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True)
-    image = models.ImageField(null=True, upload_to='event-image')
-    url = models.URLField(max_length=1000, blank=True)
+    image = ThumbnailImageField(null=True, upload_to=get_event_image_name, thumb_width=380)
+    marvel_url = models.URLField(max_length=1000, blank=True)
     start = models.DateField(null=True)
     end = models.DateField(null=True)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
@@ -872,7 +886,7 @@ class Event(models.Model):
     modified_dt = models.DateTimeField(auto_now=True)
 
     def get_slug(self):
-        return unique_slugify(self.__class__, str(self))
+        return unique_slugify(self.__class__, str(self), self.pk)
 
     def __str__(self):
         return self.name
@@ -881,6 +895,13 @@ class Event(models.Model):
              update_fields=None):
         self.slug = self.get_slug()
         super(Event, self).save(force_insert, force_update, using, update_fields)
+
+    @property
+    def site_link(self):
+        return reverse('site-event-detail', args=(self.slug,))
+
+    def get_absolute_url(self):
+        return self.site_link
 
     def fill_from_marvel_api(self, api_event: 'MarvelAPIEvent' = None):
         api_event = api_event or self.marvel_api_event
@@ -892,14 +913,14 @@ class Event(models.Model):
         self.desc = api_event.description or self.desc
 
         # Start / End
-        self.start = api_event.start
-        self.end = api_event.end
+        self.start = api_event.start or self.start
+        self.end = api_event.end or self.end
 
         # Creators
         event_creators = []
         for api_creator in MarvelAPIEventCreator.objects.filter(event=api_event):
             event_creator = EventCreator(event=self, creator=api_creator.creator.creator,
-                                                       role=api_creator.role)
+                                         role=api_creator.role)
             event_creators.append(event_creator)
 
         EventCreator.objects.filter(event=self).delete()
@@ -914,12 +935,12 @@ class Event(models.Model):
 
         # Marvel URL
         try:
-            self.url = api_event.urls.get(type="wiki").url
+            self.marvel_url = api_event.urls.get(type="wiki").url
         except MarvelAPISiteUrl.DoesNotExist:
             try:
-                self.url = api_event.urls.get(type="detail").url
+                self.marvel_url = api_event.urls.get(type="detail").url
             except MarvelAPISiteUrl.DoesNotExist:
-                self.url = ''
+                self.marvel_url = ''
 
         # Image
         try:
@@ -930,10 +951,11 @@ class Event(models.Model):
                 image.write(r.content)
                 self.image.save(link, image)
         except MarvelAPIImage.DoesNotExist:
-            self.image = None
+            pass
 
     class Meta:
         unique_together = (("publisher", "name"),)
+        ordering = ("name",)
 
 
 ########################################################################################################################
@@ -1048,8 +1070,8 @@ class MarvelAPIComics(models.Model):
     id = models.IntegerField(primary_key=True, help_text='The unique ID of the comic resource.')
     title = models.TextField(blank=True, help_text='The canonical title of the comic.')
     issue_number = models.FloatField(null=True,
-                                       help_text='The number of the issue in the series '
-                                                 '(will generally be 0 for collection formats).')
+                                     help_text='The number of the issue in the series '
+                                               '(will generally be 0 for collection formats).')
     description = models.TextField(blank=True, help_text='The preferred description of the comic.')
     modified = models.DateTimeField(null=True, help_text='The date the resource was most recently modified.')
     page_count = models.IntegerField(null=True, help_text='The number of story pages in the comic.')
@@ -1113,7 +1135,7 @@ class ReadIssue(models.Model):
     read_date = models.DateField(auto_now=True)
 
     class Meta:
-        unique_together = (("profile", "issue"), )
+        unique_together = (("profile", "issue"),)
 
 
 class ReadingListIssue(models.Model):

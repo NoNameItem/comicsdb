@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Creators{% endblock %}
+{% block title %}Characters{% endblock %}
 
-{% block page_title %}Creators{% endblock %}
+{% block page_title %}Characters{% endblock %}
 
 {% block breadcrumb_items %}
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-creator-list" %}">Creators</a></li>
+  <li class="breadcrumb-item active"><a href="{% url "site-character-list" %}">Character</a></li>
 {% endblock %}
 
 {% block vendor_css %}
@@ -18,9 +18,9 @@
 {% endblock %}
 
 {% block content %}
-  {% include "comics_db/elements/search_form.html" with show_hide_read=False placeholder="Search for creator..." %}
+  {% include "comics_db/elements/search_form.html" with show_hide_read=False placeholder="Search for character..." %}
   <div class="row">
-    {% include "comics_db/creator/list_block.html" %}
+    {% include "comics_db/character/list_block.html" %}
   </div>
 {% endblock %}
 

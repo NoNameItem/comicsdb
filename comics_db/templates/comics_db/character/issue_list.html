@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ creator.name }} issues{% endblock %}
+{% block title %}{{ character.name }} issues{% endblock %}
 
-{% block page_title %}{{ creator.name }} issues{% endblock %}
+{% block page_title %}{{ character.name }} issues{% endblock %}
 
 {% block breadcrumb_items %}
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-creator-list" %}">Creators</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-creator-detail" creator.slug %}">{{ creator.name }}</a>
-  <li class="breadcrumb-item active"><a href="{% url "site-creator-issues" creator.slug %}">Issues</a></li>
+  <li class="breadcrumb-item"><a href="{% url "site-character-list" %}">Characters</a></li>
+  <li class="breadcrumb-item active"><a href="{% url "site-character-detail" character.slug %}">{{ character.name }}</a>
+  <li class="breadcrumb-item active"><a href="{% url "site-character-issues" character.slug %}">Issues</a></li>
 {% endblock %}
 
 {% block vendor_css %}

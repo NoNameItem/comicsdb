@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Creator: {{ creator.name }}{% endblock %}
+{% block title %}Character: {{ character.name }}{% endblock %}
 
 {% block page_title %}{% endblock %}
 
 {% block breadcrumb_items %}
   <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-creator-list" %}">Creators</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-creator-detail" creator.slug %}">{{ creator.name }}</a>
+  <li class="breadcrumb-item"><a href="{% url "site-character-list" %}">Characters</a></li>
+  <li class="breadcrumb-item active"><a href="{% url "site-character-detail" character.slug %}">{{ character.name }}</a>
   </li>
 {% endblock %}
 
@@ -26,22 +26,22 @@
       <div class="col-12">
         <div class="card detail-card-with-cover">
           <div class="card-img-top img-fluid bg-cover height-300"
-               {% if creator.image %}
+               {% if character.image %}
                data-toggle="modal" data-target="#full-image-modal"
                {% endif %}
                style="background:
-                   url('{% if creator.image %}{{ creator.image.url }}{% else %}{% static "images/defaults/default_creator_image.png" %}{% endif %}') 50%;
-               {% if creator.image %}
+                   url('{% if character.image %}{{ character.image.url }}{% else %}{% static "images/defaults/default_character_image.png" %}{% endif %}') 50%;
+               {% if character.image %}
                cursor: pointer;
                {% endif %}
                    "></div>
           <div class="media detail-card-cover-details w-100">
             <div class="media-left pl-2 pt-2">
               <a href="#" class="detail-card-image">
-                <img src="{% if creator.photo %}
-                {{ creator.photo.thumb_url }}
+                <img src="{% if character.publisher.logo %}
+                {{ character.publisher.logo.url }}
                 {% else %}
-                {% static "images/defaults/default_photo.png" %}
+                {% static "images/defaults/default_logo.png" %}
                 {% endif %}" class="rounded-circle img-border height-100 width-100" alt="Card image">
               </a>
             </div>
@@ -50,7 +50,7 @@
                 <div class="col text-right">
                   {% if user.is_staff %}
                     <div class="btn-group d-md-block float-right ml-2" role="group" aria-label="Basic example">
-                      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#creator-modal">
+                      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#character-modal">
                         <i class="fal fa-cog"></i></button>
                     </div>
                   {% endif %}
@@ -59,10 +59,10 @@
             </div>
           </div>
           <div class="card-desc text-muted">
-            <h3><strong>{{ creator.name }}</strong></h3>
-            <em>{{ creator.bio|default:"No bio" }}</em>
-            {% if creator.marvel_url%}
-              <br><a href="{{ creator.marvel_url }}" target="_blank"><em>Marvel URL</em></a>
+            <h3><strong>{{ character.name }}</strong></h3>
+            <em>{{ character.desc|default:"No description" }}</em>
+            {% if character.marvel_url%}
+              <br><a href="{{ character.marvel_url }}" target="_blank"><em>Marvel URL</em></a>
             {% endif %}
           </div>
         </div>
@@ -81,8 +81,8 @@
                 <i class="fal fa-globe-americas white float-left fa-3x"></i>
               </div>
               <div class="media-body white text-right">
-                <h3>{{ creator.events.count }}</h3>
-                <span>Event{{ creator.events.count|pluralize }}</span>
+                <h3>{{ character.events.count }}</h3>
+                <span>Event{{ character.events.count|pluralize }}</span>
               </div>
             </div>
           </div>
@@ -91,7 +91,7 @@
     </div>
     <div class="col-md-4 col-12">
       <div class="card bg-gradient-directional-primary card-link">
-        <a href="{% url "site-creator-titles" creator.slug %}" class="default-link">></a>
+        <a href="{% url "site-character-titles" character.slug %}" class="default-link">></a>
         <div class="card-content">
           <div class="card-body">
             <div class="media d-flex">
@@ -99,8 +99,8 @@
                 <i class="fal fa-books white float-left fa-3x"></i>
               </div>
               <div class="media-body white text-right">
-                <h3>{{ creator.titles.count }}</h3>
-                <span>Title{{ creator.titles.count|pluralize }}</span>
+                <h3>{{ character.titles.count }}</h3>
+                <span>Title{{ character.titles.count|pluralize }}</span>
               </div>
             </div>
           </div>
@@ -109,7 +109,7 @@
     </div>
     <div class="col-md-4 col-12">
       <div class="card bg-gradient-directional-danger card-link">
-        <a href="{% url "site-creator-issues" creator.slug %}" class="default-link"></a>
+        <a href="{% url "site-character-issues" character.slug %}" class="default-link"></a>
         <div class="card-content">
           <div class="card-body">
             <div class="media d-flex">
@@ -117,7 +117,7 @@
                 <i class="fal fa-book-open white float-left fa-3x"></i>
               </div>
               <div class="media-body white text-right">
-                <h3>{{ creator.issues.count }}</h3>
+                <h3>{{ character.issues.count }}</h3>
                 <span>Issue{{ creator.issues.count|pluralize }}</span>
               </div>
             </div>
@@ -130,7 +130,7 @@
 {% endblock %}
 
 {% block modals %}
-  <div class="modal fade" id="creator-modal" tabindex="-1" role="dialog" aria-labelledby="creator-modal"
+  <div class="modal fade" id="character-modal" tabindex="-1" role="dialog" aria-labelledby="character-modal"
        aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -138,7 +138,7 @@
           {% csrf_token %}
           <div class="form-body">
             <div class="modal-header">
-              <h5 class="modal-title">Edit creator info</h5>
+              <h5 class="modal-title">Edit character info</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -147,22 +147,9 @@
               <fieldset class="form-group">
                 <div class="custom-file">
                   <input type="file"
-                         class="custom-file-input form-control {% if form.errors.photo %}is-invalid{% endif %}"
-                         id="creator-photo" name="photo">
-                  <label class="custom-file-label" for="creator-photo">Creator photo</label>
-                  <div class="invalid-feedback">
-                    {% for error in form.photo.errors %}
-                      <p>{{ error }}</p>
-                    {% endfor %}
-                  </div>
-                </div>
-              </fieldset>
-              <fieldset class="form-group">
-                <div class="custom-file">
-                  <input type="file"
                          class="custom-file-input form-control {% if form.errors.image %}is-invalid{% endif %}"
-                         id="creator-image" name="image">
-                  <label class="custom-file-label" for="creator-image">Creator image</label>
+                         id="character-image" name="image">
+                  <label class="custom-file-label" for="creator-photo">Character image</label>
                   <div class="invalid-feedback">
                     {% for error in form.image.errors %}
                       <p>{{ error }}</p>
@@ -170,10 +157,23 @@
                   </div>
                 </div>
               </fieldset>
+              <div class="form-group">
+                <label for="character-publisher">Character publisher</label>
+                <select class="form-control {% if form.errors.publisher %}is-invalid{% endif %}" name="publisher" id="character-publisher">
+                  {% for publisher in publishers %}
+                    <option value="{{ publisher.id }}" {% if character.publisher == publisher %}selected{% endif %}>{{ publisher.name }}</option>
+                  {% endfor %}
+                </select>
+                <div class="invalid-feedback">
+                  {% for error in form.publisher.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </div>
               <fieldset class="form-group">
-                <label for="creator-name">Creator name</label>
+                <label for="character-name">Character name</label>
                 <input type="text" class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name"
-                          id="creator-name" value="{{ creator.name }}">
+                          id="character-name" value="{{ character.name }}">
                 <div class="invalid-feedback">
                   {% for error in form.name.errors %}
                     <p>{{ error }}</p>
@@ -181,12 +181,12 @@
                 </div>
               </fieldset>
               <fieldset class="form-group">
-                <label for="creator-bio">Creator bio</label>
-                <textarea class="form-control {% if form.errors.bio %}is-invalid{% endif %}" name="bio"
-                          id="creator-bio"
-                          rows="3">{{ creator.bio }}</textarea>
+                <label for="character-desc">Character description</label>
+                <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
+                          id="character-desc"
+                          rows="3">{{ character.desc }}</textarea>
                 <div class="invalid-feedback">
-                  {% for error in form.bio.errors %}
+                  {% for error in form.desc.errors %}
                       <p>{{ error }}</p>
                     {% endfor %}
                 </div>
@@ -203,19 +203,19 @@
   </div>
 
   <!-- Modal -->
-  {% if creator.image %}
+  {% if character.image %}
     <div class="modal fade" id="full-image-modal" tabindex="-1" role="dialog" aria-labelledby="full-image-modal"
          aria-hidden="true">
       <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Creator image</h5>
+            <h5 class="modal-title">Character image</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-            <img src="{{ creator.image.url }}" class="img-fluid mx-auto d-block" alt="Creator image">
+            <img src="{{ character.image.url }}" class="img-fluid mx-auto d-block" alt="Creator image">
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -233,7 +233,7 @@
   <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
   {% if form.errors %}
     <script>
-    $('#creator-modal').modal('show');
+    $('#character-modal').modal('show');
     </script>
   {% endif %}
 {% endblock %}

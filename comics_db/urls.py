@@ -65,6 +65,21 @@ urlpatterns = [
 
     # Creators
     path('creators', views.CreatorListView.as_view(), name="site-creator-list"),
+    path('creator/<str:slug>/', views.CreatorDetailView.as_view(), name="site-creator-detail"),
+    path('creator/<str:slug>/titles', views.CreatorTitleListView.as_view(), name="site-creator-titles"),
+    path('creator/<str:slug>/issues', views.CreatorIssueListView.as_view(), name="site-creator-issues"),
+
+    # Characters
+    path('characters', views.CharacterListView.as_view(), name="site-character-list"),
+    path('character/<str:slug>/', views.CharacterDetailView.as_view(), name="site-character-detail"),
+    path('character/<str:slug>/titles', views.CharacterTitleListView.as_view(), name="site-character-titles"),
+    path('character/<str:slug>/issues', views.CharacterIssueListView.as_view(), name="site-character-issues"),
+
+    # Events
+    path('events', views.EventListView.as_view(), name="site-event-list"),
+    path('event/<str:slug>/', views.EventDetailView.as_view(), name="site-event-detail"),
+    path('event/<str:slug>/titles', views.EventTitleListView.as_view(), name="site-event-titles"),
+    path('event/<str:slug>/issues', views.EventIssueListView.as_view(), name="site-event-issues"),
 
     # Universe
     path('universes', views.UniverseListView.as_view(), name="site-universe-list"),

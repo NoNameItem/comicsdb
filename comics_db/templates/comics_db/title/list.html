@@ -22,19 +22,7 @@
 {% endblock %}
 
 {% block content %}
-  <div class="row">
-    <div class="col">
-      <form action method="get">
-        <fieldset class="form-group position-relative">
-          <input type="text" class="form-control form-control-xl input-xl" id="search-field"
-                 placeholder="Search for title ..." name="search" value="{{ search }}">
-          <div class="form-control-position">
-            <i class="fal fa-search"></i>
-          </div>
-        </fieldset>
-      </form>
-    </div>
-  </div>
+  {% include "comics_db/elements/search_form.html" with show_hide_read=False placeholder="Search for title..." %}
   <div class="row">
     {% include "comics_db/title/list_block.html" %}
   </div>
