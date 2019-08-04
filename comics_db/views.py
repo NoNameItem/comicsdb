@@ -104,6 +104,31 @@ class SearchMixin:
         return queryset
 
 
+class SublistMixin:
+    parent_model = None
+    parent_model_key = "slug"
+    parent_model_name_field = "name"
+    url_key = "slug"
+    parent_field = None
+
+    def get_object(self):
+        return get_object_or_404(self.parent_model, **{self.parent_model_key: self.kwargs.get(self.url_key)})
+
+    def get_sublist(self, queryset):
+        obj = self.get_object()
+        q = queryset.filter(**{self.parent_field: obj})
+        return q
+
+    def get_queryset(self):
+        queryset = super(SublistMixin, self).get_queryset()
+        return self.get_sublist(queryset)
+
+    def get_context_data(self, **kwargs):
+        context = super(SublistMixin, self).get_context_data(**kwargs)
+        context['sublist_parent'] = getattr(self.get_object(), self.parent_model_name_field, "")
+        return context
+
+
 ########################################################################################################################
 # Main Page
 ########################################################################################################################
@@ -1092,6 +1117,19 @@ class UniverseDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
 ########################################################################################################################
 
 
+class CharacterEventListView(SublistMixin, EventListView):
+    parent_model = models.Character
+    parent_field = "characters"
+
+    def get_breadcrumb(self):
+        character = self.get_object()
+        return [
+            {'url': reverse_lazy("site-character-list"), 'text': 'Characters'},
+            {'url': reverse_lazy("site-character-detail", args=(character.slug,)), 'text': character.name},
+            {'url': reverse_lazy("site-character-events", args=(character.slug,)), 'text': "Events"},
+        ]
+
+
 class CharacterTitleListView(AjaxListView):
     template_name = "comics_db/character/title_list.html"
     context_object_name = "titles"
@@ -1158,6 +1196,19 @@ class CharacterIssueListView(AjaxListView):
 ########################################################################################################################
 # Creator
 ########################################################################################################################
+
+
+class CreatorEventListView(SublistMixin, EventListView):
+    parent_model = models.Creator
+    parent_field = "creators"
+
+    def get_breadcrumb(self):
+        creator = self.get_object()
+        return [
+            {'url': reverse_lazy("site-creator-list"), 'text': 'Creators'},
+            {'url': reverse_lazy("site-creator-detail", args=(creator.slug,)), 'text': creator.name},
+            {'url': reverse_lazy("site-creator-events", args=(creator.slug,)), 'text': "Events"},
+        ]
 
 
 class CreatorTitleListView(AjaxListView):
@@ -1297,6 +1348,19 @@ class EventIssueListView(AjaxListView):
 ########################################################################################################################
 # Publisher
 ########################################################################################################################
+
+
+class PublisherEventListView(SublistMixin, EventListView):
+    parent_model = models.Publisher
+    parent_field = "publisher"
+
+    def get_breadcrumb(self):
+        publisher = self.get_object()
+        return [
+            {'url': reverse_lazy("site-publisher-list"), 'text': 'Publisher'},
+            {'url': reverse_lazy("site-publisher-detail", args=(publisher.slug,)), 'text': publisher.name},
+            {'url': reverse_lazy("site-publisher-events", args=(publisher.slug,)), 'text': "Events"},
+        ]
 
 
 class PublisherUniverseListView(AjaxListView):

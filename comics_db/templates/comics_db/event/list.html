@@ -1,9 +1,21 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Events{% endblock %}
+{% block title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s events
+  {% else %}
+    Events
+  {% endif %}
+{% endblock %}
 
-{% block page_title %}Events{% endblock %}
+{% block page_title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s events
+  {% else %}
+    Events
+  {% endif %}
+{% endblock %}
 
 {% block vendor_css %}
 {% endblock %}
@@ -29,8 +41,5 @@
     $.endlessPaginate({
       paginateOnScroll : true,
     });
-    {% if form.errors %}
-      $('#title-modal').modal('show');
-    {% endif %}
   </script>
 {% endblock %}

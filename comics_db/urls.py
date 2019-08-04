@@ -59,6 +59,7 @@ urlpatterns = [
     # Publisher
     path('publishers', views.PublisherListView.as_view(), name="site-publisher-list"),
     path('publisher/<str:slug>', views.PublisherDetailView.as_view(), name="site-publisher-detail"),
+    path('publisher/<str:slug>/events', views.PublisherEventListView.as_view(), name="site-publisher-events"),
     path('publisher/<str:slug>/universes', views.PublisherUniverseListView.as_view(), name="site-publisher-universes"),
     path('publisher/<str:slug>/titles', views.PublisherTitleListView.as_view(), name="site-publisher-titles"),
     path('publisher/<str:slug>/issues', views.PublisherIssueListView.as_view(), name="site-publisher-issues"),
@@ -66,12 +67,14 @@ urlpatterns = [
     # Creators
     path('creators', views.CreatorListView.as_view(), name="site-creator-list"),
     path('creator/<str:slug>/', views.CreatorDetailView.as_view(), name="site-creator-detail"),
+    path('creator/<str:slug>/events', views.CreatorEventListView.as_view(), name="site-creator-events"),
     path('creator/<str:slug>/titles', views.CreatorTitleListView.as_view(), name="site-creator-titles"),
     path('creator/<str:slug>/issues', views.CreatorIssueListView.as_view(), name="site-creator-issues"),
 
     # Characters
     path('characters', views.CharacterListView.as_view(), name="site-character-list"),
     path('character/<str:slug>/', views.CharacterDetailView.as_view(), name="site-character-detail"),
+    path('character/<str:slug>/events', views.CharacterEventListView.as_view(), name="site-character-events"),
     path('character/<str:slug>/titles', views.CharacterTitleListView.as_view(), name="site-character-titles"),
     path('character/<str:slug>/issues', views.CharacterIssueListView.as_view(), name="site-character-issues"),
 
