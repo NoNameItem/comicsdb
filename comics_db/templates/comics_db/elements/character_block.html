@@ -1,5 +1,5 @@
     <!-- Characters -->
-    <div class="{{ col|default:"col-xxl-4 col-sm-6 col-12" }}">
+    <div class="{{ col|default:"col-xxl-3 col-sm-6 col-12" }}">
       <div class="card">
         <div class="card-header">
           <h4 class="card-title"><i class="fal fa-mask" aria-hidden="true"></i> Characters</h4>
@@ -18,6 +18,8 @@
                     class="col-12">
                   <a href="{% url "site-character-detail" character.slug %}">{{ character.name }}</a>
                 </div>
+              {% empty %}
+                <p class="ml-1">{{ empty_message|default:"No characters" }}</p>
               {% endfor %}
             </div>
           </div>

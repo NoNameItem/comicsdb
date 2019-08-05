@@ -103,8 +103,8 @@
   </div>
   <!-- /STATISTICS -->
   <div class="row">
-    {% include "comics_db/elements/creator_block.html" with creators=creators col="col-sm-6 col-12" %}
-    {% include "comics_db/elements/character_block.html" with characters=event.characters.all col="col-sm-6 col-12" %}
+    {% include "comics_db/elements/creator_block.html" with creators=creators col="col-sm-6 col-12" empty_message="No creators in this event" %}
+    {% include "comics_db/elements/character_block.html" with characters=event.characters.all col="col-sm-6 col-12" empty_message="No characters in this event" %}
   </div>
 {% endblock %}
 
