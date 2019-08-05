@@ -11,11 +11,6 @@ class PublisherForm(forms.ModelForm):
         model = models.Publisher
         fields = ["logo", "poster", "desc"]
 
-#
-# class UniverseForm(forms.Form):
-#     poster = forms.ImageField(required=False)
-#     desc = forms.CharField(required=False)
-
 
 class UniverseForm(forms.ModelForm):
     poster = forms.ImageField(required=False)
@@ -30,7 +25,7 @@ class TitleForm(forms.ModelForm):
 
     class Meta:
         model = models.Title
-        fields = ["name", "desc", "title_type", "image"]
+        fields = ["name", "desc", "title_type", "image", "api_image", "start_year", "end_year"]
 
 
 class TitleCreateForm(forms.ModelForm):
@@ -38,7 +33,8 @@ class TitleCreateForm(forms.ModelForm):
 
     class Meta:
         model = models.Title
-        fields = ["name", "desc", "title_type", "image", "publisher", "universe", "path_key"]
+        fields = ["name", "desc", "title_type", "image", "publisher", "universe", "path_key", "api_image", "start_year",
+                  "end_year"]
 
 
 class IssueForm(forms.ModelForm):
@@ -48,7 +44,7 @@ class IssueForm(forms.ModelForm):
 
     class Meta:
         model = models.Issue
-        fields = ["name", "number", "desc", "publish_date", "main_cover", "title"]
+        fields = ["name", "number", "desc", "publish_date", "main_cover", "title", "api_image"]
 
 
 class ReadingListForm(forms.ModelForm):
@@ -63,7 +59,7 @@ class CreatorForm(forms.ModelForm):
 
     class Meta:
         model = models.Creator
-        fields = ["name", "bio", "photo", "image"]
+        fields = ["name", "bio", "photo", "image", "api_image"]
 
 
 class CharacterForm(forms.ModelForm):
@@ -71,7 +67,7 @@ class CharacterForm(forms.ModelForm):
 
     class Meta:
         model = models.Character
-        fields = ["name", "desc", "image", "publisher"]
+        fields = ["name", "desc", "image", "publisher", "api_image"]
 
 
 class EventForm(forms.ModelForm):
@@ -81,4 +77,4 @@ class EventForm(forms.ModelForm):
 
     class Meta:
         model = models.Event
-        fields = ["name", "desc", "image", "publisher", "start", "end"]
+        fields = ["name", "desc", "image", "publisher", "start", "end", "api_image"]

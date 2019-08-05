@@ -1,5 +1,8 @@
 import tempfile
+from time import sleep
 
+import botocore
+import django_s3_storage
 import requests
 from django.db import models
 from django.db.models.aggregates import Sum
@@ -397,6 +400,7 @@ class Creator(models.Model):
     image = ThumbnailImageField(null=True, upload_to=get_creator_image_name, thumb_width=520)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
     marvel_url = models.TextField(blank=True)
+    api_image = models.BooleanField(default=False)
 
     # Dates
     created_dt = models.DateTimeField(auto_now_add=True)
@@ -426,15 +430,29 @@ class Creator(models.Model):
             self.marvel_url = ''
 
         # Image
-        try:
-            api_image = api_creator.image
-            link = "{0.path}.{0.extension}".format(api_image)
-            r = requests.get(link, allow_redirects=True)
-            with tempfile.NamedTemporaryFile() as image:
-                image.write(r.content)
-                self.image.save(link, image)
-        except MarvelAPIImage.DoesNotExist:
-            pass
+        if not self.api_image:
+            try:
+                api_image = api_creator.image
+                link = "{0.path}.{0.extension}".format(api_image)
+                r = requests.get(link, allow_redirects=True)
+                with tempfile.NamedTemporaryFile() as image:
+                    image.write(r.content)
+                    image_saved = False
+                    image_save_try_count = 0
+                    while not image_saved:
+                        image_save_try_count += 1
+                        try:
+                            self.image.save(link, image)
+                            self.api_image = True
+                            image_saved = True
+                        except (botocore.exceptions.ClientError, django_s3_storage.storage.S3Error) as err:
+                            if image_save_try_count < 11:
+                                sleep(30)
+                                continue
+                            else:
+                                raise RuntimeError("Could not upload image.\n" + err)
+            except MarvelAPIImage.DoesNotExist:
+                pass
 
     @property
     def site_link(self):
@@ -531,6 +549,7 @@ class Title(models.Model):
     desc = models.TextField(blank=True)
     image = ThumbnailImageField(null=True, upload_to=get_title_image_name, thumb_width=380)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
+    api_image = models.BooleanField(default=False)
 
     start_year = models.IntegerField(null=True)
     end_year = models.IntegerField(null=True)
@@ -607,22 +626,25 @@ class Title(models.Model):
         # Creators
         title_creators = []
         for api_creator in MarvelAPISeriesCreator.objects.filter(series_fk=api_series):
-            title_creator = TitleCreator(title=self, creator=api_creator.creator.creator,
-                                         role=api_creator.role)
-            title_creators.append(title_creator)
+            if api_creator.creator.creator:
+                title_creator = TitleCreator(title=self, creator=api_creator.creator.creator,
+                                             role=api_creator.role)
+                title_creators.append(title_creator)
         TitleCreator.objects.filter(title=self).delete()
         TitleCreator.objects.bulk_create(title_creators)
 
         # Characters
         title_characters = []
         for api_character in api_series.characters.all():
-            title_characters.append(api_character.character)
+            if api_character.character:
+                title_characters.append(api_character.character)
         self.characters.set(title_characters)
 
         # Events
         title_events = []
         for api_event in api_series.events.all():
-            title_events.append(api_event.event)
+            if api_event.event:
+                title_events.append(api_event.event)
         self.events.set(title_events)
 
         # Marvel URL
@@ -632,15 +654,29 @@ class Title(models.Model):
             self.marvel_url = ''
 
         # Image
-        try:
-            api_image = api_series.image
-            link = "{0.path}.{0.extension}".format(api_image)
-            r = requests.get(link, allow_redirects=True)
-            with tempfile.NamedTemporaryFile() as image:
-                image.write(r.content)
-                self.image.save(link, image)
-        except MarvelAPIImage.DoesNotExist:
-            pass
+        if not self.api_image:
+            try:
+                api_image = api_series.image
+                link = "{0.path}.{0.extension}".format(api_image)
+                r = requests.get(link, allow_redirects=True)
+                with tempfile.NamedTemporaryFile() as image:
+                    image.write(r.content)
+                    image_saved = False
+                    image_save_try_count = 0
+                    while not image_saved:
+                        image_save_try_count += 1
+                        try:
+                            self.image.save(link, image)
+                            self.api_image = True
+                            image_saved = True
+                        except (botocore.exceptions.ClientError, django_s3_storage.storage.S3Error) as err:
+                            if image_save_try_count < 11:
+                                sleep(30)
+                                continue
+                            else:
+                                raise RuntimeError("Could not upload image.\n" + err)
+            except MarvelAPIImage.DoesNotExist:
+                pass
 
     class Meta:
         unique_together = (("name", "publisher", "universe", "title_type"),
@@ -668,6 +704,7 @@ class Issue(models.Model):
     link = models.URLField(max_length=1000, unique=True)
     page_count = models.IntegerField(null=True)
     file_size = models.IntegerField(null=True)
+    api_image = models.BooleanField(default=False)
 
     title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="issues", db_index=True)
     creators = models.ManyToManyField(Creator, through=IssueCreator, related_name='issues')
@@ -749,22 +786,25 @@ class Issue(models.Model):
         # Creators
         issue_creators = []
         for api_creator in MarvelAPIComicsCreator.objects.filter(comics_fk=api_comic):
-            issue_creator = IssueCreator(issue=self, creator=api_creator.creator.creator,
-                                         role=api_creator.role)
-            issue_creators.append(issue_creator)
+            if api_creator.creator.creator:
+                issue_creator = IssueCreator(issue=self, creator=api_creator.creator.creator,
+                                             role=api_creator.role)
+                issue_creators.append(issue_creator)
         IssueCreator.objects.filter(issue=self).delete()
         IssueCreator.objects.bulk_create(issue_creators)
 
         # Characters
         issue_characters = []
         for api_character in api_comic.characters.all():
-            issue_characters.append(api_character.character)
+            if api_character.character:
+                issue_characters.append(api_character.character)
         self.characters.set(issue_characters)
 
         # Events
         issue_events = []
         for api_event in api_comic.events.all():
-            issue_events.append(api_event.event)
+            if api_event.event:
+                issue_events.append(api_event.event)
         self.events.set(issue_events)
 
         # Marvel URLs
@@ -779,15 +819,29 @@ class Issue(models.Model):
             self.marvel_purchase_link = ''
 
         # Image
-        try:
-            api_image = api_comic.image
-            link = "{0.path}.{0.extension}".format(api_image)
-            r = requests.get(link, allow_redirects=True)
-            with tempfile.NamedTemporaryFile() as image:
-                image.write(r.content)
-                self.main_cover.save(link, image)
-        except MarvelAPIImage.DoesNotExist:
-            pass
+        if not self.api_image:
+            try:
+                api_image = api_comic.image
+                link = "{0.path}.{0.extension}".format(api_image)
+                r = requests.get(link, allow_redirects=True)
+                with tempfile.NamedTemporaryFile() as image:
+                    image.write(r.content)
+                    image_saved = False
+                    image_save_try_count = 0
+                    while not image_saved:
+                        image_save_try_count += 1
+                        try:
+                            self.image.save(link, image)
+                            self.api_image = True
+                            image_saved = True
+                        except (botocore.exceptions.ClientError, django_s3_storage.storage.S3Error) as err:
+                            if image_save_try_count < 11:
+                                sleep(30)
+                                continue
+                            else:
+                                raise RuntimeError("Could not upload image.\n" + err)
+            except MarvelAPIImage.DoesNotExist:
+                pass
 
     class Meta:
         unique_together = (("name", "title", "publish_date"),)
@@ -804,6 +858,7 @@ class Character(models.Model):
     image = ThumbnailImageField(null=True, upload_to=get_character_image_name, thumb_width=380)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
     publisher = models.ForeignKey(Publisher, on_delete=models.SET_NULL, null=True, related_name="characters")
+    api_image = models.BooleanField(default=False)
 
     titles = models.ManyToManyField(Title, related_name='characters')
     issues = models.ManyToManyField(Issue, related_name='characters')
@@ -849,15 +904,29 @@ class Character(models.Model):
             self.marvel_url = ''
 
         # Image
-        try:
-            api_image = api_character.image
-            link = "{0.path}.{0.extension}".format(api_image)
-            r = requests.get(link, allow_redirects=True)
-            with tempfile.NamedTemporaryFile() as image:
-                image.write(r.content)
-                self.image.save(link, image)
-        except MarvelAPIImage.DoesNotExist:
-            self.image = None
+        if not self.api_image:
+            try:
+                api_image = api_character.image
+                link = "{0.path}.{0.extension}".format(api_image)
+                r = requests.get(link, allow_redirects=True)
+                with tempfile.NamedTemporaryFile() as image:
+                    image.write(r.content)
+                    image_saved = False
+                    image_save_try_count = 0
+                    while not image_saved:
+                        image_save_try_count += 1
+                        try:
+                            self.image.save(link, image)
+                            self.api_image = True
+                            image_saved = True
+                        except (botocore.exceptions.ClientError, django_s3_storage.storage.S3Error) as err:
+                            if image_save_try_count < 11:
+                                sleep(30)
+                                continue
+                            else:
+                                raise RuntimeError("Could not upload image.\n" + err)
+            except MarvelAPIImage.DoesNotExist:
+                self.image = None
 
     class Meta:
         unique_together = (("publisher", "name"),)
@@ -882,6 +951,7 @@ class Event(models.Model):
     start = models.DateField(null=True)
     end = models.DateField(null=True)
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
+    api_image = models.BooleanField(default=False)
 
     publisher = models.ForeignKey(Publisher, null=True, on_delete=models.SET_NULL, related_name="events")
 
@@ -928,9 +998,10 @@ class Event(models.Model):
         # Creators
         event_creators = []
         for api_creator in MarvelAPIEventCreator.objects.filter(event=api_event):
-            event_creator = EventCreator(event=self, creator=api_creator.creator.creator,
-                                         role=api_creator.role)
-            event_creators.append(event_creator)
+            if api_creator.creator.creator:
+                event_creator = EventCreator(event=self, creator=api_creator.creator.creator,
+                                             role=api_creator.role)
+                event_creators.append(event_creator)
 
         EventCreator.objects.filter(event=self).delete()
         EventCreator.objects.bulk_create(event_creators)
@@ -938,7 +1009,8 @@ class Event(models.Model):
         # Characters
         event_characters = []
         for api_character in api_event.characters.all():
-            event_characters.append(api_character.character)
+            if api_character.character:
+                event_characters.append(api_character.character)
 
         self.characters.set(event_characters)
 
@@ -952,15 +1024,29 @@ class Event(models.Model):
                 self.marvel_url = ''
 
         # Image
-        try:
-            api_image = api_event.image
-            link = "{0.path}.{0.extension}".format(api_image)
-            r = requests.get(link, allow_redirects=True)
-            with tempfile.NamedTemporaryFile() as image:
-                image.write(r.content)
-                self.image.save(link, image)
-        except MarvelAPIImage.DoesNotExist:
-            pass
+        if not self.api_image:
+            try:
+                api_image = api_event.image
+                link = "{0.path}.{0.extension}".format(api_image)
+                r = requests.get(link, allow_redirects=True)
+                with tempfile.NamedTemporaryFile() as image:
+                    image.write(r.content)
+                    image_saved = False
+                    image_save_try_count = 0
+                    while not image_saved:
+                        image_save_try_count += 1
+                        try:
+                            self.image.save(link, image)
+                            self.api_image = True
+                            image_saved = True
+                        except (botocore.exceptions.ClientError, django_s3_storage.storage.S3Error) as err:
+                            if image_save_try_count < 11:
+                                sleep(30)
+                                continue
+                            else:
+                                raise RuntimeError("Could not upload image.\n" + err)
+            except MarvelAPIImage.DoesNotExist:
+                pass
 
     class Meta:
         unique_together = (("publisher", "name"),)

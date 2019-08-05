@@ -224,44 +224,7 @@ class BaseParser:
         :return: Run result boolean (True - success, False - error)
         """
         try:
-            # # Initializing Run
-            # if not self._parser_run:
-            #     self._parser_run = comics_models.ParserRun()
             self._parser_run.celery_task_id = celery_task_id
-
-            # # Checking parser code
-            # # Parser code is overridden
-            # if self.PARSER_CODE == BaseParser.PARSER_CODE:
-            #     raise InvalidParserImplementationError(
-            #         '{0.__class__} Parser code should be overridden in implementation'.format(self.PARSER_CODE))
-            #
-            # # Parser code in valid parser codes list
-            # if self.PARSER_CODE not in (x[0] for x in comics_models.ParserRun.PARSER_CHOICES):
-            #     raise InvalidParserImplementationError(
-            #         '{0.__class__} Parser code "{0.PARSER_CODE}" not in ParserRun.PARSER_CHOICES'.format(self))
-            #
-            # self._parser_run.parser = self.PARSER_CODE
-            #
-            # # Checking Run Detail Model
-            # # Run Detail Model is a class
-            # if not inspect.isclass(self.RUN_DETAIL_MODEL):
-            #     raise InvalidParserImplementationError(
-            #         '{0.__class__} Run Detail Model should be a class'.format(self))
-            #
-            # # Run Detail Model is overridden
-            # if self.RUN_DETAIL_MODEL == comics_models.ParserRunDetail:
-            #     raise InvalidParserImplementationError(
-            #         '{0.__class__} Run Detail Model should be overridden in implementation'.format(self))
-            #
-            # # Run Detail Model is a subclass of BaseParser.RUN_DETAIL_MODEL
-            # if not issubclass(self.RUN_DETAIL_MODEL, BaseParser.RUN_DETAIL_MODEL):
-            #     raise InvalidParserImplementationError(
-            #         '{0.__class__} Run Detail Model should be a subclass of BaseParser.RUN_DETAIL_MODEL'.format(self))
-            # self._parser_run.save()
-            #
-            # for k, v in self._params.items():
-            #     run_param = comics_models.ParserRunParams(parser_run=self._parser_run, name=k, val=str(v))
-            #     run_param.save()
             self._notify_staff_start()
 
             # Preparing data, filling items count and saving Run log record to table
@@ -984,7 +947,7 @@ class MarvelAPICreatorMergeParser(BaseParser):
                 db_creator.save()
                 run_detail.end_with_success()
 
-            except Error as err:
+            except Exception as err:
                 if run_detail:
                     run_detail.end_with_error("Error while processing creator (id={0})".format(api_creator.id), err)
                 has_errors = True
@@ -1036,7 +999,7 @@ class MarvelAPICharacterMergeParser(BaseParser):
                 db_character.save()
                 run_detail.end_with_success()
 
-            except Error as err:
+            except Exception as err:
                 if run_detail:
                     run_detail.end_with_error("Error while processing creator (id={0})".format(api_character.id), err)
                 has_errors = True
@@ -1088,9 +1051,9 @@ class MarvelAPIEventMergeParser(BaseParser):
                 db_event.save()
                 run_detail.end_with_success()
 
-            except Error as err:
+            except Exception as err:
                 if run_detail:
-                    run_detail.end_with_error("Error while processing creator (id={0})".format(api_character.id), err)
+                    run_detail.end_with_error("Error while processing creator (id={0})".format(api_event.id), err)
                 has_errors = True
         return not has_errors
 
@@ -1161,7 +1124,7 @@ class MarvelAPITitleMergeParser(BaseParser):
                 db_title.save()
                 run_detail.end_with_success()
 
-            except Error as err:
+            except Exception as err:
                 if run_detail:
                     run_detail.end_with_error("Error while processing title (id={0})".format(db_title.id), err)
                 has_errors = True
@@ -1230,7 +1193,7 @@ class MarvelAPIIssueMergeParser(BaseParser):
                 db_issue.save()
                 run_detail.end_with_success()
 
-            except Error as err:
+            except Exception as err:
                 if run_detail:
                     run_detail.end_with_error("Error while processing title (id={0})".format(db_issue.id), err)
                 has_errors = True

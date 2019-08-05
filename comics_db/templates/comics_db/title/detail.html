@@ -10,6 +10,7 @@
 
 {% block vendor_css %}
   <link rel="stylesheet" href="{% static "app-assets/vendors/css/forms/selects/select2.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/css/plugins/forms/switch.min.css" %}">
 {% endblock %}
 
 {% block page_css %}
@@ -151,6 +152,23 @@
                 {{ title.title_type.name }}
               </div>
             </div>
+
+            <div class="row">
+              <div class="col-4k-2 col-2k-3 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-4 col-12 text-xxs-right">
+                <strong>Start year: </strong>
+              </div>
+              <div class="col-4k-10 col-2k-9 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-8 col-12 pl-xxs-0">
+                {{ title.start_year }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-4k-2 col-2k-3 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-4 col-12 text-xxs-right">
+                <strong>End year: </strong>
+              </div>
+              <div class="col-4k-10 col-2k-9 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-8 col-12 pl-xxs-0">
+                {{ title.end_year }}
+              </div>
+            </div>
             {% if read_date %}
               <div class="row">
               <div class="col-4k-2 col-2k-3 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-4 col-12 text-xxs-right">
@@ -194,7 +212,7 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <div class="form-group">
+              <fieldset class="form-group">
                 <label for="title-name">Title name</label>
                 <input type="text"
                        class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name" id="title-name"
@@ -203,6 +221,30 @@
                   {% for error in form.name.errors %}
                     <p>{{ error }}</p>
                   {% endfor %}
+                </div>
+              </fieldset>
+              <div class="row">
+                <div class="col-md-6 col-12">
+                  <fieldset class="form-group">
+                    <label for="title-start-year">Title start year</label>
+                    <input type="number" class="form-control  {% if form.errors.name %}is-invalid{% endif %}" id="title-start-year" name="start_year" value="{{ title.start_year }}">
+                    <div class="invalid-feedback">
+                      {% for error in form.start_year.errors %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
+                  </fieldset>
+                </div>
+                <div class="col-md-6 col-12">
+                  <fieldset class="form-group">
+                    <label for="title-end-year">Title end year</label>
+                    <input type="number" class="form-control  {% if form.errors.name %}is-invalid{% endif %}" id="title-end-year" name="end_year" value="{{ title.end_year }}">
+                    <div class="invalid-feedback">
+                      {% for error in form.end_year.errors %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
+                  </fieldset>
                 </div>
               </div>
               <fieldset class="form-group">
@@ -246,6 +288,16 @@
                   </div>
                 </div>
               </fieldset>
+              <div class="form-group row">
+                <div class="col-auto p-1 ">
+                  <label class="form-check-label ml-1" for="modal-api-image">
+                    Prevent image API rewrite
+                  </label>
+                </div>
+                <div class="col-auto pl-0"><input type="checkbox" class="switch" id="modal-api-image" name="api_image"
+                                                  data-reverse
+                                                  {% if title.api_image %}checked{% endif %}></div>
+              </div>
             </div>
           </div>
           <div class="modal-footer">
@@ -362,12 +414,14 @@
 {% block vendor_js %}
   <script src="{% static "app-assets/vendors/js/extensions/sweetalert.min.js" %}" type="text/javascript"></script>
   <script src="{% static "app-assets/vendors/js/forms/select/select2.full.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/forms/toggle/bootstrap-checkbox.min.js" %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block page_js %}
   <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
   <script>
     let titles_url = "{% url "title-list" %}";
+    $('#modal-api-image').checkboxpicker();
     {% if form.errors %}
       $('#title-modal').modal('show');
     {% endif %}

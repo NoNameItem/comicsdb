@@ -6,6 +6,7 @@
 {% block page_title %}{% endblock %}
 
 {% block vendor_css %}
+  <link rel="stylesheet" href="{% static "app-assets/css/plugins/forms/switch.min.css" %}">
 {% endblock %}
 
 {% block page_css %}
@@ -123,19 +124,6 @@
               </button>
             </div>
             <div class="modal-body">
-              <fieldset class="form-group">
-                <div class="custom-file">
-                  <input type="file"
-                         class="custom-file-input form-control {% if form.errors.image %}is-invalid{% endif %}"
-                         id="character-image" name="image">
-                  <label class="custom-file-label" for="creator-photo">Event image</label>
-                  <div class="invalid-feedback">
-                    {% for error in form.image.errors %}
-                      <p>{{ error }}</p>
-                    {% endfor %}
-                  </div>
-                </div>
-              </fieldset>
               <div class="form-group">
                 <label for="character-publisher">Event publisher</label>
                 <select class="form-control {% if form.errors.publisher %}is-invalid{% endif %}" name="publisher" id="character-publisher">
@@ -198,6 +186,29 @@
                     {% endfor %}
                 </div>
               </fieldset>
+              <fieldset class="form-group">
+                <div class="custom-file">
+                  <input type="file"
+                         class="custom-file-input form-control {% if form.errors.image %}is-invalid{% endif %}"
+                         id="character-image" name="image">
+                  <label class="custom-file-label" for="creator-photo">Event image</label>
+                  <div class="invalid-feedback">
+                    {% for error in form.image.errors %}
+                      <p>{{ error }}</p>
+                    {% endfor %}
+                  </div>
+                </div>
+              </fieldset>
+              <div class="form-group row">
+                <div class="col-auto p-1 ">
+                  <label class="form-check-label ml-1" for="modal-api-image">
+                    Prevent image API rewrite
+                  </label>
+                </div>
+                <div class="col-auto pl-0"><input type="checkbox" class="switch" id="modal-api-image" name="api_image"
+                                                  data-reverse
+                                                  {% if event.api_image %}checked{% endif %}></div>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -236,6 +247,7 @@
 {% block vendor_js %}
   <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}" type="text/javascript"></script>
   <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/forms/toggle/bootstrap-checkbox.min.js" %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block page_js %}
@@ -243,6 +255,7 @@
   <script>
     $('#event-start-date-container').datetimepicker({format : 'DD.MM.YYYY', date : new Date('{{ event.start }}')});
     $('#event-end-date-container').datetimepicker({format : 'DD.MM.YYYY', date : new Date('{{ event.end }}')});
+    $('#modal-api-image').checkboxpicker();
     {% if form.errors %}
       $('#creator-modal').modal('show');
     {% endif %}

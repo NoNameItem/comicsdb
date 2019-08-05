@@ -10,6 +10,7 @@
 
 {% block vendor_css %}
   <link rel="stylesheet" href="{% static "app-assets/vendors/css/forms/selects/select2.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/css/plugins/forms/switch.min.css" %}">
 {% endblock %}
 
 {% block page_css %}
@@ -297,7 +298,16 @@
                   </div>
                 </div>
               </fieldset>
-
+              <div class="form-group row">
+                <div class="col-auto p-1 ">
+                  <label class="form-check-label ml-1" for="modal-api-image">
+                    Prevent image API rewrite
+                  </label>
+                </div>
+                <div class="col-auto pl-0"><input type="checkbox" class="switch" id="modal-api-image" name="api_image"
+                                                  data-reverse
+                                                  {% if issue.api_image %}checked{% endif %}></div>
+              </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -368,6 +378,7 @@
   <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}" type="text/javascript"></script>
   <script src="{% static "app-assets/vendors/js/extensions/sweetalert.min.js" %}" type="text/javascript"></script>
   <script src="{% static "app-assets/vendors/js/forms/select/select2.full.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/forms/toggle/bootstrap-checkbox.min.js" %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block page_js %}
@@ -375,6 +386,7 @@
   <script src="{% static "comics_db/js/issue_detail.js" %}" type="text/javascript"></script>
   <script>
     $('#issue-date-container').datetimepicker({format : 'DD.MM.YYYY', date : new Date('{{ issue.publish_date }}')});
+    $('#modal-api-image').checkboxpicker();
     {% if form.errors %}
       $('#issue-modal').modal('show');
     {% endif %}
