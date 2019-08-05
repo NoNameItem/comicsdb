@@ -1,9 +1,21 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Issues{% endblock %}
+{% block title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s issues
+  {% else %}
+    Issues
+  {% endif %}
+{% endblock %}
 
-{% block page_title %}Issues{% endblock %}
+{% block page_title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s issues
+  {% else %}
+    Issues
+  {% endif %}
+{% endblock %}
 
 {% block vendor_css %}
   <link rel="stylesheet" href="{% static "app-assets/css/plugins/forms/switch.min.css" %}">

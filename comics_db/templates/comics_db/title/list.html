@@ -1,10 +1,21 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Titles{% endblock %}
+{% block title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s titles
+  {% else %}
+    Titles
+  {% endif %}
+{% endblock %}
 
-{% block page_title %}Titles
-  {% if user.is_staff %}
+{% block page_title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s titles
+  {% else %}
+    Titles
+  {% endif %}
+  {% if user.is_staff and not sublist_parent %}
     <button type="button" class="btn btn-sm btn-icon btn-success" data-toggle="modal" data-target="#title-modal"><i
         class="fal fa-plus"></i></button>{% endif %}
 {% endblock %}

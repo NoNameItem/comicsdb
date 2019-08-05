@@ -1,9 +1,20 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Universes{% endblock %}
+{% block title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s universes
+  {% else %}
+    Universes
+  {% endif %}
+{% endblock %}
 
-{% block page_title %}Universes{% endblock %}
+{% block page_title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s universes
+  {% else %}
+    Universes
+  {% endif %}{% endblock %}
 
 {% block vendor_css %}
 {% endblock %}

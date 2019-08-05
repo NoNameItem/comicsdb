@@ -27,14 +27,13 @@
     </noscript> <!-- /Yandex.Metrika counter -->
   {% endif %}
   <script src="https://kit.fontawesome.com/fcb1921aef.js"></script>
-  <title>{% block title %}Yet Another Comics DB{% endblock %}</title>
+  <title>[ComicsDB] {% block title %}Yet Another Comics DB{% endblock %}</title>
   <link rel="icon" href="{% static "images/favicon.png" %}">
   <link
       href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,500,500i%7COpen+Sans:300,300i,400,400i,600,600i,700,700i"
       rel="stylesheet">
   <!-- BEGIN VENDOR CSS-->
   <link rel="stylesheet" type="text/css" href="{% static "app-assets/vendors/css/vendors.min.css" %}">
-  {#  <link type="text/css" rel="stylesheet" href="{% static "fontawesome/css/all.min.css" %}"/>#}
   <link rel="stylesheet" type="text/css" href="{% static "app-assets/vendors/css/extensions/toastr.css" %}">
   {% block vendor_css %}{% endblock %}
   <!-- END VENDOR CSS-->
