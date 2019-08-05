@@ -79,6 +79,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.request',  # For EL-pagination
+                'comics_db.context_processors.settings',
             ],
         },
     },
@@ -217,6 +218,14 @@ LOGIN_URL = "/accounts/login"
 CELERY_BROKER_URL = custom_settings.CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = \
+    'db+postgresql://{0}:{1}@{3}:{4}/{2}'.format(
+        DATABASES['default']['USER'],
+        DATABASES['default']['PASSWORD'],
+        DATABASES['default']['NAME'],
+        DATABASES['default']['HOST'],
+        DATABASES['default']['PORT'],
+    )
 
 # Marvel API settings
 MARVEL_PUBLIC_KEY = custom_settings.MARVEL_PUBLIC_KEY

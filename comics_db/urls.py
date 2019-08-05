@@ -32,7 +32,14 @@ router.register(r'issue', views.IssueViewSet)
 router.register(r'parser_run', views.ParserRunViewSet)
 router.register(r'cloud_parser_run_details', views.CloudFilesParserRunDetailViewSet)
 router.register(r'marvel_api_parser_run_details', views.MarvelAPIParserRunDetailViewSet)
+router.register(r'marvel_api_creator_merge_details', views.MarvelAPICreatorMergeRunDetailDetailViewSet)
+router.register(r'marvel_api_character_merge_details', views.MarvelAPICharacterMergeRunDetailDetailViewSet)
+router.register(r'marvel_api_event_merge_details', views.MarvelAPIEventMergeRunDetailDetailViewSet)
+router.register(r'marvel_api_title_merge_details', views.MarvelAPITitleMergeRunDetailDetailViewSet)
+router.register(r'marvel_api_issue_merge_details', views.MarvelAPIIssueMergeRunDetailDetailViewSet)
 router.register(r'parser_schedule', views.ParserScheduleViewSet, base_name='parser-schedule')
+router.register(r'marvel_api/series', views.MarvelAPISeriesViewSet, base_name='marvel-api-series')
+router.register(r'marvel_api/comics', views.MarvelAPIComicsViewSet, base_name='marvel-api-comics')
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -52,9 +59,30 @@ urlpatterns = [
     # Publisher
     path('publishers', views.PublisherListView.as_view(), name="site-publisher-list"),
     path('publisher/<str:slug>', views.PublisherDetailView.as_view(), name="site-publisher-detail"),
+    path('publisher/<str:slug>/events', views.PublisherEventListView.as_view(), name="site-publisher-events"),
     path('publisher/<str:slug>/universes', views.PublisherUniverseListView.as_view(), name="site-publisher-universes"),
     path('publisher/<str:slug>/titles', views.PublisherTitleListView.as_view(), name="site-publisher-titles"),
     path('publisher/<str:slug>/issues', views.PublisherIssueListView.as_view(), name="site-publisher-issues"),
+
+    # Creators
+    path('creators', views.CreatorListView.as_view(), name="site-creator-list"),
+    path('creator/<str:slug>/', views.CreatorDetailView.as_view(), name="site-creator-detail"),
+    path('creator/<str:slug>/events', views.CreatorEventListView.as_view(), name="site-creator-events"),
+    path('creator/<str:slug>/titles', views.CreatorTitleListView.as_view(), name="site-creator-titles"),
+    path('creator/<str:slug>/issues', views.CreatorIssueListView.as_view(), name="site-creator-issues"),
+
+    # Characters
+    path('characters', views.CharacterListView.as_view(), name="site-character-list"),
+    path('character/<str:slug>/', views.CharacterDetailView.as_view(), name="site-character-detail"),
+    path('character/<str:slug>/events', views.CharacterEventListView.as_view(), name="site-character-events"),
+    path('character/<str:slug>/titles', views.CharacterTitleListView.as_view(), name="site-character-titles"),
+    path('character/<str:slug>/issues', views.CharacterIssueListView.as_view(), name="site-character-issues"),
+
+    # Events
+    path('events', views.EventListView.as_view(), name="site-event-list"),
+    path('event/<str:slug>/', views.EventDetailView.as_view(), name="site-event-detail"),
+    path('event/<str:slug>/titles', views.EventTitleListView.as_view(), name="site-event-titles"),
+    path('event/<str:slug>/issues', views.EventIssueListView.as_view(), name="site-event-issues"),
 
     # Universe
     path('universes', views.UniverseListView.as_view(), name="site-universe-list"),
@@ -66,44 +94,42 @@ urlpatterns = [
     path('titles', views.TitleListView.as_view(), name="site-title-list"),
     path('title/<str:slug>/', views.TitleDetailView.as_view(), name="site-title-detail"),
     path('title/<str:slug>/issues', views.TitleIssueListView.as_view(), name="site-title-issues"),
-    path('title/<str:slug>/delete', views.DeleteTitle.as_view(), name="site-title-delete"),
-    path('title/<str:slug>/move-issues', views.MoveTitleIssues.as_view(), name="site-title-move-issues"),
-    path('title/<str:slug>/add-to-list', views.AddTitleToReadingList.as_view(), name="site-title-add-to-list"),
-    path('title/<str:slug>/download', views.DownloadTitle.as_view(), name="site-title-download"),
+    path('title/<str:slug>/delete', views.TitleDelete.as_view(), name="site-title-delete"),
+    path('title/<str:slug>/move-issues', views.TitleMoveIssues.as_view(), name="site-title-move-issues"),
+    path('title/<str:slug>/add-to-list', views.TitleAddToReadingList.as_view(), name="site-title-add-to-list"),
+    path('title/<str:slug>/download', views.TitleDownload.as_view(), name="site-title-download"),
 
     # Issues
     path('issues', views.IssueListView.as_view(), name="site-issue-list"),
     path('issue/<str:slug>/', views.IssueDetailView.as_view(), name="site-issue-detail"),
-    path('issue/<str:slug>/mark-read', views.ReadIssue.as_view(), name="site-issue-mark-read"),
-    path('issue/<str:slug>/delete', views.DeleteIssue.as_view(), name="site-issue-delete"),
-    path('issue/<str:slug>/add-to-list', views.AddToReadingList.as_view(), name="site-issue-add-to-list"),
+    path('issue/<str:slug>/mark-read', views.IssueMarkRead.as_view(), name="site-issue-mark-read"),
+    path('issue/<str:slug>/delete', views.IssueDelete.as_view(), name="site-issue-delete"),
+    path('issue/<str:slug>/add-to-list', views.IssueAddToReadingList.as_view(), name="site-issue-add-to-list"),
 
     # Reading lists
     path('reading-lists', views.ReadingListListView.as_view(), name="site-user-reading-lists"),
     path('reading-list/<str:slug>/', views.ReadingListDetailView.as_view(), name="site-user-reading-list"),
-    path('reading-list/<str:slug>/delete', views.DeleteReadingList.as_view(), name="site-reading-list-delete"),
-    path('reading-list/<str:slug>/download', views.DownloadReadingList.as_view(), name="site-reading-list-download"),
-    path('reading-list/<str:slug>/reorder', views.ChangeReadingOrder.as_view(), name="site-reading-list-reorder"),
-    path('reading-list/<str:slug>/delete-issue', views.DeleteFromReadingList.as_view(),
+    path('reading-list/<str:slug>/delete', views.ReadingListDelete.as_view(), name="site-reading-list-delete"),
+    path('reading-list/<str:slug>/download', views.ReadingListDownload.as_view(), name="site-reading-list-download"),
+    path('reading-list/<str:slug>/reorder', views.ReadingListChangeOrder.as_view(), name="site-reading-list-reorder"),
+    path('reading-list/<str:slug>/delete-issue', views.ReadingListDeleteIssue.as_view(),
          name="site-reading-list-delete-issue"),
     path('reading-list/<str:list_slug>/issue/<str:slug>', views.ReadingListIssueDetailView.as_view(),
          name="site-reading-list-issue"),
 
     # Parser log
-    path('parser_log', views.ParserLogView.as_view(template_name="comics_db/admin/parser_log.html",
-                                                   extra_context={'parser_choices': models.ParserRun.PARSER_CHOICES}),
-         name="site-parser-log"),
+    path('parser_log', views.ParserLogView.as_view(), name="site-parser-log"),
     path('parser_log/<int:pk>', views.ParserRunDetail.as_view(), name="parser-log-detail"),
-    path('run_parser', views.RunParser.as_view(), name="run-parser"),
+    path('run_parser', views.ParserRun.as_view(), name="run-parser"),
 
     # Parser schedule
-    path('parser_schedule', TemplateView.as_view(template_name="comics_db/admin/parser_schedule.html",
-                                                 extra_context={
-                                                     'parser_choices': models.ParserRun.PARSER_CHOICES,
-                                                     'period_choices': IntervalSchedule.PERIOD_CHOICES,
-                                                 }),
+    path('parser_schedule', views.ParserScheduleView.as_view(), name="parser-schedule"),
 
-         name="parser-schedule"),
+    # Marvel API
+    path(r'marvel-api/series/', views.MarvelAPISeriesList.as_view(), name="site-marvel-api-series-list"),
+    path(r'marvel-api/series/<int:pk>', views.MarvelAPISeriesDetail.as_view(), name="site-marvel-api-series-detail"),
+    path(r'marvel-api/comics/', views.MarvelAPIComicsList.as_view(), name="site-marvel-api-comics-list"),
+    path(r'marvel-api/comics/<int:pk>', views.MarvelAPIComicsDetail.as_view(), name="site-marvel-api-comics-detail"),
 
     # API
     path('api/', include(router.urls)),

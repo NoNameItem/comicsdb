@@ -1,7 +1,6 @@
 <form action method="get" id="search-form">
   <div class="row">
-
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and show_hide_read %}
       <div class="col-auto">
         <input type="checkbox" class="switch" id="hide-read" name="hide-read" data-reverse data-off-label="Show read"
                data-on-label="Hide read" {% if hide_read %}checked{% endif %} onchange="$('#search-form').submit()">
@@ -10,9 +9,9 @@
     <div class="col">
       <fieldset class="form-group position-relative">
         <input type="text" class="form-control form-control-xl input-xl" id="search-field"
-               placeholder="Search for issue ..." name="search" value="{{ search }}">
+               placeholder="{{ placeholder|default:"Search..." }}" name="search" value="{{ search }}">
         <div class="form-control-position">
-          <i class="far fa-search"></i>
+          <i class="fal fa-search"></i>
         </div>
       </fieldset>
     </div>

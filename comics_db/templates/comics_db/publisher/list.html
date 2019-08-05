@@ -5,11 +5,6 @@
 
 {% block page_title %}Publishers{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-publisher-list" %}">Publishers</a></li>
-{% endblock %}
-
 {% block vendor_css %}
 {% endblock %}
 
@@ -18,6 +13,7 @@
 {% endblock %}
 
 {% block content %}
+  {% include "comics_db/elements/search_form.html" with show_hide_read=False placeholder="Search for publisher..." %}
   <div class="row">
     {% include "comics_db/publisher/list_block.html" %}
   </div>

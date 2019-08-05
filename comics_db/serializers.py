@@ -167,6 +167,26 @@ class IssueDetailSerializer(serializers.HyperlinkedModelSerializer):
         }
 
 
+# Marvel API Titles
+
+
+class MarvelAPISeriesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MarvelAPISeries
+        fields = ("id", "title", "start_year", "end_year", "rating", "series_type", "ignore")
+        read_only_fields = fields
+
+
+# Marvel API Comics
+
+
+class MarvelAPIComicsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.MarvelAPIComics
+        fields = ("id", "title", "issue_number", "page_count", "description")
+        read_only_fields = fields
+
+
 # ParserRun
 
 
@@ -296,6 +316,194 @@ class MarvelAPIParserRunDetailDetailSerializer(serializers.HyperlinkedModelSeria
         fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end",
                   "entity_type", "entity_id", "data", "error", "error_detail", "action", "entity_type_name",
                   "action_name")
+        read_only_fields = fields
+
+
+class MarvelAPICreatorMergeRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_creator.full_name"
+    )
+    db_name = serializers.CharField(
+        read_only=True,
+        source="db_creator.name"
+    )
+
+    class Meta:
+        model = models.MarvelAPICreatorMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "created", "api_name", "db_name")
+        read_only_fields = fields
+
+
+class MarvelAPICreatorMergeRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_creator.full_name"
+    )
+    db_name = serializers.CharField(
+        read_only=True,
+        source="db_creator.name"
+    )
+
+    class Meta:
+        model = models.MarvelAPICreatorMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "created", "api_name", "db_name", "error_detail")
+        read_only_fields = fields
+
+
+class MarvelAPICharacterMergeRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_character.name"
+    )
+    db_name = serializers.CharField(
+        read_only=True,
+        source="db_character.name"
+    )
+
+    class Meta:
+        model = models.MarvelAPICharacterMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "created", "api_name", "db_name")
+        read_only_fields = fields
+
+
+class MarvelAPICharacterMergeRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_character.name"
+    )
+    db_name = serializers.CharField(
+        read_only=True,
+        source="db_character.name"
+    )
+
+    class Meta:
+        model = models.MarvelAPICharacterMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "created", "api_name", "db_name", "error_detail")
+        read_only_fields = fields
+
+
+class MarvelAPIEventMergeRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_event.title"
+    )
+    db_name = serializers.CharField(
+        read_only=True,
+        source="db_event.name"
+    )
+
+    class Meta:
+        model = models.MarvelAPIEventMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "created", "api_name", "db_name")
+        read_only_fields = fields
+
+
+class MarvelAPIEventMergeRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_event.title"
+    )
+    db_name = serializers.CharField(
+        read_only=True,
+        source="db_event.name"
+    )
+
+    class Meta:
+        model = models.MarvelAPIEventMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "created", "api_name", "db_name", "error_detail")
+        read_only_fields = fields
+
+
+class MarvelAPITitleMergeRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_title.title"
+    )
+    # db_name = serializers.CharField(
+    #     read_only=True,
+    #     source="db_title.name"
+    # )
+    site_link = serializers.CharField(
+        read_only=True,
+        source="db_title.site_link"
+    )
+
+    class Meta:
+        model = models.MarvelAPITitleMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "api_name", "db_name", "site_link", "merge_result")
+        read_only_fields = fields
+
+
+class MarvelAPITitleMergeRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_title.title"
+    )
+    site_link = serializers.CharField(
+        read_only=True,
+        source="db_title.site_link"
+    )
+    db_id = serializers.IntegerField(
+        read_only=True,
+        source="db_title.id"
+    )
+
+    class Meta:
+        model = models.MarvelAPITitleMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "api_name", "db_name", "error_detail", "site_link",  "merge_result", "merge_result_name",
+                  "possible_matches", "db_id")
+        read_only_fields = fields
+
+
+class MarvelAPIIssueMergeRunDetailListSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_comic.title"
+    )
+    site_link = serializers.CharField(
+        read_only=True,
+        source="db_issue.site_link"
+    )
+
+    class Meta:
+        model = models.MarvelAPIIssueMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "api_name", "db_name", "site_link", "merge_result")
+        read_only_fields = fields
+
+
+class MarvelAPIIssueMergeRunDetailDetailSerializer(serializers.HyperlinkedModelSerializer):
+    api_name = serializers.CharField(
+        read_only=True,
+        source="api_comic.title"
+    )
+    site_link = serializers.CharField(
+        read_only=True,
+        source="db_issue.site_link"
+    )
+    db_id = serializers.IntegerField(
+        read_only=True,
+        source="db_issue.id"
+    )
+    api_series_name = serializers.CharField(
+        read_only=True,
+        source="db_issue.title.api_series.title"
+    )
+
+    class Meta:
+        model = models.MarvelAPIIssueMergeParserRunDetail
+        fields = ("id", settings.REST_FRAMEWORK['URL_FIELD_NAME'], "status", "status_name", "start", "end", "error",
+                  "api_name", "db_name", "error_detail", "site_link",  "merge_result", "merge_result_name",
+                  "possible_matches", "db_id", "api_series_link", "api_series_name")
         read_only_fields = fields
 
 

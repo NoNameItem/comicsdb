@@ -8,18 +8,32 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
   <meta name="author" content="artem.vasin">
-  <meta name="Description" content="{% block meta_description %}ComicsDB - Comics collection, where you can find, read and download comics{% endblock %}">
+  <meta name="Description"
+        content="{% block meta_description %}ComicsDB - Comics collection, where you can find, read and download comics{% endblock %}">
   {% block meta %}
   {% endblock %}
-  <!-- Yandex.Metrika counter --> <script type="text/javascript" > (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)}; m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)}) (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym"); ym(53974480, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true }); </script> <noscript><div><img src="https://mc.yandex.ru/watch/53974480" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->
-  <title>{% block title %}Yet Another Comics DB{% endblock %}</title>
+  {% if not django_settings.DEBUG %}
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript"> (function (m, e, t, r, i, k, a) {
+      m[i] = m[i] || function () {
+        (m[i].a = m[i].a || []).push(arguments)
+      };
+      m[i].l = 1 * new Date();
+      k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+    })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+    ym(53974480, "init", {clickmap : true, trackLinks : true, accurateTrackBounce : true, webvisor : true}); </script>
+    <noscript>
+      <div><img src="https://mc.yandex.ru/watch/53974480" style="position:absolute; left:-9999px;" alt=""/></div>
+    </noscript> <!-- /Yandex.Metrika counter -->
+  {% endif %}
+  <script src="https://kit.fontawesome.com/fcb1921aef.js"></script>
+  <title>[ComicsDB] {% block title %}Yet Another Comics DB{% endblock %}</title>
   <link rel="icon" href="{% static "images/favicon.png" %}">
   <link
       href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,500,500i%7COpen+Sans:300,300i,400,400i,600,600i,700,700i"
       rel="stylesheet">
   <!-- BEGIN VENDOR CSS-->
   <link rel="stylesheet" type="text/css" href="{% static "app-assets/vendors/css/vendors.min.css" %}">
-  <link type="text/css" rel="stylesheet" href="{% static "fontawesome/css/all.min.css" %}"/>
   <link rel="stylesheet" type="text/css" href="{% static "app-assets/vendors/css/extensions/toastr.css" %}">
   {% block vendor_css %}{% endblock %}
   <!-- END VENDOR CSS-->
@@ -54,7 +68,7 @@
                                                                                        src="{% static "images/logo.png" %}">
           <h2 class="brand-text">ComicsDB</h2></a></li>
         <li class="nav-item d-md-none"><a class="nav-link open-navbar-container" data-toggle="collapse"
-                                          data-target="#navbar-mobile"><i class="fa fa-ellipsis-v"></i></a></li>
+                                          data-target="#navbar-mobile"><i class="fal fa-ellipsis-v"></i></a></li>
       </ul>
     </div>
     <div class="navbar-container content">
@@ -90,21 +104,36 @@
 <div class="main-menu menu-fixed menu-light menu-accordion menu-border" data-scroll-to-active="true"
      style="touch-action: none; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
   <!-- main menu header-->
-{#  <div class="main-menu-header">#}
-{#    <input class="menu-search form-control round" type="text" placeholder="Search"/>#}
-{#  </div>#}
+  {#  <div class="main-menu-header">#}
+  {#    <input class="menu-search form-control round" type="text" placeholder="Search"/>#}
+  {#  </div>#}
   <!-- / main menu header-->
   <!-- main menu content-->
   <div class="main-menu-content ps">
     <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
+      <li class="{% if request.resolver_match.url_name|startswith:"site-character" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-character-list' %}">
+          <i class="fal fa-mask"></i><span class="menu-title">Characters</span>
+        </a>
+      </li>
+      <li class="{% if request.resolver_match.url_name|startswith:"site-creator" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-creator-list' %}">
+          <i class="fal fa-pencil-paintbrush"></i><span class="menu-title">Creators</span>
+        </a>
+      </li>
+      <li class="{% if request.resolver_match.url_name|startswith:"site-event" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-event-list' %}">
+          <i class="fal fa-globe-americas"></i><span class="menu-title">Events</span>
+        </a>
+      </li>
+      <li class="{% if request.resolver_match.url_name|startswith:"site-issue" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-issue-list' %}">
+          <i class="fal fa-book-open"></i><span class="menu-title">Issues</span>
+        </a>
+      </li>
       <li class="{% if request.resolver_match.url_name|startswith:"site-publisher" %}active{% else %}nav-item{% endif %}">
         <a href="{% url 'site-publisher-list' %}">
           <i class="fal fa-building"></i><span class="menu-title">Publishers</span>
-        </a>
-      </li>
-      <li class="{% if request.resolver_match.url_name|startswith:"site-universe" %}active{% else %}nav-item{% endif %}">
-        <a href="{% url 'site-universe-list' %}">
-          <i class="fal fa-globe-asia"></i><span class="menu-title">Universes</span>
         </a>
       </li>
       <li class="{% if request.resolver_match.url_name|startswith:"site-title" %}active{% else %}nav-item{% endif %}">
@@ -112,16 +141,14 @@
           <i class="fal fa-books"></i><span class="menu-title">Titles</span>
         </a>
       </li>
-    <li class="{% if request.resolver_match.url_name|startswith:"site-issue" %}active{% else %}nav-item{% endif %}">
-        <a href="{% url 'site-issue-list' %}">
-          <i class="fal fa-book-open"></i><span class="menu-title">Issues</span>
+      <li class="{% if request.resolver_match.url_name|startswith:"site-universe" %}active{% else %}nav-item{% endif %}">
+        <a href="{% url 'site-universe-list' %}">
+          <i class="fal fa-globe-asia"></i><span class="menu-title">Universes</span>
         </a>
       </li>
       {% if user.is_staff %}
         <!-- admin menu items-->
-        <li class="navigation-header"><span>Administration</span><i class=" ft-minus" data-toggle="tooltip"
-                                                                    data-placement="right"
-                                                                    data-original-title="Apps"></i>
+        <li class="navigation-header"><span>Administration</span><i class=" ft-minus"></i>
         </li>
         <li class="{% if request.resolver_match.url_name|startswith:"parser-log" %}active{% else %}nav-item{% endif %}">
           <a href="{% url 'site-parser-log' %}">
@@ -130,8 +157,17 @@
         </li>
         <li class="{% if request.resolver_match.url_name == "parser-schedule" %}active{% else %}nav-item{% endif %}">
           <a href="{% url 'parser-schedule' %}">
-            <i class="far fa-calendar-alt"></i><span class="menu-title">Parser schedule</span>
+            <i class="fal fa-calendar-alt"></i><span class="menu-title">Parser schedule</span>
           </a>
+        </li>
+        <li class="nav-item has-sub"><a href="#"><i class="fal fa-project-diagram"></i><span class="menu-title"
+                                                                                             data-i18n="">Marvel API</span></a>
+          <ul class="menu-content" style="">
+            <li class="is-shown"><a class="menu-item" href="{% url "site-marvel-api-series-list" %}">Series</a>
+            </li>
+            <li class="is-shown"><a class="menu-item" href="{% url "site-marvel-api-comics-list" %}">Comics</a>
+            </li>
+          </ul>
         </li>
       {% endif %}
     </ul>
@@ -151,7 +187,10 @@
       <div class="content-header-right breadcrumbs-right breadcrumbs-top col-md col-12">
         <div class="breadcrumb-wrapper col-12">
           <ol class="breadcrumb">
-            {% block breadcrumb_items %}{% endblock %}
+            <li class="breadcrumb-item {% if request.resolver_match.url_name == "site-main" %}active{% endif %}"><a href="{% url "site-main" %}">Home</a></li>
+            {% for item in breadcrumb %}
+              <li class="breadcrumb-item {% if forloop.last %}active{% endif %}"><a href="{{ item.url }}">{{ item.text }}</a></li>
+            {% endfor %}
           </ol>
         </div>
       </div>
@@ -169,7 +208,8 @@
 <footer class="footer footer-static footer-light navbar-border">
   <p class="clearfix blue-grey lighten-2 text-sm-center mb-0 px-2"><span
       class="float-md-left d-block d-md-inline-block">Copyright  &copy; 2019 <a
-      href="{% url "site-main" %}">ComicsDB</a>, All rights reserved. You can send your problem description to <a href="mailto:nonameit@ya.ru">nonameit@ya.ru</a></span>
+      href="{% url "site-main" %}">ComicsDB</a>, All rights reserved. You can send your problem description to <a
+      href="mailto:nonameit@ya.ru">nonameit@ya.ru</a></span>
     {% if user.is_authenticated %}
       <span class="float-md-right d-block d-md-inline-block d-none d-lg-block">We build API for this shit, <a
           href="{% url "api-root" %}" target="_blank">check this out</a></span></p>{% endif %}

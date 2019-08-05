@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Characters{% endblock %}
+
+{% block page_title %}Characters{% endblock %}
+
+{% block vendor_css %}
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "comics_db/css/card-list.css" %}">
+{% endblock %}
+
+{% block content %}
+  {% include "comics_db/elements/search_form.html" with show_hide_read=False placeholder="Search for character..." %}
+  <div class="row">
+    {% include "comics_db/character/list_block.html" %}
+  </div>
+{% endblock %}
+
+{% block vendor_js %}
+  <script src="{% static "el-pagination/js/el-pagination.js" %}"></script>
+  <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
+{% endblock %}
+
+{% block page_js %}
+
+  <script>
+    $.endlessPaginate({
+      paginateOnScroll : true,
+    });
+    {% if form.errors %}
+      $('#title-modal').modal('show');
+    {% endif %}
+  </script>
+{% endblock %}

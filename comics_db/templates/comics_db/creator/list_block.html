@@ -1,0 +1,32 @@
+{% load static %}
+{% load el_pagination_tags %}
+
+{% lazy_paginate creators %}
+{% for creator in creators %}
+  <div class="col-4k-2 col-fhd-3 col-xl-4 col-md-6 col-12">
+    <div class="card card-with-cover card-link">
+      <a class='default-link' href='{% url "site-creator-detail" creator.slug %}'></a>
+      <div class="card-img-top img-fluid bg-cover height-200"
+           style="background: url('{% if creator.image %}{{ creator.image.thumb_url }}{% else %}{% static "images/defaults/default_creator_image_small.png" %}{% endif %}') 50%"></div>
+      <div class="card-profile-image">
+        <img src="{% if creator.photo %}
+                  {{ creator.photo.url }}
+                {% else %}
+                  {% static "images/defaults/default_photo.png" %}
+                {% endif %}"
+             class="rounded-circle img-border box-shadow-1 width-100 height-100" alt="Card image" >
+      </div>
+      <div class="card-with-cover-content text-center">
+        <div class="card-body">
+          <h4 class="card-title">{{ creator.name }}</h4>
+          <ul class="list-inline list-inline-pipe">
+            <li>{{ creator.event_count }} event{{ creator.event_count|pluralize }}</li>
+            <li>{{ creator.title_count }} title{{ creator.title_count|pluralize }}</li>
+            <li>{{ creator.issue_count }} issue{{ creator.issue_count|pluralize }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+{% show_more %}

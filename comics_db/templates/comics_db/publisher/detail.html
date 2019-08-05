@@ -5,13 +5,6 @@
 
 {% block page_title %}{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-publisher-list" %}">Publishers</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-publisher-detail" publisher.slug %}">{{ publisher.name }}</a>
-  </li>
-{% endblock %}
-
 {% block vendor_css %}
 {% endblock %}
 
@@ -52,7 +45,7 @@
                   {% if user.is_staff %}
                     <div class="btn-group d-md-block float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#publisher-modal">
-                        <i class="fa fa-cog"></i></button>
+                        <i class="fal fa-cog"></i></button>
                     </div>
                   {% endif %}
                 </div>
@@ -71,7 +64,25 @@
   {% include "comics_db/elements/read_progress_bar.html" %}
   <!-- STATISTICS -->
   <div class="row">
-    <div class="col-md-4 col-12">
+    <div class="col-md-3 col-12">
+      <div class="card bg-gradient-directional-success card-link">
+        <a href="{% url "site-publisher-events" publisher.slug %}" class="default-link">></a>
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-globe-americas white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ publisher.events.count }}</h3>
+                <span>Event{{ publisher.events.count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-12">
       <div class="card bg-gradient-directional-warning card-link">
         <a href="{% url "site-publisher-universes" publisher.slug%}" class="default-link"></a>
         <div class="card-content">
@@ -89,7 +100,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-4 col-12">
+    <div class="col-md-3 col-12">
       <div class="card bg-gradient-directional-primary card-link">
         <a href="{% url "site-publisher-titles" publisher.slug %}" class="default-link">></a>
         <div class="card-content">
@@ -107,7 +118,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-4 col-12">
+    <div class="col-md-3 col-12">
       <div class="card bg-gradient-directional-danger card-link">
         <a href="{% url "site-publisher-issues" publisher.slug %}" class="default-link"></a>
         <div class="card-content">

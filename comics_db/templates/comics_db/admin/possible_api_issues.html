@@ -1,0 +1,20 @@
+<table class="table table-bordered">
+  <thead>
+  <tr>
+    <th scope="col"></th>
+    <th scope="col">ID</th>
+    <th scope="col">Issue number</th>
+    <th scope="col">Title</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for comic in comics %}
+    <tr>
+      <td align="center" valign="center"><button type="button" class="btn btn-icon btn-success" onclick="set_api_comics({{ db_issue_id }}, {{ comic.id }})"><i class="fal fa-check"></i></button></td>
+      <td>{{ comic.id }}</td>
+      <td>{{ comic.issue_number }}</td>
+      <td><a href="{% url "site-marvel-api-comics-detail" comic.id %}" target="_blank">{{ comic.title }}</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>

@@ -5,13 +5,6 @@
 
 {% block page_title %}{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-universe-list" %}">Universes</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-universe-detail" universe.slug %}">{{ universe.name }}</a>
-  </li>
-{% endblock %}
-
 {% block vendor_css %}
 {% endblock %}
 
@@ -51,7 +44,7 @@
                   {% if user.is_staff %}
                     <div class="btn-group d-md-block float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#universe-modal">
-                        <i class="fa fa-cog"></i></button>
+                        <i class="fal fa-cog"></i></button>
                     </div>
                   {% endif %}
                 </div>

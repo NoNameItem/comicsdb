@@ -1,14 +1,20 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Universes{% endblock %}
-
-{% block page_title %}Universes{% endblock %}
-
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-universe-list" %}">Universes</a></li>
+{% block title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s universes
+  {% else %}
+    Universes
+  {% endif %}
 {% endblock %}
+
+{% block page_title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s universes
+  {% else %}
+    Universes
+  {% endif %}{% endblock %}
 
 {% block vendor_css %}
 {% endblock %}
@@ -18,6 +24,7 @@
 {% endblock %}
 
 {% block content %}
+  {% include "comics_db/elements/search_form.html" with show_hide_read=False placeholder="Search for universe..." %}
   <div class="row">
     {% include "comics_db/universe/list_block.html" %}
   </div>

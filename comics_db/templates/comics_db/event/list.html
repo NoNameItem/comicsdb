@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s events
+  {% else %}
+    Events
+  {% endif %}
+{% endblock %}
+
+{% block page_title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s events
+  {% else %}
+    Events
+  {% endif %}
+{% endblock %}
+
+{% block vendor_css %}
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "comics_db/css/card-list.css" %}">
+{% endblock %}
+
+{% block content %}
+  {% include "comics_db/elements/search_form.html" with show_hide_read=False placeholder="Search for event..." %}
+  <div class="row">
+    {% include "comics_db/event/list_block.html" %}
+  </div>
+{% endblock %}
+
+{% block vendor_js %}
+  <script src="{% static "el-pagination/js/el-pagination.js" %}"></script>
+  <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
+{% endblock %}
+
+{% block page_js %}
+  <script>
+    $.endlessPaginate({
+      paginateOnScroll : true,
+    });
+  </script>
+{% endblock %}

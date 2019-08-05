@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  Marvel API Series: {{ api_series.title }}
+{% endblock %}
+
+{% block page_title %}
+  {{ api_series.title }}
+{% endblock %}
+
+{% block vendor_css %}
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid-theme.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/css/plugins/forms/switch.min.css" %}">
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "comics_db/css/marvel-api-series.css" %}">
+{% endblock %}
+
+{% block content %}
+  <section class="row">
+    <div class="col-12">
+      <div id="series-info" class="card">
+        <div class="card-header">
+          <h4 class="card-title">Series info</h4>
+          <a class="heading-elements-toggle"><i class="fal fa-ellipsis-v font-medium-3"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+              <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-content collapse show">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">ID</label>
+                  <p class="form-control-plaintext">{{ api_series.id }}</p>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">Title</label>
+                  <p class="form-control-plaintext">{{ api_series.title }}</p>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">Type</label>
+                  <p class="form-control-plaintext">{{ api_series.series_type }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">Start Year</label>
+                  <p class="form-control-plaintext">{{ api_series.start_year }}</p>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">End Year</label>
+                  <p class="form-control-plaintext">{{ api_series.end_year }}</p>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="form-group">
+                  <label for="template_id">Rating</label>
+                  <p class="form-control-plaintext">{{ api_series.rating }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <div class="form-group">
+                  <label for="template_id">Description</label>
+                  <p class="form-control-plaintext">{{ api_series.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="row mb-1">
+          <div class="col-auto pr-0 font-medium-3 setup-label-container">
+            <label class="form-check-label ml-1" for="show-matched">
+              Show matched
+            </label>
+          </div>
+          <div class="col-auto pl-0">
+            <div class="form-check">
+              <input type="checkbox" class="switch setup" id="show-matched" name="show_matched"
+                     data-reverse>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Comics
+              <div class="badge badge-pill badge-primary filter-count-badge">{{ api_series.comics.all.count }}</div>
+            </h4>
+            <a class="heading-elements-toggle"><i class="fal fa-ellipsis-v font-medium-3"></i></a>
+            <div class="heading-elements">
+              <ul class="list-inline mb-0">
+                <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+                <li><a data-action="expand"><i class="ft-maximize"></i></a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="card-content collapse show">
+            <div class="card-body" style="overflow-x: auto">
+              <div id="grid">
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block vendor_js %}
+  <script src="{% static "app-assets/vendors/js/tables/jsgrid/jsgrid.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/tables/jsgrid/i18n/jsgrid-ru.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pagination/jquery.twbsPagination.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/forms/extended/inputmask/jquery.inputmask.bundle.min.js" %}"></script>
+  <script src="{% static "app-assets/vendors/js/forms/toggle/bootstrap-checkbox.min.js" %}"
+          type="text/javascript"></script>
+{% endblock %}
+
+{% block page_js %}
+  <script>
+    let series_id = {{ api_series.id }};
+  </script>
+  <script src="{% static "js/jsgrid_utils.js" %}" type="text/javascript"></script>
+  <script src="{% static "comics_db/js/marvel_api_comics.js" %}" type="text/javascript"></script>
+{% endblock %}

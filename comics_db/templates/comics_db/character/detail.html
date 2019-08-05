@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Character: {{ character.name }}{% endblock %}
+
+{% block page_title %}{% endblock %}
+
+{% block vendor_css %}
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "comics_db/css/detail_pages.css" %}">
+{% endblock %}
+
+{% block content %}
+  <!-- HEADER -->
+  <div id="detail-card-head">
+    <div class="row">
+      <div class="col-12">
+        <div class="card detail-card-with-cover">
+          <div class="card-img-top img-fluid bg-cover height-300"
+               {% if character.image %}
+               data-toggle="modal" data-target="#full-image-modal"
+               {% endif %}
+               style="background:
+                   url('{% if character.image %}{{ character.image.url }}{% else %}{% static "images/defaults/default_character_image.png" %}{% endif %}') 50%;
+               {% if character.image %}
+               cursor: pointer;
+               {% endif %}
+                   "></div>
+          <div class="media detail-card-cover-details w-100">
+            <div class="media-left pl-2 pt-2">
+              <a href="#" class="detail-card-image">
+                <img src="{% if character.publisher.logo %}
+                {{ character.publisher.logo.url }}
+                {% else %}
+                {% static "images/defaults/default_logo.png" %}
+                {% endif %}" class="rounded-circle img-border height-100 width-100" alt="Card image">
+              </a>
+            </div>
+            <div class="media-body pt-3 px-2">
+              <div class="row">
+                <div class="col text-right">
+                  {% if user.is_staff %}
+                    <div class="btn-group d-md-block float-right ml-2" role="group" aria-label="Basic example">
+                      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#character-modal">
+                        <i class="fal fa-cog"></i></button>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-desc text-muted">
+            <h3><strong>{{ character.name }}</strong></h3>
+            <em>{{ character.desc|default:"No description" }}</em>
+            {% if character.marvel_url%}
+              <br><a href="{{ character.marvel_url }}" target="_blank"><em>Marvel URL</em></a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- STATISTICS -->
+  <div class="row">
+  <div class="col-md-4 col-12">
+      <div class="card bg-gradient-directional-success card-link">
+        <a href="{% url "site-character-events" character.slug %}" class="default-link">></a>
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-globe-americas white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ character.events.count }}</h3>
+                <span>Event{{ character.events.count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-12">
+      <div class="card bg-gradient-directional-primary card-link">
+        <a href="{% url "site-character-titles" character.slug %}" class="default-link">></a>
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-books white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ character.titles.count }}</h3>
+                <span>Title{{ character.titles.count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-12">
+      <div class="card bg-gradient-directional-danger card-link">
+        <a href="{% url "site-character-issues" character.slug %}" class="default-link"></a>
+        <div class="card-content">
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-book-open white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ character.issues.count }}</h3>
+                <span>Issue{{ creator.issues.count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /STATISTICS -->
+{% endblock %}
+
+{% block modals %}
+  <div class="modal fade" id="character-modal" tabindex="-1" role="dialog" aria-labelledby="character-modal"
+       aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form class="form" method="post" action enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-body">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit character info</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <fieldset class="form-group">
+                <div class="custom-file">
+                  <input type="file"
+                         class="custom-file-input form-control {% if form.errors.image %}is-invalid{% endif %}"
+                         id="character-image" name="image">
+                  <label class="custom-file-label" for="creator-photo">Character image</label>
+                  <div class="invalid-feedback">
+                    {% for error in form.image.errors %}
+                      <p>{{ error }}</p>
+                    {% endfor %}
+                  </div>
+                </div>
+              </fieldset>
+              <div class="form-group">
+                <label for="character-publisher">Character publisher</label>
+                <select class="form-control {% if form.errors.publisher %}is-invalid{% endif %}" name="publisher" id="character-publisher">
+                  {% for publisher in publishers %}
+                    <option value="{{ publisher.id }}" {% if character.publisher == publisher %}selected{% endif %}>{{ publisher.name }}</option>
+                  {% endfor %}
+                </select>
+                <div class="invalid-feedback">
+                  {% for error in form.publisher.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </div>
+              <fieldset class="form-group">
+                <label for="character-name">Character name</label>
+                <input type="text" class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name"
+                          id="character-name" value="{{ character.name }}">
+                <div class="invalid-feedback">
+                  {% for error in form.name.errors %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </fieldset>
+              <fieldset class="form-group">
+                <label for="character-desc">Character description</label>
+                <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
+                          id="character-desc"
+                          rows="3">{{ character.desc }}</textarea>
+                <div class="invalid-feedback">
+                  {% for error in form.desc.errors %}
+                      <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+              </fieldset>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <input type="submit" class="btn btn-primary" value="Save">
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  {% if character.image %}
+    <div class="modal fade" id="full-image-modal" tabindex="-1" role="dialog" aria-labelledby="full-image-modal"
+         aria-hidden="true">
+      <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Character image</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <img src="{{ character.image.url }}" class="img-fluid mx-auto d-block" alt="Creator image">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block vendor_js %}
+{% endblock %}
+
+{% block page_js %}
+  <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
+  {% if form.errors %}
+    <script>
+    $('#character-modal').modal('show');
+    </script>
+  {% endif %}
+{% endblock %}

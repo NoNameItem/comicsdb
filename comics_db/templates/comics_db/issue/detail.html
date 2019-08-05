@@ -8,13 +8,6 @@
 
 {% block meta_description %}{{ issue.name }} info and download cbr/cbz. {{ issue.desc }}{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-issue-list" %}">Issues</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-issue-detail" issue.slug %}">{{ issue.name }}</a>
-  </li>
-{% endblock %}
-
 {% block vendor_css %}
   <link rel="stylesheet" href="{% static "app-assets/vendors/css/forms/selects/select2.min.css" %}">
 {% endblock %}
@@ -59,7 +52,8 @@
                           class="fal fa-backward"></i></a>
                     {% endif %}{% endblock %}
                     <a role="button" class="btn btn-secondary" href="{{ issue.download_link }}" data-toggle="tooltip"
-                       data-placement="bottom" title="Download issue"><i class="fal fa-download"></i> ({{ issue.file_size|filesizeformat }})</a>
+                       data-placement="bottom" title="Download issue"><i class="fal fa-download"></i>
+                      <span class="d-none d-sm-inline">({{ issue.file_size|filesizeformat }})</span></a>
                     {% if user.is_authenticated and reading_lists %}
                       <button type="button" class="btn btn-secondary" data-toggle="tooltip"
                               data-placement="bottom" title="Add to read list"
@@ -75,7 +69,7 @@
                   {% if user.is_staff %}
                     <div class="btn-group d-none d-sm-inline-flex float-right ml-2" role="group">
                       <button type="button" class="btn btn-success btn-outline-primary" data-toggle="modal" data-target="#issue-modal">
-                        <i class="fa fa-cog"></i>
+                        <i class="fal fa-cog"></i>
                       </button>
                       <button type="button" class="btn btn-danger btn-outline-primary" id="issue-delete-btn">
                         <i class="fal fa-trash-alt"></i>
@@ -89,10 +83,18 @@
           <div class="row">
             <div class="col-12">
               <div class="card-desc text-muted">
-                <h3><strong>{{ issue.name }}</strong> <i class="fas fa-check-circle success" id="read-mark"
+                <h3><strong>{{ issue.name }}</strong> <i class="fal fa-check-circle success" id="read-mark"
                                                          {% if not read_date %}style="display: none" {% endif %}></i>
                 </h3>
                 <em>{{ issue.desc|default:"No description" }}</em>
+                <ul class="list-inline list-inline-pipe mb-0">
+                  {% if issue.marvel_detail_link %}
+                    <li><a href="{{ issue.marvel_detail_link }}" target="_blank">Marvel URL</a></li>
+                  {% endif %}
+                  {% if issue.marvel_purchase_link %}
+                    <li><a href="{{ issue.marvel_purchase_link }}" target="_blank">Purchase</a></li>
+                  {% endif %}
+                </ul>
               </div>
             </div>
           </div>
@@ -108,7 +110,13 @@
     <div class="col-xxl-3 col-sm-6 col-12">
       <div class="card">
         <div class="card-header">
-          <h4 class="card-title">Issue info</h4>
+          <h4 class="card-title"><i class="fal fa-info-circle"></i> Issue info</h4>
+          <a class="heading-elements-toggle"><i class="fal fa-ellipsis-v font-medium-3" aria-hidden="true"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+            </ul>
+          </div>
         </div>
         <div class="card-content collapse show">
           <div class="card-body border-top-blue-grey border-top-lighten-5 ">
@@ -138,6 +146,14 @@
                 <a href="{% url "site-title-detail" issue.title.slug %}">{{ issue.title.name }}</a>
               </div>
             </div>
+          <div class="row">
+              <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
+                <strong>Number: </strong>
+              </div>
+              <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
+                {{ issue.number|floatformat }}
+              </div>
+            </div>
             <div class="row">
               <div class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
                 <strong>Title type: </strong>
@@ -159,7 +175,7 @@
                 <strong>Pages count: </strong>
               </div>
               <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
-                {{ issue.page_count|default_if_none:"Unknown" }}
+                {{ issue.page_count|default:"Unknown" }}
               </div>
             </div>
 
@@ -185,6 +201,9 @@
       </div>
     </div>
     <!-- /Main info -->
+    {% include "comics_db/elements/creator_block.html" with creators=creators empty_message="No creators in this issue" %}
+    {% include "comics_db/elements/character_block.html" with characters=issue.characters.all empty_message="No characters in this issue" %}
+    {% include "comics_db/elements/event_block.html" with events=title.events.all empty_message="No events in this issue" %}
   </div>
   <!-- /Info cards -->
   <form action="{% url "site-issue-delete" issue.slug %}" method="post" id="delete-form" class="d-none">

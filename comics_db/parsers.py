@@ -13,22 +13,20 @@ from urllib.parse import urlparse
 import boto3
 import botocore
 import botocore.exceptions
+import requests
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, MultipleObjectsReturned
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives
 from django.db import Error
 from django.db.models import Count, Max
 from django.template.loader import render_to_string
 from django.utils import timezone
-from requests import HTTPError, RequestException
+from requests import RequestException
 
-from comics_db import models as comics_models
-from comics_db.models import ParserRun, ParserRunDetail, CloudFilesParserRunDetail, MarvelAPIParserRunDetail, \
-    MarvelAPIComics, MarvelAPICharacter, MarvelAPICreator, MarvelAPIEvent, MarvelAPISeries, MarvelAPIImage, \
-    MarvelAPISiteUrl, MarvelAPIDate, MarvelAPIComicsCreator
+from comics_db import models as comics_models, tasks
 from comics_db.reader import ComicsReader
 from comicsdb import settings
-from marvel_api_wrapper import endpoints, entities
+from marvel_api_wrapper import entities
 from marvel_api_wrapper.endpoint_fabric import EndpointFabric
 from marvel_api_wrapper.endpoints import CreatorsListEndpoint, ComicsListEndpoint, CharactersListEndpoint, \
     EventsListEndpoint, SeriesListEndpoint, APIRateLimitError, APIError
@@ -65,12 +63,14 @@ class BaseParser:
     """
     PARSER_CODE = "BASE"  # Parser code for linking log to specific parser type
     PARSER_NAME = 'Base parser'
-    RUN_DETAIL_MODEL = ParserRunDetail  # Model for saving parser detail logs
+    RUN_DETAIL_MODEL = comics_models.ParserRunDetail  # Model for saving parser detail logs
 
-    def __init__(self):
-        self._parser_run = None
+    def __init__(self, queue=False, parser_run=None):
+        self._parser_run = parser_run
         self._data = None
         self._params = {}
+        if not self._parser_run:
+            self.initialize_run(queue)
 
     @property
     def _items_count(self) -> int:
@@ -79,6 +79,10 @@ class BaseParser:
         :return: items count
         """
         return 0
+
+    @property
+    def parser_run(self) -> comics_models.ParserRun:
+        return self._parser_run
 
     def _prepare(self) -> NoReturn:
         """
@@ -172,6 +176,45 @@ class BaseParser:
         message_html = render_to_string("comics_db/admin/notifications/parser_error.html", data)
         self._notify_staff(message_html, message_txt, subject)
 
+    def initialize_run(self, queue):
+        if queue:
+            self._parser_run = comics_models.ParserRun(status="QUEUE")
+        else:
+            self._parser_run = comics_models.ParserRun()
+        # Checking parser code
+        # Parser code is overridden
+        if self.PARSER_CODE == BaseParser.PARSER_CODE:
+            raise InvalidParserImplementationError(
+                '{0.__class__} Parser code should be overridden in implementation'.format(self.PARSER_CODE))
+
+        # Parser code in valid parser codes list
+        if self.PARSER_CODE not in (x[0] for x in comics_models.ParserRun.PARSER_CHOICES):
+            raise InvalidParserImplementationError(
+                '{0.__class__} Parser code "{0.PARSER_CODE}" not in ParserRun.PARSER_CHOICES'.format(self))
+
+        self._parser_run.parser = self.PARSER_CODE
+
+        # Checking Run Detail Model
+        # Run Detail Model is a class
+        if not inspect.isclass(self.RUN_DETAIL_MODEL):
+            raise InvalidParserImplementationError(
+                '{0.__class__} Run Detail Model should be a class'.format(self))
+
+        # Run Detail Model is overridden
+        if self.RUN_DETAIL_MODEL == comics_models.ParserRunDetail:
+            raise InvalidParserImplementationError(
+                '{0.__class__} Run Detail Model should be overridden in implementation'.format(self))
+
+        # Run Detail Model is a subclass of BaseParser.RUN_DETAIL_MODEL
+        if not issubclass(self.RUN_DETAIL_MODEL, BaseParser.RUN_DETAIL_MODEL):
+            raise InvalidParserImplementationError(
+                '{0.__class__} Run Detail Model should be a subclass of BaseParser.RUN_DETAIL_MODEL'.format(self))
+        self._parser_run.save()
+
+        for k, v in self._params.items():
+            run_param = comics_models.ParserRunParams(parser_run=self._parser_run, name=k, val=str(v))
+            run_param.save()
+
     def run(self, celery_task_id: int = None) -> bool:
         """
         Main method for running parser.
@@ -181,43 +224,44 @@ class BaseParser:
         :return: Run result boolean (True - success, False - error)
         """
         try:
-            # Initializing Run
-            self._parser_run = ParserRun()
+            # # Initializing Run
+            # if not self._parser_run:
+            #     self._parser_run = comics_models.ParserRun()
             self._parser_run.celery_task_id = celery_task_id
 
-            # Checking parser code
-            # Parser code is overridden
-            if self.PARSER_CODE == BaseParser.PARSER_CODE:
-                raise InvalidParserImplementationError(
-                    '{0.__class__} Parser code should be overridden in implementation'.format(self.PARSER_CODE))
-
-            # Parser code in valid parser codes list
-            if self.PARSER_CODE not in (x[0] for x in ParserRun.PARSER_CHOICES):
-                raise InvalidParserImplementationError(
-                    '{0.__class__} Parser code "{0.PARSER_CODE}" not in ParserRun.PARSER_CHOICES'.format(self))
-
-            self._parser_run.parser = self.PARSER_CODE
-
-            # Checking Run Detail Model
-            # Run Detail Model is a class
-            if not inspect.isclass(self.RUN_DETAIL_MODEL):
-                raise InvalidParserImplementationError(
-                    '{0.__class__} Run Detail Model should be a class'.format(self))
-
-            # Run Detail Model is overridden
-            if self.RUN_DETAIL_MODEL == ParserRunDetail:
-                raise InvalidParserImplementationError(
-                    '{0.__class__} Run Detail Model should be overridden in implementation'.format(self))
-
-            # Run Detail Model is a subclass of BaseParser.RUN_DETAIL_MODEL
-            if not issubclass(self.RUN_DETAIL_MODEL, BaseParser.RUN_DETAIL_MODEL):
-                raise InvalidParserImplementationError(
-                    '{0.__class__} Run Detail Model should be a subclass of BaseParser.RUN_DETAIL_MODEL'.format(self))
-            self._parser_run.save()
-
-            for k, v in self._params.items():
-                run_param = comics_models.ParserRunParams(parser_run=self._parser_run, name=k, val=str(v))
-                run_param.save()
+            # # Checking parser code
+            # # Parser code is overridden
+            # if self.PARSER_CODE == BaseParser.PARSER_CODE:
+            #     raise InvalidParserImplementationError(
+            #         '{0.__class__} Parser code should be overridden in implementation'.format(self.PARSER_CODE))
+            #
+            # # Parser code in valid parser codes list
+            # if self.PARSER_CODE not in (x[0] for x in comics_models.ParserRun.PARSER_CHOICES):
+            #     raise InvalidParserImplementationError(
+            #         '{0.__class__} Parser code "{0.PARSER_CODE}" not in ParserRun.PARSER_CHOICES'.format(self))
+            #
+            # self._parser_run.parser = self.PARSER_CODE
+            #
+            # # Checking Run Detail Model
+            # # Run Detail Model is a class
+            # if not inspect.isclass(self.RUN_DETAIL_MODEL):
+            #     raise InvalidParserImplementationError(
+            #         '{0.__class__} Run Detail Model should be a class'.format(self))
+            #
+            # # Run Detail Model is overridden
+            # if self.RUN_DETAIL_MODEL == comics_models.ParserRunDetail:
+            #     raise InvalidParserImplementationError(
+            #         '{0.__class__} Run Detail Model should be overridden in implementation'.format(self))
+            #
+            # # Run Detail Model is a subclass of BaseParser.RUN_DETAIL_MODEL
+            # if not issubclass(self.RUN_DETAIL_MODEL, BaseParser.RUN_DETAIL_MODEL):
+            #     raise InvalidParserImplementationError(
+            #         '{0.__class__} Run Detail Model should be a subclass of BaseParser.RUN_DETAIL_MODEL'.format(self))
+            # self._parser_run.save()
+            #
+            # for k, v in self._params.items():
+            #     run_param = comics_models.ParserRunParams(parser_run=self._parser_run, name=k, val=str(v))
+            #     run_param.save()
             self._notify_staff_start()
 
             # Preparing data, filling items count and saving Run log record to table
@@ -265,22 +309,23 @@ class BaseParser:
 class CloudFilesParser(BaseParser):
     PARSER_CODE = "CLOUD_FILES"
     PARSER_NAME = "Cloud files parser"
-    RUN_DETAIL_MODEL = CloudFilesParserRunDetail
+    RUN_DETAIL_MODEL = comics_models.CloudFilesParserRunDetail
     _REGEX = re.compile(r"^content/"
                         r"(?P<publisher>.+?)/"
                         r"(?P<universe>.+?)/"
                         r"(?P<year>\d+?)/"
                         r"(?P<title_type>.+?)/"
                         r"(?:(?P<title>.+?)\/)?"
-                        r"(?P<issue_name>[^#]+?(?:#(?P<number>-?[0-9]+))?[^#]*)\.(?:cbr|cbt|cbz)$",
+                        r"(?P<issue_name>[^#]+?(?:#(?P<number>-?[0-9.]+))?[^#]*)\.(?:cbr|cbt|cbz)$",
                         re.IGNORECASE)
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
-    def __init__(self, path_prefix, full=False, load_covers=False):
-        super().__init__()
+    def __init__(self, path_prefix, queue=False, parser_run=None, full=False, load_covers=False, marvel_api_merge=False):
+        super().__init__(queue=queue, parser_run=parser_run)
         self._params['path_prefix'] = path_prefix
         self._params['full'] = full
         self._params['load_covers'] = load_covers
+        self._params['marvel_api_merge'] = marvel_api_merge
         self._publishers = set()
         self._universes = set()
         self._titles = set()
@@ -413,12 +458,12 @@ class CloudFilesParser(BaseParser):
                         issue, created = comics_models.Issue.objects.get_or_create(link=file_key,
                                                                                    defaults={
                                                                                        'name': info['issue_name'],
-                                                                                       'number': number,
                                                                                        'title': title,
                                                                                        'publish_date': publish_date
                                                                                    })
 
                         issue.file_size = file_size
+                        issue.number = number
                         issue.save()
 
                         if self._params['full']:  # Saving in set for not deleting
@@ -480,14 +525,17 @@ class CloudFilesParser(BaseParser):
                 comics_models.Universe.objects.exclude(id__in=self._universes).delete()
                 comics_models.Publisher.objects.exclude(id__in=self._publishers).delete()
             if self._params['load_covers']:
-                for t in comics_models.Title.objects.filter(image=''):
-                    i = t.issues.exclude(main_cover='').order_by('number').first()
-                    if i:
-                        try:
-                            t.image.save(i.main_cover.name, i.main_cover.file)
-                            t.save()
-                        except Exception:
-                            pass
+                for t in comics_models.Title.objects.all():
+                    if t.image == '' or t.image is None:
+                        i = t.issues.exclude(main_cover='').order_by('number').first()
+                        if i:
+                            try:
+                                t.image.save(i.main_cover.name, i.main_cover.file)
+                                t.save()
+                            except Exception:
+                                pass
+            if self._params.get('marvel_api_merge'):
+                tasks.full_marvel_api_merge_task.delay()
         except Error as err:
             raise RuntimeParserError("Error while performing postprocessing", err.args[0])
 
@@ -495,18 +543,18 @@ class CloudFilesParser(BaseParser):
 class MarvelAPIParser(BaseParser):
     PARSER_CODE = "MARVEL_API"
     PARSER_NAME = "Marvel API parser"
-    RUN_DETAIL_MODEL = MarvelAPIParserRunDetail
+    RUN_DETAIL_MODEL = comics_models.MarvelAPIParserRunDetail
 
     MODELS = {
-        "COMICS": MarvelAPIComics,
-        "CHARACTER": MarvelAPICharacter,
-        "CREATOR": MarvelAPICreator,
-        "EVENT": MarvelAPIEvent,
-        "SERIES": MarvelAPISeries
+        "COMICS": comics_models.MarvelAPIComics,
+        "CHARACTER": comics_models.MarvelAPICharacter,
+        "CREATOR": comics_models.MarvelAPICreator,
+        "EVENT": comics_models.MarvelAPIEvent,
+        "SERIES": comics_models.MarvelAPISeries
     }
 
-    def __init__(self, incremental=False):
-        super().__init__()
+    def __init__(self, queue=False, parser_run=None, incremental=False):
+        super().__init__(queue=queue, parser_run=parser_run)
         self._params['incremental'] = incremental
         f = EndpointFabric.get_instance(public_key=settings.MARVEL_PUBLIC_KEY, private_key=settings.MARVEL_PRIVATE_KEY)
         self._creators_endpoint = f.get_endpoint(CreatorsListEndpoint)
@@ -586,9 +634,9 @@ class MarvelAPIParser(BaseParser):
 
     def _process_comics(self, data: entities.Comic):
         # Series
-        series = self._series_dict.get(data.series.id) or MarvelAPISeries.objects.get(id=data.series.id)
+        series = self._series_dict.get(data.series.id) or comics_models.MarvelAPISeries.objects.get(id=data.series.id)
 
-        comics, _ = MarvelAPIComics.objects.get_or_create(id=data.id, defaults={'series': series})
+        comics, _ = comics_models.MarvelAPIComics.objects.get_or_create(id=data.id, defaults={'series': series})
         comics.title = data.title
         comics.issue_number = data.issue_number
         comics.description = data.description
@@ -599,11 +647,11 @@ class MarvelAPIParser(BaseParser):
 
         # Thumbnail
         if "image_not_available" not in data.thumbnail.path:
-            thumbnail, _ = MarvelAPIImage.objects.get_or_create(comics=comics,
-                                                                defaults={
-                                                                    'path': data.thumbnail.path,
-                                                                    'extension': data.thumbnail.extension
-                                                                })
+            thumbnail, _ = comics_models.MarvelAPIImage.objects.get_or_create(comics=comics,
+                                                                              defaults={
+                                                                                  'path': data.thumbnail.path,
+                                                                                  'extension': data.thumbnail.extension
+                                                                              })
             thumbnail.path = data.thumbnail.path
             thumbnail.extension = data.thumbnail.extension
             thumbnail.save()
@@ -612,53 +660,54 @@ class MarvelAPIParser(BaseParser):
         for url in data.urls:
             o = urlparse(url.url)
             url_text = "{0}://{1}{2}".format(*o[:3])
-            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type,
-                                                          comics=comics,
-                                                          defaults={
-                                                              'url': url_text
-                                                          })
+            u, _ = comics_models.MarvelAPISiteUrl.objects.get_or_create(type=url.type,
+                                                                        comics=comics,
+                                                                        defaults={
+                                                                            'url': url_text
+                                                                        })
             u.url = url_text
             u.save()
 
         # Dates
         for date in data.dates:
-            d, _ = MarvelAPIDate.objects.get_or_create(type=date.type, comics=comics, defaults={'date': date.date})
+            d, _ = comics_models.MarvelAPIDate.objects.get_or_create(type=date.type, comics=comics,
+                                                                     defaults={'date': date.date})
             d.date = date.date
             d.save()
 
         # Events
         for event in data.events.items:
-            event_record = self._events_dict.get(event.id) or MarvelAPIEvent.objects.get(id=event.id)
+            event_record = self._events_dict.get(event.id) or comics_models.MarvelAPIEvent.objects.get(id=event.id)
             comics.events.add(event_record)
         if data.events.available != len(data.events.items):
             for event in data.events.entities:
-                event_record = self._events_dict.get(event.id) or MarvelAPIEvent.objects.get(id=event.id)
+                event_record = self._events_dict.get(event.id) or comics_models.MarvelAPIEvent.objects.get(id=event.id)
                 comics.events.add(event_record)
 
         # Characters
         for character in data.characters.items:
             character_record = self._characters_dict.get(character.id) or \
-                               MarvelAPICharacter.objects.get(id=character.id)
+                               comics_models.MarvelAPICharacter.objects.get(id=character.id)
             comics.characters.add(character_record)
         if data.characters.available != len(data.characters.items):
             for character in data.characters.entities:
                 character_record = self._characters_dict.get(character.id) or \
-                                   MarvelAPICharacter.objects.get(id=character.id)
+                                   comics_models.MarvelAPICharacter.objects.get(id=character.id)
                 comics.characters.add(character_record)
 
         # Creators
         for creator in data.creators.items:
             creator_record = self._creators_dict.get(creator.id) or \
-                             MarvelAPICreator.objects.get(id=creator.id)
+                             comics_models.MarvelAPICreator.objects.get(id=creator.id)
             comics.creators.add(creator_record, through_defaults={'role': creator.role})
         if data.creators.available != len(data.creators.items):
             for creator in data.creators.entities:
                 creator_record = self._creators_dict.get(creator.id) or \
-                                 MarvelAPICreator.objects.get(id=creator.id)
+                                 comics_models.MarvelAPICreator.objects.get(id=creator.id)
                 comics.creators.add(creator_record, through_defaults={'role': 'unknown'})
 
     def _process_creator(self, data: entities.Creator):
-        creator, created = MarvelAPICreator.objects.get_or_create(id=data.id)
+        creator, created = comics_models.MarvelAPICreator.objects.get_or_create(id=data.id)
         creator.first_name = data.first_name
         creator.middle_name = data.middle_name
         creator.last_name = data.last_name
@@ -670,11 +719,11 @@ class MarvelAPIParser(BaseParser):
 
         # Thumbnail
         if "image_not_available" not in data.thumbnail.path:
-            thumbnail, _ = MarvelAPIImage.objects.get_or_create(creator=creator,
-                                                                defaults={
-                                                                    'path': data.thumbnail.path,
-                                                                    'extension': data.thumbnail.extension
-                                                                })
+            thumbnail, _ = comics_models.MarvelAPIImage.objects.get_or_create(creator=creator,
+                                                                              defaults={
+                                                                                  'path': data.thumbnail.path,
+                                                                                  'extension': data.thumbnail.extension
+                                                                              })
             thumbnail.path = data.thumbnail.path
             thumbnail.extension = data.thumbnail.extension
             thumbnail.save()
@@ -683,18 +732,18 @@ class MarvelAPIParser(BaseParser):
         for url in data.urls:
             o = urlparse(url.url)
             url_text = "{0}://{1}{2}".format(*o[:3])
-            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type,
-                                                          creator=creator,
-                                                          defaults={
-                                                              'url': url_text
-                                                          })
+            u, _ = comics_models.MarvelAPISiteUrl.objects.get_or_create(type=url.type,
+                                                                        creator=creator,
+                                                                        defaults={
+                                                                            'url': url_text
+                                                                        })
             u.url = url_text
             u.save()
 
         self._creators_dict[data.id] = creator
 
     def _process_character(self, data: entities.Character):
-        character, created = MarvelAPICharacter.objects.get_or_create(id=data.id)
+        character, created = comics_models.MarvelAPICharacter.objects.get_or_create(id=data.id)
         character.name = data.name
         character.description = data.description
         character.modified = data.modified
@@ -703,11 +752,11 @@ class MarvelAPIParser(BaseParser):
 
         # Thumbnail
         if "image_not_available" not in data.thumbnail.path:
-            thumbnail, _ = MarvelAPIImage.objects.get_or_create(character=character,
-                                                                defaults={
-                                                                    'path': data.thumbnail.path,
-                                                                    'extension': data.thumbnail.extension
-                                                                })
+            thumbnail, _ = comics_models.MarvelAPIImage.objects.get_or_create(character=character,
+                                                                              defaults={
+                                                                                  'path': data.thumbnail.path,
+                                                                                  'extension': data.thumbnail.extension
+                                                                              })
             thumbnail.path = data.thumbnail.path
             thumbnail.extension = data.thumbnail.extension
             thumbnail.save()
@@ -716,18 +765,18 @@ class MarvelAPIParser(BaseParser):
         for url in data.urls:
             o = urlparse(url.url)
             url_text = "{0}://{1}{2}".format(*o[:3])
-            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type,
-                                                          character=character,
-                                                          defaults={
-                                                              'url': url_text
-                                                          })
+            u, _ = comics_models.MarvelAPISiteUrl.objects.get_or_create(type=url.type,
+                                                                        character=character,
+                                                                        defaults={
+                                                                            'url': url_text
+                                                                        })
             u.url = url_text
             u.save()
 
         self._characters_dict[data.id] = character
 
     def _process_event(self, data: entities.Event):
-        event, _ = MarvelAPIEvent.objects.get_or_create(id=data.id)
+        event, _ = comics_models.MarvelAPIEvent.objects.get_or_create(id=data.id)
         event.title = data.title
         event.description = data.description
         event.resource_URI = data.resource_uri
@@ -738,11 +787,11 @@ class MarvelAPIParser(BaseParser):
 
         # Thumbnail
         if "image_not_available" not in data.thumbnail.path:
-            thumbnail, _ = MarvelAPIImage.objects.get_or_create(event=event,
-                                                                defaults={
-                                                                    'path': data.thumbnail.path,
-                                                                    'extension': data.thumbnail.extension
-                                                                })
+            thumbnail, _ = comics_models.MarvelAPIImage.objects.get_or_create(event=event,
+                                                                              defaults={
+                                                                                  'path': data.thumbnail.path,
+                                                                                  'extension': data.thumbnail.extension
+                                                                              })
             thumbnail.path = data.thumbnail.path
             thumbnail.extension = data.thumbnail.extension
             thumbnail.save()
@@ -751,18 +800,18 @@ class MarvelAPIParser(BaseParser):
         for url in data.urls:
             o = urlparse(url.url)
             url_text = "{0}://{1}{2}".format(*o[:3])
-            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type,
-                                                          event=event,
-                                                          defaults={
-                                                              'url': url_text
-                                                          })
+            u, _ = comics_models.MarvelAPISiteUrl.objects.get_or_create(type=url.type,
+                                                                        event=event,
+                                                                        defaults={
+                                                                            'url': url_text
+                                                                        })
             u.url = url_text
             u.save()
 
         self._events_dict[data.id] = event
 
     def _process_series(self, data: entities.Series):
-        series, _ = MarvelAPISeries.objects.get_or_create(id=data.id)
+        series, _ = comics_models.MarvelAPISeries.objects.get_or_create(id=data.id)
         series.title = data.title
         series.description = data.description
         series.resource_URI = data.resource_uri
@@ -770,15 +819,16 @@ class MarvelAPIParser(BaseParser):
         series.end_year = data.end_year
         series.rating = data.rating
         series.modified = data.modified
+        series.series_type = data.type or 'empty'
         series.save()
 
         # Thumbnail
         if "image_not_available" not in data.thumbnail.path:
-            thumbnail, _ = MarvelAPIImage.objects.get_or_create(series=series,
-                                                                defaults={
-                                                                    'path': data.thumbnail.path,
-                                                                    'extension': data.thumbnail.extension
-                                                                })
+            thumbnail, _ = comics_models.MarvelAPIImage.objects.get_or_create(series=series,
+                                                                              defaults={
+                                                                                  'path': data.thumbnail.path,
+                                                                                  'extension': data.thumbnail.extension
+                                                                              })
             thumbnail.path = data.thumbnail.path
             thumbnail.extension = data.thumbnail.extension
             thumbnail.save()
@@ -787,11 +837,11 @@ class MarvelAPIParser(BaseParser):
         for url in data.urls:
             o = urlparse(url.url)
             url_text = "{0}://{1}{2}".format(*o[:3])
-            u, _ = MarvelAPISiteUrl.objects.get_or_create(type=url.type,
-                                                          series=series,
-                                                          defaults={
-                                                              'url': url_text
-                                                          })
+            u, _ = comics_models.MarvelAPISiteUrl.objects.get_or_create(type=url.type,
+                                                                        series=series,
+                                                                        defaults={
+                                                                            'url': url_text
+                                                                        })
             u.url = url_text
             u.save()
 
@@ -817,23 +867,23 @@ class MarvelAPIParser(BaseParser):
                 elif i[0] == 'SERIES':
                     self._process_series(i[1])
                 run_detail.end_with_success()
-            except MarvelAPISeries.DoesNotExist as err:
+            except comics_models.MarvelAPISeries.DoesNotExist as err:
                 if run_detail:
                     run_detail.end_with_error("Series does not exists", err.args[0])
                 has_errors = True
-            except MarvelAPIComics.DoesNotExist as err:
+            except comics_models.MarvelAPIComics.DoesNotExist as err:
                 if run_detail:
                     run_detail.end_with_error("Comics does not exists", err.args[0])
                 has_errors = True
-            except MarvelAPICharacter.DoesNotExist as err:
+            except comics_models.MarvelAPICharacter.DoesNotExist as err:
                 if run_detail:
                     run_detail.end_with_error("Character does not exists", err.args[0])
                 has_errors = True
-            except MarvelAPIEvent.DoesNotExist as err:
+            except comics_models.MarvelAPIEvent.DoesNotExist as err:
                 if run_detail:
                     run_detail.end_with_error("Event does not exists", err.args[0])
                 has_errors = True
-            except MarvelAPICreator.DoesNotExist as err:
+            except comics_models.MarvelAPICreator.DoesNotExist as err:
                 if run_detail:
                     run_detail.end_with_error("Creator does not exists", err.args[0])
                 has_errors = True
@@ -856,33 +906,332 @@ class MarvelAPIParser(BaseParser):
         return not has_errors
 
     def _series_link(self) -> NoReturn:
-        for series in MarvelAPISeries.objects.all():
+        for series in comics_models.MarvelAPISeries.objects.all():
             comics = series.comics.all()
 
-            creators = MarvelAPIComicsCreator.objects.filter(comics_fk__in=comics).distinct('creator', 'role')
+            creators = comics_models.MarvelAPIComicsCreator.objects.filter(comics_fk__in=comics).distinct('creator',
+                                                                                                          'role')
             for creator in creators:
                 series.creators.add(creator.creator, through_defaults={'role': creator.role})
 
-            events = MarvelAPIEvent.objects.filter(comics__in=comics).distinct()
+            events = comics_models.MarvelAPIEvent.objects.filter(comics__in=comics).distinct()
             for event in events:
                 series.events.add(event)
 
-            characters = MarvelAPICharacter.objects.filter(comics__in=comics).distinct()
+            characters = comics_models.MarvelAPICharacter.objects.filter(comics__in=comics).distinct()
             for character in characters:
                 series.characters.add(character)
 
     def _events_link(self) -> NoReturn:
-        for event in MarvelAPIEvent.objects.all():
+        for event in comics_models.MarvelAPIEvent.objects.all():
             comics = event.comics.all()
 
-            creators = MarvelAPIComicsCreator.objects.filter(comics_fk__in=comics).distinct('creator', 'role')
+            creators = comics_models.MarvelAPIComicsCreator.objects.filter(comics_fk__in=comics).distinct('creator',
+                                                                                                          'role')
             for creator in creators:
                 event.creators.add(creator.creator, through_defaults={'role': creator.role})
 
-            characters = MarvelAPICharacter.objects.filter(comics__in=comics).distinct()
+            characters = comics_models.MarvelAPICharacter.objects.filter(comics__in=comics).distinct()
             for character in characters:
                 event.characters.add(character)
 
     def _postprocessing(self) -> NoReturn:
         self._series_link()
         self._events_link()
+        tasks.full_marvel_api_merge_task.delay()
+
+
+class MarvelAPICreatorMergeParser(BaseParser):
+    PARSER_CODE = "MARVEL_API_CREATOR_MERGE"
+    PARSER_NAME = "Marvel API creator merge"
+    RUN_DETAIL_MODEL = comics_models.MarvelAPICreatorMergeParserRunDetail
+
+    def __init__(self, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run)
+        self._api_creators = None
+
+    def _prepare(self) -> NoReturn:
+        self._api_creators = comics_models.MarvelAPICreator.objects.all()
+
+    @property
+    def _items_count(self) -> int:
+        return len(self._api_creators)
+
+    def _process(self) -> bool:
+        run_detail = None
+        has_errors = False
+        for api_creator in self._api_creators:
+            run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, api_creator=api_creator)
+            run_detail.save()
+            # Finding db creator
+            try:
+                if api_creator.creator:
+                    db_creator = api_creator.creator
+                    db_creator.name = api_creator.full_name
+
+                else:
+                    db_creator, created = comics_models.Creator.objects.get_or_create(name=api_creator.full_name)
+                    if created:
+                        run_detail.created = True
+                        db_creator.save()
+                    api_creator.creator = db_creator
+                    api_creator.save()
+                run_detail.db_creator = db_creator
+                run_detail.save()
+
+                db_creator.fill_from_marvel_api(api_creator)
+
+                db_creator.save()
+                run_detail.end_with_success()
+
+            except Error as err:
+                if run_detail:
+                    run_detail.end_with_error("Error while processing creator (id={0})".format(api_creator.id), err)
+                has_errors = True
+        return not has_errors
+
+
+class MarvelAPICharacterMergeParser(BaseParser):
+    PARSER_CODE = "MARVEL_API_CHARACTER_MERGE"
+    PARSER_NAME = "Marvel API character merge"
+    RUN_DETAIL_MODEL = comics_models.MarvelAPICharacterMergeParserRunDetail
+
+    def __init__(self, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run)
+        self._api_characters = None
+
+    def _prepare(self) -> NoReturn:
+        self._api_characters = comics_models.MarvelAPICharacter.objects.all()
+
+    @property
+    def _items_count(self) -> int:
+        return len(self._api_characters)
+
+    def _process(self) -> bool:
+        run_detail = None
+        has_errors = False
+        for api_character in self._api_characters:
+            run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, api_character=api_character)
+            run_detail.save()
+            try:
+                if api_character.character:
+                    db_character = api_character.character
+                    db_character.name = api_character.name
+
+                else:
+                    db_character, created = comics_models.Character.objects.get_or_create(name=api_character.name,
+                                                                                          publisher=comics_models.Publisher.objects.get(
+                                                                                              slug="marvel"))
+                    if created:
+                        run_detail.created = True
+                        db_character.save()
+                    api_character.character = db_character
+                    api_character.save()
+
+                run_detail.db_character = db_character
+                run_detail.save()
+
+                db_character.fill_from_marvel_api(api_character)
+
+                db_character.save()
+                run_detail.end_with_success()
+
+            except Error as err:
+                if run_detail:
+                    run_detail.end_with_error("Error while processing creator (id={0})".format(api_character.id), err)
+                has_errors = True
+        return not has_errors
+
+
+class MarvelAPIEventMergeParser(BaseParser):
+    PARSER_CODE = "MARVEL_API_EVENT_MERGE"
+    PARSER_NAME = "Marvel API event merge"
+    RUN_DETAIL_MODEL = comics_models.MarvelAPIEventMergeParserRunDetail
+
+    def __init__(self, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run)
+        self._api_events = None
+
+    def _prepare(self) -> NoReturn:
+        self._api_events = comics_models.MarvelAPIEvent.objects.all()
+
+    @property
+    def _items_count(self) -> int:
+        return len(self._api_events)
+
+    def _process(self) -> bool:
+        run_detail = None
+        has_errors = False
+        for api_event in self._api_events:
+            run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, api_event=api_event)
+            run_detail.save()
+            try:
+                if api_event.event:
+                    db_event = api_event.event
+                    db_event.name = api_event.title
+
+                else:
+                    db_event, created = comics_models.Event.objects.get_or_create(
+                        name=api_event.title,
+                        publisher=comics_models.Publisher.objects.get(slug="marvel"))
+                    if created:
+                        run_detail.created = True
+                        db_event.save()
+                    api_event.event = db_event
+                    api_event.save()
+
+                run_detail.db_event = db_event
+                run_detail.save()
+
+                db_event.fill_from_marvel_api(api_event)
+
+                db_event.save()
+                run_detail.end_with_success()
+
+            except Error as err:
+                if run_detail:
+                    run_detail.end_with_error("Error while processing creator (id={0})".format(api_character.id), err)
+                has_errors = True
+        return not has_errors
+
+
+class MarvelAPITitleMergeParser(BaseParser):
+    PARSER_CODE = "MARVEL_API_TITLE_MERGE"
+    PARSER_NAME = "Marvel API title merge"
+    RUN_DETAIL_MODEL = comics_models.MarvelAPITitleMergeParserRunDetail
+
+    title_types = {
+        'limited': 'Limited',
+        'one shot': 'One-shot',
+        'ongoing': 'Ongoing',
+        'empty': 'Ongoing'
+    }
+
+    def __init__(self, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run)
+        self._db_titles = None
+
+    def _prepare(self) -> NoReturn:
+        self._db_titles = comics_models.Title.objects.filter(
+            publisher=comics_models.Publisher.objects.get(slug="marvel"))
+
+    @property
+    def _items_count(self) -> int:
+        return len(self._db_titles)
+
+    def _process(self) -> bool:
+        run_detail = None
+        has_errors = False
+        for db_title in self._db_titles:
+            run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, db_title=db_title)
+            run_detail.save()
+            api_series = None
+            # Finding db creator
+            try:
+
+                if db_title.api_series:
+                    api_series = db_title.api_series
+                    db_title.name = api_series.title
+                    run_detail.merge_result = "ALREADY"
+                else:
+                    possible_api_series = list(comics_models.MarvelAPISeries.objects.filter(title=db_title.name))
+                    if len(possible_api_series) == 0:
+                        run_detail.merge_result = 'NOT_FOUND'
+                        db_title.possible_matches.clear()
+                        run_detail.end_with_error(run_detail.get_merge_result_display())
+                        has_errors = True
+                        continue
+                    if len(possible_api_series) > 1:
+                        run_detail.merge_result = 'DUPLICATES'
+                        db_title.possible_matches.set(possible_api_series)
+                        run_detail.end_with_error(run_detail.get_merge_result_display())
+                        has_errors = True
+                        continue
+
+                    run_detail.merge_result = 'SUCCESS'
+                    db_title.possible_matches.clear()
+                    api_series = possible_api_series[0]
+                    db_title.api_series = api_series
+
+                run_detail.api_title = api_series
+                run_detail.save()
+
+                db_title.fill_from_marvel_api(api_series)
+
+                db_title.save()
+                run_detail.end_with_success()
+
+            except Error as err:
+                if run_detail:
+                    run_detail.end_with_error("Error while processing title (id={0})".format(db_title.id), err)
+                has_errors = True
+        return not has_errors
+
+
+class MarvelAPIIssueMergeParser(BaseParser):
+    PARSER_CODE = "MARVEL_API_ISSUE_MERGE"
+    PARSER_NAME = "Marvel API issue merge"
+    RUN_DETAIL_MODEL = comics_models.MarvelAPIIssueMergeParserRunDetail
+
+    def __init__(self, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run)
+        self._db_issues = None
+
+    def _prepare(self) -> NoReturn:
+        matched_titles = comics_models.Title.objects.filter(api_series__isnull=False)
+        self._db_issues = comics_models.Issue.objects.filter(title__in=matched_titles)
+
+    @property
+    def _items_count(self) -> int:
+        return len(self._db_issues)
+
+    def _process(self) -> bool:
+        run_detail = None
+        has_errors = False
+        for db_issue in self._db_issues:
+            run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, db_issue=db_issue)
+            run_detail.save()
+            api_series = None
+            try:
+
+                if db_issue.marvel_api_comic:
+                    api_comic = db_issue.marvel_api_comic
+                    run_detail.merge_result = "ALREADY"
+                else:
+                    possible_api_comics = list(
+                        comics_models.MarvelAPIComics.objects.filter(
+                            series=db_issue.title.api_series,
+                            issue_number=db_issue.number
+                        )
+                    )
+                    if len(possible_api_comics) == 0:
+                        run_detail.merge_result = 'NOT_FOUND'
+                        db_issue.possible_matches.clear()
+                        run_detail.end_with_error(run_detail.get_merge_result_display())
+                        has_errors = True
+                        continue
+                    if len(possible_api_comics) > 1:
+                        run_detail.merge_result = 'DUPLICATES'
+                        db_issue.possible_matches.set(possible_api_comics)
+                        run_detail.end_with_error(run_detail.get_merge_result_display())
+                        has_errors = True
+                        continue
+
+                    run_detail.merge_result = 'SUCCESS'
+                    db_issue.possible_matches.clear()
+                    api_comic = possible_api_comics[0]
+                    db_issue.marvel_api_comic = api_comic
+
+                run_detail.api_comic = api_comic
+                run_detail.save()
+
+                db_issue.fill_from_marvel_api(api_series)
+
+                db_issue.save()
+                run_detail.end_with_success()
+
+            except Error as err:
+                if run_detail:
+                    run_detail.end_with_error("Error while processing title (id={0})".format(db_issue.id), err)
+                has_errors = True
+        return not has_errors

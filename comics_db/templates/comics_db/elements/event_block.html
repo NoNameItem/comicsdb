@@ -1,0 +1,29 @@
+    <!-- Events -->
+    <div class="{{ col|default:"col-xxl-3 col-sm-6 col-12" }}">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title"><i class="fal fa-globe-americas" aria-hidden="true"></i> Events</h4>
+          <a class="heading-elements-toggle"><i class="fal fa-ellipsis-v font-medium-3" aria-hidden="true"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-content collapse show">
+          <div class="card-body border-top-blue-grey border-top-lighten-5 ">
+            <div class="row">
+              {% for event in events %}
+                <div
+                    class="col-12">
+                  <a href="{% url "site-event-detail" event.slug %}">{{ event.name }}</a>
+                </div>
+              {% empty %}
+                <p class="ml-1">{{ empty_message|default:"No events" }}</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /Characters -->

@@ -1,0 +1,32 @@
+{% load static %}
+{% load el_pagination_tags %}
+
+{% lazy_paginate characters %}
+{% for character in characters %}
+  <div class="col-4k-2 col-fhd-3 col-xl-4 col-md-6 col-12">
+    <div class="card card-with-cover card-link">
+      <a class='default-link' href='{% url "site-character-detail" character.slug %}'></a>
+      <div class="card-img-top img-fluid bg-cover height-200"
+           style="background: url('{% if character.image %}{{ character.image.thumb_url }}{% else %}{% static "images/defaults/default_character_image_small.png" %}{% endif %}') 50%"></div>
+      <div class="card-profile-image">
+        <img src="{% if character.publisher.logo %}
+                  {{ character.publisher.logo.url }}
+                {% else %}
+                  {% static "images/defaults/default_logo.png" %}
+                {% endif %}"
+             class="rounded-circle img-border box-shadow-1 width-100 height-100" alt="Card image" >
+      </div>
+      <div class="card-with-cover-content text-center">
+        <div class="card-body">
+          <h4 class="card-title">{{ character.name }}</h4>
+          <ul class="list-inline list-inline-pipe">
+            <li>{{ character.event_count }} event{{ character.event_count|pluralize }}</li>
+            <li>{{ character.title_count }} title{{ character.title_count|pluralize }}</li>
+            <li>{{ character.issue_count }} issue{{ character.issue_count|pluralize }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+{% show_more %}

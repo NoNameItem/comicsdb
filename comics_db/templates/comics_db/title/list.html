@@ -1,17 +1,23 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Titles{% endblock %}
-
-{% block page_title %}Titles
-  {% if user.is_staff %}
-    <button type="button" class="btn btn-sm btn-icon btn-success" data-toggle="modal" data-target="#title-modal"><i
-        class="fal fa-plus"></i></button>{% endif %}
+{% block title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s titles
+  {% else %}
+    Titles
+  {% endif %}
 {% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-title-list" %}">Titles</a></li>
+{% block page_title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s titles
+  {% else %}
+    Titles
+  {% endif %}
+  {% if user.is_staff and not sublist_parent %}
+    <button type="button" class="btn btn-sm btn-icon btn-success" data-toggle="modal" data-target="#title-modal"><i
+        class="fal fa-plus"></i></button>{% endif %}
 {% endblock %}
 
 {% block vendor_css %}
@@ -22,19 +28,7 @@
 {% endblock %}
 
 {% block content %}
-  <div class="row">
-    <div class="col">
-      <form action method="get">
-        <fieldset class="form-group position-relative">
-          <input type="text" class="form-control form-control-xl input-xl" id="search-field"
-                 placeholder="Search for title ..." name="search" value="{{ search }}">
-          <div class="form-control-position">
-            <i class="far fa-search"></i>
-          </div>
-        </fieldset>
-      </form>
-    </div>
-  </div>
+  {% include "comics_db/elements/search_form.html" with show_hide_read=False placeholder="Search for title..." %}
   <div class="row">
     {% include "comics_db/title/list_block.html" %}
   </div>

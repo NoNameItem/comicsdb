@@ -1,13 +1,20 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Issues{% endblock %}
+{% block title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s issues
+  {% else %}
+    Issues
+  {% endif %}
+{% endblock %}
 
-{% block page_title %}Issues{% endblock %}
-
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-issue-list" %}">Issues</a></li>
+{% block page_title %}
+  {% if sublist_parent %}
+    {{ sublist_parent }}'s issues
+  {% else %}
+    Issues
+  {% endif %}
 {% endblock %}
 
 {% block vendor_css %}
@@ -19,7 +26,7 @@
 {% endblock %}
 
 {% block content %}
-  {% include "comics_db/elements/issue_search_form.html" %}
+  {% include "comics_db/elements/search_form.html" with show_hide_read=True placeholder="Search for issue..." %}
   <div class="row">
     {% include "comics_db/issue/list_block.html" %}
   </div>

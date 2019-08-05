@@ -8,13 +8,6 @@
 
 {% block meta_description %}{{ title.name }}{% endblock %}
 
-{% block breadcrumb_items %}
-  <li class="breadcrumb-item"><a href="{% url "site-main" %}">Home</a></li>
-  <li class="breadcrumb-item"><a href="{% url "site-title-list" %}">Titles</a></li>
-  <li class="breadcrumb-item active"><a href="{% url "site-title-detail" title.slug %}">{{ title.name }}</a>
-  </li>
-{% endblock %}
-
 {% block vendor_css %}
   <link rel="stylesheet" href="{% static "app-assets/vendors/css/forms/selects/select2.min.css" %}">
 {% endblock %}
@@ -63,7 +56,7 @@
                   {% if user.is_staff %}
                     <div class="btn-group d-none d-sm-inline-flex float-right ml-2" role="group" aria-label="Basic example">
                       <button type="button" class="btn btn-success" data-toggle="modal" data-target="#title-modal">
-                        <i class="fa fa-cog"></i>
+                        <i class="fal fa-cog"></i>
                       </button>
                       <button type="button" class="btn btn-warning" data-toggle="tooltip" onclick="$('#move-issue-modal').modal('show')"
                          data-placement="bottom" title="Move issues to another title">
@@ -80,8 +73,13 @@
           </div>
           <div class="card-desc text-muted">
             <h3><strong>{{ title.name }} ({{ title.title_type.name }}) {% if read == total %}
-              <i class="fas fa-check-circle success"></i>{% endif %}</strong></h3>
+              <i class="fal fa-check-circle success"></i>{% endif %}</strong></h3>
             <em>{{ title.desc|default:"No description" }}</em>
+            <ul class="list-inline list-inline-pipe mb-0">
+              {% if title.marvel_url %}
+                <li><a href="{{ title.marvel_url }}" target="_blank">Marvel URL</a></li>
+              {% endif %}
+            </ul>
           </div>
         </div>
       </div>
@@ -118,6 +116,12 @@
       <div class="card">
         <div class="card-header">
           <h4 class="card-title">Title info</h4>
+          <a class="heading-elements-toggle"><i class="fal fa-ellipsis-v font-medium-3" aria-hidden="true"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+            </ul>
+          </div>
         </div>
         <div class="card-content collapse show">
           <div class="card-body border-top-blue-grey border-top-lighten-5 ">
@@ -163,6 +167,9 @@
       </div>
     </div>
     <!-- /Main info -->
+   {% include "comics_db/elements/creator_block.html" with creators=creators empty_message="No creators in this title" %}
+   {% include "comics_db/elements/character_block.html" with characters=title.characters.all empty_message="No characters in this title" %}
+   {% include "comics_db/elements/event_block.html" with events=title.events.all empty_message="No events in this title" %}
   </div>
   <!-- /Info cards -->
   <form action="{% url "site-title-delete" title.slug %}" method="post" id="delete-form" class="d-none">

@@ -38,9 +38,9 @@ function showStep(obj) {
         $("#modal-status").text(response.status_name);
         $("#modal-issue").text(response.issue_name);
         if (response.created) {
-          $("#modal-created").html('<i class="far fa-check-circle success fa-2x"></i>');
+          $("#modal-created").html('<i class="fal fa-check-circle success fa-2x"></i>');
         } else {
-          $("#modal-created").html('<i class="far fa-times-circle danger fa-2x"></i>');
+          $("#modal-created").html('<i class="fal fa-times-circle danger fa-2x"></i>');
         }
         $("#modal-regex").text(response.regex);
         $("#modal-groups").text(response.groups);

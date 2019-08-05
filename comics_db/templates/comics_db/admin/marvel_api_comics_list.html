@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Marvel API Comics{% endblock %}
+
+{% block page_title %}Marvel API Comics{% endblock %}
+
+{% block vendor_css %}
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/vendors/css/tables/jsgrid/jsgrid-theme.min.css" %}">
+  <link rel="stylesheet" href="{% static "app-assets/css/plugins/forms/switch.min.css" %}">
+{% endblock %}
+
+{% block page_css %}
+  <link rel="stylesheet" href="{% static "comics_db/css/marvel-api-series.css" %}">
+{% endblock %}
+
+{% block content %}
+  <div class="row mb-1">
+    <div class="col-auto pr-0 font-medium-3 setup-label-container">
+      <label class="form-check-label ml-1" for="show-matched">
+        Show matched
+      </label>
+    </div>
+    <div class="col-auto pl-0">
+      <div class="form-check">
+        <input type="checkbox" class="switch setup" id="show-matched" name="show_matched"
+               data-reverse>
+      </div>
+    </div>
+
+{#    <div class="col-auto pr-0 font-medium-3 setup-label-container">#}
+{#      <label class="form-check-label ml-1" for="show-ignored">#}
+{#        Show ignored#}
+{#      </label>#}
+{#    </div>#}
+{#    <div class="col-auto pl-0">#}
+{#      <div class="form-check">#}
+{#        <input type="checkbox" class="switch setup" id="show-ignored" name="show_ignored"#}
+{#               data-reverse>#}
+{#      </div>#}
+{#    </div>#}
+  </div>
+  <div id="grid-container" style="overflow-x: auto; width: 100%">
+    <div id="grid"></div>
+  </div>
+  <div id="pager"></div>
+{% endblock %}
+
+{% block vendor_js %}
+  <script src="{% static "app-assets/vendors/js/tables/jsgrid/jsgrid.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/tables/jsgrid/i18n/jsgrid-ru.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pagination/jquery.twbsPagination.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/forms/extended/inputmask/jquery.inputmask.bundle.min.js" %}"></script>
+  <script src="{% static "app-assets/vendors/js/forms/toggle/bootstrap-checkbox.min.js" %}"
+          type="text/javascript"></script>
+{% endblock %}
+
+{% block page_js %}
+  <script>
+    let series_id;
+  </script>
+  <script src="{% static "js/jsgrid_utils.js" %}" type="text/javascript"></script>
+  <script src="{% static "comics_db/js/marvel_api_comics.js" %}" type="text/javascript"></script>
+{% endblock %}

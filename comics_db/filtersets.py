@@ -9,6 +9,8 @@ RUN_STATUS_CHOICES = models.ParserRun.STATUS_CHOICES
 RUN_DETAIL_STATUS_CHOICES = models.ParserRunDetail.STATUS_CHOICES
 ACTION_CHOICES = models.MarvelAPIParserRunDetail.ACTION_CHOICES
 ENTITY_TYPE_CHOICES = models.MarvelAPIParserRunDetail.ENTITY_TYPE_CHOICES
+MARVEL_API_SERIES_TYPE_CHOICES = tuple((x['series_type'], x['series_type'])
+                                       for x in models.MarvelAPISeries.objects.values("series_type").distinct())
 
 
 class PublisherFilter(filters.FilterSet):
@@ -197,7 +199,7 @@ class ParserRunFilter(filters.FilterSet):
     )
 
 
-class CloudFilesParserRunDetailFilter(filters.FilterSet):
+class ParserRunDetailFilter(filters.FilterSet):
     start_lte = filters.DateTimeFilter(
         field_name="start",
         lookup_expr="lte",
@@ -232,17 +234,20 @@ class CloudFilesParserRunDetailFilter(filters.FilterSet):
                                                                               "%s" % x, RUN_DETAIL_STATUS_CHOICES)))
 
     )
-    file_key = filters.CharFilter(
-        field_name="file_key",
-        lookup_expr="icontains",
-        label="File key",
-        help_text="`file_key` contains (ignore case)"
-    )
     error = filters.CharFilter(
         field_name="error",
         lookup_expr="icontains",
         label="Error",
         help_text="`error` contains (ignore case)"
+    )
+
+
+class CloudFilesParserRunDetailFilter(ParserRunDetailFilter):
+    file_key = filters.CharFilter(
+        field_name="file_key",
+        lookup_expr="icontains",
+        label="File key",
+        help_text="`file_key` contains (ignore case)"
     )
     created = filters.BooleanFilter(
         field_name="created",
@@ -252,41 +257,7 @@ class CloudFilesParserRunDetailFilter(filters.FilterSet):
     )
 
 
-class MarvelAPIParserRunDetailFilter(filters.FilterSet):
-    start_lte = filters.DateTimeFilter(
-        field_name="start",
-        lookup_expr="lte",
-        label="Start",
-        help_text="`start` less than or equal. Date format: YYYY-MM-DDThh:mm:ss.sTZD (iso-8601 datetime)"
-    )
-    start_gte = filters.DateTimeFilter(
-        field_name="start",
-        lookup_expr="gte",
-        label="Start",
-        help_text="`start` greater than or equal. Date format: YYYY-MM-DDThh:mm:ss.sTZD (iso-8601 datetime)"
-    )
-    end_lte = filters.DateTimeFilter(
-        field_name="end",
-        lookup_expr="lte",
-        label="End",
-        help_text="`end` less than or equal. Date format: YYYY-MM-DDThh:mm:ss.sTZD (iso-8601 datetime)"
-    )
-    end_gte = filters.DateTimeFilter(
-        field_name="end",
-        lookup_expr="gte",
-        label="End",
-        help_text="`end` greater than or equal. Date format: YYYY-MM-DDThh:mm:ss.sTZD (iso-8601 datetime)"
-    )
-    status = filters.ChoiceFilter(
-        field_name="status",
-        lookup_expr="iexact",
-        choices=RUN_DETAIL_STATUS_CHOICES,
-        label="Status",
-        help_text="`status` equals (ignore_case).\n"
-                  "Possible choices are:\n{0}".format("\n".join(map(lambda x: "* `%s` - "
-                                                                              "%s" % x, RUN_DETAIL_STATUS_CHOICES)))
-
-    )
+class MarvelAPIParserRunDetailFilter(ParserRunDetailFilter):
     action = filters.ChoiceFilter(
         field_name="action",
         lookup_expr="iexact",
@@ -310,17 +281,116 @@ class MarvelAPIParserRunDetailFilter(filters.FilterSet):
         label="Entity_id",
         help_text="`entity_id` equals"
     )
-    error = filters.CharFilter(
-        field_name="error",
-        lookup_expr="icontains",
-        label="Error",
-        help_text="`error` contains (ignore case)"
-    )
     created = filters.BooleanFilter(
         field_name="created",
         label="Created",
         help_text="`created` equals",
         widget=BooleanWidget()
+    )
+
+
+class MarvelAPICreatorMergeRunDetailFilter(ParserRunDetailFilter):
+    created = filters.BooleanFilter(
+        field_name="created",
+        label="Created",
+        help_text="`created` equals",
+        widget=BooleanWidget()
+    )
+    db_name = filters.CharFilter(
+        field_name="db_creator__name",
+        lookup_expr="icontains",
+        label="DB creator",
+        help_text="`db creator` contains (ignore case)"
+    )
+    api_name = filters.CharFilter(
+        field_name="api_creator__full_name",
+        lookup_expr="icontains",
+        label="API creator",
+        help_text="`API creator` contains (ignore case)"
+    )
+
+
+class MarvelAPICharacterMergeRunDetailFilter(ParserRunDetailFilter):
+    created = filters.BooleanFilter(
+        field_name="created",
+        label="Created",
+        help_text="`created` equals",
+        widget=BooleanWidget()
+    )
+    db_name = filters.CharFilter(
+        field_name="db_character__name",
+        lookup_expr="icontains",
+        label="DB creator",
+        help_text="`db creator` contains (ignore case)"
+    )
+    api_name = filters.CharFilter(
+        field_name="api_character__name",
+        lookup_expr="icontains",
+        label="API creator",
+        help_text="`API creator` contains (ignore case)"
+    )
+
+
+class MarvelAPIEventMergeRunDetailFilter(ParserRunDetailFilter):
+    created = filters.BooleanFilter(
+        field_name="created",
+        label="Created",
+        help_text="`created` equals",
+        widget=BooleanWidget()
+    )
+    db_name = filters.CharFilter(
+        field_name="db_event__name",
+        lookup_expr="icontains",
+        label="DB creator",
+        help_text="`db creator` contains (ignore case)"
+    )
+    api_name = filters.CharFilter(
+        field_name="api_event__title",
+        lookup_expr="icontains",
+        label="API creator",
+        help_text="`API creator` contains (ignore case)"
+    )
+
+
+class MarvelAPITitleMergeRunDetailFilter(ParserRunDetailFilter):
+    api_name = filters.CharFilter(
+        field_name="api_title__title",
+        lookup_expr="icontains",
+    )
+    db_name = filters.CharFilter(
+        field_name="db_title__name",
+        lookup_expr="icontains",
+    )
+    merge_result = filters.ChoiceFilter(
+        field_name="merge_result",
+        lookup_expr="iexact",
+        choices=models.MarvelAPITitleMergeParserRunDetail.RESULT_CHOICES,
+        label="Merge_result",
+        help_text="`parser` equals (ignore_case).\n"
+                  "Possible choices are:\n{0}".format(
+            "\n".join(map(lambda x: "* `%s` - %s" % x, models.MarvelAPITitleMergeParserRunDetail.RESULT_CHOICES)))
+
+    )
+
+
+class MarvelAPIIssueMergeRunDetailFilter(ParserRunDetailFilter):
+    api_name = filters.CharFilter(
+        field_name="api_comic__title",
+        lookup_expr="icontains",
+    )
+    db_name = filters.CharFilter(
+        field_name="db_issue__name",
+        lookup_expr="icontains",
+    )
+    merge_result = filters.ChoiceFilter(
+        field_name="merge_result",
+        lookup_expr="iexact",
+        choices=models.MarvelAPIIssueMergeParserRunDetail.RESULT_CHOICES,
+        label="Merge_result",
+        help_text="`parser` equals (ignore_case).\n"
+                  "Possible choices are:\n{0}".format(
+            "\n".join(map(lambda x: "* `%s` - %s" % x, models.MarvelAPIIssueMergeParserRunDetail.RESULT_CHOICES)))
+
     )
 
 
@@ -331,3 +401,93 @@ class AppTokenFilter(filters.FilterSet):
         label="App name",
         help_text="`app_name` contains (ignore case)"
     )
+
+
+class MarvelAPISeriesFilter(filters.FilterSet):
+    id = filters.NumberFilter(
+        field_name="id",
+        label="Id",
+        help_text="`id` equals"
+    )
+    title = filters.CharFilter(
+        field_name="title",
+        lookup_expr="icontains",
+        label="Title",
+        help_text="`title` contains (ignore case)"
+    )
+    start_year = filters.NumberFilter(
+        field_name="start_year",
+        label="Start_year",
+        help_text="`start_year` equals"
+    )
+    end_year = filters.NumberFilter(
+        field_name="end_year",
+        label="End_year",
+        help_text="`end_year` equals"
+    )
+    rating = filters.CharFilter(
+        field_name="rating",
+        lookup_expr="icontains",
+        label="Rating",
+        help_text="`rating` contains (ignore case)"
+    )
+    series_type = filters.ChoiceFilter(
+        field_name="series_type",
+        lookup_expr="iexact",
+        choices=MARVEL_API_SERIES_TYPE_CHOICES,
+        label="Series_type",
+        help_text="`series_type` equals (ignore_case).\n"
+                  "Possible choices are:\n{0}".format(
+            "\n".join(map(lambda x: "* `%s` - %s" % x, MARVEL_API_SERIES_TYPE_CHOICES)))
+    )
+    show_ignored = filters.BooleanFilter(method="show_ignored_filter")
+    show_matched = filters.BooleanFilter(method="show_matched_filter")
+
+    def show_ignored_filter(self, queryset, name, value):
+        if not value:
+            queryset = queryset.exclude(ignore=True)
+        return queryset
+
+    def show_matched_filter(self, queryset, name, value):
+        if not value:
+            queryset = queryset.exclude(db_title__isnull=False)
+        return queryset
+
+
+class MarvelAPIComicsFilter(filters.FilterSet):
+    id = filters.NumberFilter(
+        field_name="id",
+        label="Id",
+        help_text="`id` equals"
+    )
+    title = filters.CharFilter(
+        field_name="title",
+        lookup_expr="icontains",
+        label="Title",
+        help_text="`title` contains (ignore case)"
+    )
+    issue_number = filters.NumberFilter(
+        field_name="issue_number",
+        label="Issue number",
+        help_text="`issue_number` equals"
+    )
+    page_count = filters.NumberFilter(
+        field_name="page_count",
+        label="page_count",
+        help_text="`page_count` equals"
+    )
+    description = filters.CharFilter(
+        field_name="description",
+        label="description",
+        help_text="`description` contains (ignore case)"
+    )
+    series_id = filters.NumberFilter(
+        field_name="series_id"
+    )
+
+    show_matched = filters.BooleanFilter(method="show_matched_filter")
+
+    def show_matched_filter(self, queryset, name, value):
+        if not value:
+            queryset = queryset.exclude(db_issue__isnull=False)
+        return queryset
