@@ -26,7 +26,7 @@ def unique_slugify(klass, value, pk, counter=0, allow_unicode=True):
         slug = slugify(value, allow_unicode)
 
     if klass.objects.filter(slug=slug).exclude(pk=pk).exists():
-        return unique_slugify(klass, value, counter + 1, allow_unicode)
+        return unique_slugify(klass, value, pk, counter + 1, allow_unicode)
     else:
         return slug
 
