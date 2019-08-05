@@ -1,0 +1,31 @@
+    <!-- Creators -->
+    <div class="{{ col|default:"col-xxl-4 col-sm-6 col-12" }}">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title"><i class="fal fa-pencil-paintbrush" aria-hidden="true"></i> Creators</h4>
+          <a class="heading-elements-toggle"><i class="fal fa-ellipsis-v font-medium-3" aria-hidden="true"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card-content collapse show">
+          <div class="card-body border-top-blue-grey border-top-lighten-5 ">
+            <div class="row">
+              {% for creator in creators %}
+                <div
+                    class="col-4k-2 col-2k-4 col-fhd-4 col-xxl-5 col-xl-3 col-sm-5 col-xs-3 col-xxs-5 col-12 text-xxs-right">
+                  <strong>{% ifchanged %}{{ creator.role }}:{% endifchanged %}</strong>
+                </div>
+                <div
+                    class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
+                  <a href="{% url "site-creator-detail" creator.slug %}">{{ creator.name }}</a>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /Creators -->

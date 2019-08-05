@@ -52,7 +52,8 @@
                           class="fal fa-backward"></i></a>
                     {% endif %}{% endblock %}
                     <a role="button" class="btn btn-secondary" href="{{ issue.download_link }}" data-toggle="tooltip"
-                       data-placement="bottom" title="Download issue"><i class="fal fa-download"></i> ({{ issue.file_size|filesizeformat }})</a>
+                       data-placement="bottom" title="Download issue"><i class="fal fa-download"></i>
+                      <span class="d-none d-sm-inline">({{ issue.file_size|filesizeformat }})</span></a>
                     {% if user.is_authenticated and reading_lists %}
                       <button type="button" class="btn btn-secondary" data-toggle="tooltip"
                               data-placement="bottom" title="Add to read list"
@@ -106,10 +107,16 @@
   <!-- Info cards -->
   <div class="row">
     <!-- Main info -->
-    <div class="col-xxl-3 col-sm-6 col-12">
+    <div class="col-xxl-4 col-sm-6 col-12">
       <div class="card">
         <div class="card-header">
-          <h4 class="card-title">Issue info</h4>
+          <h4 class="card-title"><i class="fal fa-info-circle"></i> Issue info</h4>
+          <a class="heading-elements-toggle"><i class="fal fa-ellipsis-v font-medium-3" aria-hidden="true"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+            </ul>
+          </div>
         </div>
         <div class="card-content collapse show">
           <div class="card-body border-top-blue-grey border-top-lighten-5 ">
@@ -168,7 +175,7 @@
                 <strong>Pages count: </strong>
               </div>
               <div class="col-4k-10 col-2k-8 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-7 col-12 pl-xxs-0">
-                {{ issue.page_count|default_if_none:"Unknown" }}
+                {{ issue.page_count|default:"Unknown" }}
               </div>
             </div>
 
@@ -194,6 +201,8 @@
       </div>
     </div>
     <!-- /Main info -->
+    {% include "comics_db/elements/creator_block.html" with creators=creators %}
+    {% include "comics_db/elements/character_block.html" with characters=issue.characters.all %}
   </div>
   <!-- /Info cards -->
   <form action="{% url "site-issue-delete" issue.slug %}" method="post" id="delete-form" class="d-none">

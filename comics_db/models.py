@@ -861,6 +861,7 @@ class Character(models.Model):
 
     class Meta:
         unique_together = (("publisher", "name"),)
+        ordering = ("name", )
 
 
 def get_event_image_name(instance, filename):

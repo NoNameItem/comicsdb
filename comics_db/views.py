@@ -129,6 +129,35 @@ class SublistMixin:
         return context
 
 
+class CreatorsMixin:
+    creators_model = None
+    creators_parent_field = None
+
+    ROLE_SORT = {
+        "WRITER": 0,
+        "PENCILLER": 1,
+        "PENCILLER (COVER)": 1,
+        "OTHER": 1000,
+        "UNKNOWN": 1000
+    }
+
+    def get_context_data(self, **kwargs):
+        context = super(CreatorsMixin, self).get_context_data(**kwargs)
+        creators_queryset = self.creators_model.objects.filter(**{self.creators_parent_field: self.get_object()})
+        creators = []
+        for query_creator in creators_queryset:
+            creator = {
+                'slug': query_creator.creator.slug,
+                'name': query_creator.creator.name,
+                'role': query_creator.role.title().replace("Penciler", "Penciller")
+            }
+            creator['sort'] = self.ROLE_SORT.get(creator['role'].upper(), 50)
+            creators.append(creator)
+        creators.sort(key=lambda x: (x['sort'], x['role'], x['name']))
+        context['creators'] = creators
+        return context
+
+
 ########################################################################################################################
 # Main Page
 ########################################################################################################################
@@ -249,12 +278,14 @@ class EventListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     ]
 
 
-class EventDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
+class EventDetailView(BreadcrumbMixin, FormUpdateMixin, CreatorsMixin, DetailView):
     template_name = "comics_db/event/detail.html"
     model = models.Event
     context_object_name = "event"
     form_class = forms.EventForm
     extra_context = {'publishers': models.Publisher.objects.all()}
+    creators_model = models.EventCreator
+    creators_parent_field = "event"
 
     def get_breadcrumb(self):
         event = self.get_object()
@@ -300,11 +331,13 @@ class IssueListView(BreadcrumbMixin, SearchMixin, AjaxListView):
         return context
 
 
-class IssueDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
+class IssueDetailView(BreadcrumbMixin, FormUpdateMixin, CreatorsMixin, DetailView):
     template_name = "comics_db/issue/detail.html"
     model = models.Issue
     context_object_name = "issue"
     form_class = forms.IssueForm
+    creators_model = models.IssueCreator
+    creators_parent_field = "issue"
 
     def get_breadcrumb(self):
         issue = self.get_object()
@@ -943,11 +976,13 @@ class TitleListView(BreadcrumbMixin, SearchMixin, AjaxListView):
         return self.render_to_response(context)
 
 
-class TitleDetailView(BreadcrumbMixin, FormUpdateMixin, DetailView):
+class TitleDetailView(BreadcrumbMixin, FormUpdateMixin, CreatorsMixin, DetailView):
     template_name = "comics_db/title/detail.html"
     model = models.Title
     context_object_name = "title"
     form_class = forms.TitleForm
+    creators_parent_field = "title"
+    creators_model = models.TitleCreator
 
     def get_breadcrumb(self):
         title = self.get_object()

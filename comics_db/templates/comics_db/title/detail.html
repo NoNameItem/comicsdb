@@ -79,7 +79,6 @@
               {% if title.marvel_url %}
                 <li><a href="{{ title.marvel_url }}" target="_blank">Marvel URL</a></li>
               {% endif %}
-
             </ul>
           </div>
         </div>
@@ -113,10 +112,16 @@
   <!-- Info cards -->
   <div class="row">
     <!-- Main info -->
-    <div class="col-xxl-3 col-sm-6 col-12">
+    <div class="col-xxl-4 col-sm-6 col-12">
       <div class="card">
         <div class="card-header">
           <h4 class="card-title">Title info</h4>
+          <a class="heading-elements-toggle"><i class="fal fa-ellipsis-v font-medium-3" aria-hidden="true"></i></a>
+          <div class="heading-elements">
+            <ul class="list-inline mb-0">
+              <li><a data-action="collapse"><i class="ft-minus"></i></a></li>
+            </ul>
+          </div>
         </div>
         <div class="card-content collapse show">
           <div class="card-body border-top-blue-grey border-top-lighten-5 ">
@@ -162,6 +167,8 @@
       </div>
     </div>
     <!-- /Main info -->
+   {% include "comics_db/elements/creator_block.html" with creators=creators %}
+   {% include "comics_db/elements/character_block.html" with characters=title.characters.all %}
   </div>
   <!-- /Info cards -->
   <form action="{% url "site-title-delete" title.slug %}" method="post" id="delete-form" class="d-none">
