@@ -86,6 +86,14 @@
                                                          {% if not read_date %}style="display: none" {% endif %}></i>
                 </h3>
                 <em>{{ issue.desc|default:"No description" }}</em>
+                <ul class="list-inline list-inline-pipe mb-0">
+                  {% if issue.marvel_detail_link %}
+                    <li><a href="{{ issue.marvel_detail_link }}" target="_blank">Marvel URL</a></li>
+                  {% endif %}
+                  {% if issue.marvel_purchase_link %}
+                    <li><a href="{{ issue.marvel_purchase_link }}" target="_blank">Purchase</a></li>
+                  {% endif %}
+                </ul>
               </div>
             </div>
           </div>
