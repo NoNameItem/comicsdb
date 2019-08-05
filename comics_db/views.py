@@ -143,6 +143,9 @@ class MainPageView(BreadcrumbMixin, TemplateView):
         context['issues_count'] = models.Issue.objects.count()
         context['publishers_count'] = models.Publisher.objects.count()
         context['universes_count'] = models.Universe.objects.count()
+        context['characters_count'] = models.Character.objects.count()
+        context['creators_count'] = models.Creator.objects.count()
+        context['events_count'] = models.Event.objects.count()
         if self.request.user.is_authenticated:
             try:
                 context['read'] = models.Issue.objects.filter(readers=self.request.user.profile).count()

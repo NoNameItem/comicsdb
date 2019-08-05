@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block meta %}<meta name="yandex-verification" content="6e61166ecc9e9a0d" />
+{% block meta %}
+  <meta name="yandex-verification" content="6e61166ecc9e9a0d"/>
 {% endblock %}
 
 {% block page_title %}
@@ -82,6 +83,61 @@
               <div class="media-body white text-right">
                 <h3>{{ issues_count }}</h3>
                 <span>Issue{{ issues_count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-6 col-12">
+      <div class="card bg-gradient-directional-teal card-link">
+        <div class="card-content">
+          <a class='default-link' href='{% url 'site-creator-list' %}'></a>
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-pencil-paintbrush white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ creators_count }}</h3>
+                <span>Creator{{ creators_count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-12">
+      <div class="card bg-gradient-directional-cyan card-link">
+        <div class="card-content">
+          <a class='default-link' href='{% url 'site-character-list' %}'></a>
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-mask white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ characters_count }}</h3>
+                <span>Character{{ characters_count|pluralize }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-12">
+      <div class="card bg-gradient-directional-pink card-link">
+        <div class="card-content">
+          <a class='default-link' href='{% url 'site-event-list' %}'></a>
+          <div class="card-body">
+            <div class="media d-flex">
+              <div class="align-self-center">
+                <i class="fal fa-globe-americas white float-left fa-3x"></i>
+              </div>
+              <div class="media-body white text-right">
+                <h3>{{ events_count }}</h3>
+                <span>Event{{ events_count|pluralize }}</span>
               </div>
             </div>
           </div>
