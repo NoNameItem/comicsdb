@@ -141,9 +141,9 @@
               <fieldset class="form-group">
                 <label for="creator-name">Creator name</label>
                 <input type="text" class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name"
-                          id="creator-name" value="{{ creator.name }}">
+                          id="creator-name" value="{{ form.name.value }}">
                 <div class="invalid-feedback">
-                  {% for error in form.name.errors %}
+                  {% for error in form.errors.name %}
                     <p>{{ error }}</p>
                   {% endfor %}
                 </div>
@@ -152,11 +152,11 @@
                 <label for="creator-bio">Creator bio</label>
                 <textarea class="form-control {% if form.errors.bio %}is-invalid{% endif %}" name="bio"
                           id="creator-bio"
-                          rows="3">{{ creator.bio }}</textarea>
+                          rows="3">{{ form.bio.value }}</textarea>
                 <div class="invalid-feedback">
-                  {% for error in form.bio.errors %}
-                      <p>{{ error }}</p>
-                    {% endfor %}
+                  {% for error in form.errors.bio %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
                 </div>
               </fieldset>
               <fieldset class="form-group">
@@ -166,7 +166,7 @@
                          id="creator-photo" name="photo">
                   <label class="custom-file-label" for="creator-photo">Creator photo</label>
                   <div class="invalid-feedback">
-                    {% for error in form.photo.errors %}
+                    {% for error in form.errors.photo %}
                       <p>{{ error }}</p>
                     {% endfor %}
                   </div>
@@ -179,7 +179,7 @@
                          id="creator-image" name="image">
                   <label class="custom-file-label" for="creator-image">Creator image</label>
                   <div class="invalid-feedback">
-                    {% for error in form.image.errors %}
+                    {% for error in form.errors.image %}
                       <p>{{ error }}</p>
                     {% endfor %}
                   </div>
@@ -193,7 +193,7 @@
                 </div>
                 <div class="col-auto pl-0"><input type="checkbox" class="switch" id="modal-api-image" name="api_image"
                                                   data-reverse
-                                                  {% if creator.api_image %}checked{% endif %}></div>
+                                                  {% if form.api_image.value %}checked{% endif %}></div>
               </div>
             </div>
             <div class="modal-footer">

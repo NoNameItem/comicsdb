@@ -162,8 +162,10 @@
                          id="publisher-logo" name="logo">
                   <label class="custom-file-label" for="publisher-logo">Publisher logo</label>
                   <div class="invalid-feedback">
-                    {{ form.errors.logo }}
-                  </div>
+                  {% for error in form.errors.logo %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
                 </div>
               </fieldset>
               <fieldset class="form-group">
@@ -173,8 +175,10 @@
                          id="publisher-poster" name="poster">
                   <label class="custom-file-label" for="publisher-poster">Publisher poster</label>
                   <div class="invalid-feedback">
-                    {{ form.errors.poster }}
-                  </div>
+                  {% for error in form.errors.poster %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
+                </div>
                 </div>
 
               </fieldset>
@@ -182,9 +186,11 @@
                 <label for="publisher-description">Publisher description</label>
                 <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
                           id="publisher-description"
-                          rows="3">{{ publisher.desc }}</textarea>
+                          rows="3">{{ form.desc.value }}</textarea>
                 <div class="invalid-feedback">
-                  {{ form.errors.desc }}
+                  {% for error in form.errors.desc %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
                 </div>
               </fieldset>
             </div>

@@ -125,8 +125,10 @@
                          id="universe-poster" name="poster">
                   <label class="custom-file-label" for="universe-poster">Universe poster</label>
                   <div class="invalid-feedback">
-                    {{ form.errors.poster }}
-                  </div>
+                      {% for error in form.errors.poster %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
                 </div>
 
               </fieldset>
@@ -134,10 +136,12 @@
                 <label for="universe-description">Universe description</label>
                 <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
                           id="universe-description"
-                          rows="3">{{ universe.desc }}</textarea>
+                          rows="3">{{ form.desc.value }}</textarea>
                 <div class="invalid-feedback">
-                  {{ form.errors.desc }}
-                </div>
+                      {% for error in form.errors.desc %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
               </fieldset>
             </div>
             <div class="modal-footer">

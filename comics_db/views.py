@@ -64,19 +64,25 @@ class FormUpdateMixin:
         return self.request.user.is_staff
 
     def success_redirect(self, obj, **kwargs):
-        return HttpResponseRedirect(self.object.site_link)
+        return HttpResponseRedirect(obj.get_absolute_url())
+
+    def get_context_data(self, **kwargs):
+        context = super(FormUpdateMixin, self).get_context_data(**kwargs)
+        context['form'] = self.form_class(instance=self.get_object())
+        return context
 
     def post(self, request, **kwargs):
         if not self.form_class:
             raise RuntimeError("Attribute form_class should be set")
         if not self.perm_check():
             raise PermissionDenied
+        obj = self.get_object()
         self.object = self.get_object()
-        form = self.form_class(request.POST, request.FILES, instance=self.object)
+        form = self.form_class(request.POST, request.FILES, instance=obj)
         if form.is_valid():
-            self.object = form.save()
-            return self.success_redirect(self.object, **kwargs)
-        context = self.get_context_data(object=self.object)
+            obj = form.save()
+            return self.success_redirect(obj, **kwargs)
+        context = self.get_context_data()
         context['form'] = form
         return self.render_to_response(context)
 

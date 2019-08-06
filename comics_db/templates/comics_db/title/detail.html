@@ -158,7 +158,7 @@
                 <strong>Start year: </strong>
               </div>
               <div class="col-4k-10 col-2k-9 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-8 col-12 pl-xxs-0">
-                {{ title.start_year }}
+                {{ title.start_year|default_if_none:"Unknown" }}
               </div>
             </div>
             <div class="row">
@@ -166,7 +166,7 @@
                 <strong>End year: </strong>
               </div>
               <div class="col-4k-10 col-2k-9 col-fhd-8 col-xxl-7 col-xl-9 col-sm-7 col-xs-9 col-xxs-8 col-12 pl-xxs-0">
-                {{ title.end_year }}
+                {{ title.end_year|default_if_none:"Unknown" }}
               </div>
             </div>
             {% if read_date %}
@@ -216,20 +216,21 @@
                 <label for="title-name">Title name</label>
                 <input type="text"
                        class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name" id="title-name"
-                       aria-describedby="helpId" value="{{ title.name }}">
+                       aria-describedby="helpId" value="{{ form.name.value }}">
                 <div class="invalid-feedback">
-                  {% for error in form.name.errors %}
-                    <p>{{ error }}</p>
-                  {% endfor %}
-                </div>
+                      {% for error in form.errors.name %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
               </fieldset>
               <div class="row">
                 <div class="col-md-6 col-12">
                   <fieldset class="form-group">
                     <label for="title-start-year">Title start year</label>
-                    <input type="number" class="form-control  {% if form.errors.name %}is-invalid{% endif %}" id="title-start-year" name="start_year" value="{{ title.start_year }}">
+                    <input type="number" class="form-control  {% if form.errors.start_year %}is-invalid{% endif %}"
+                           id="title-start-year" name="start_year" value="{{ form.start_year.value }}">
                     <div class="invalid-feedback">
-                      {% for error in form.start_year.errors %}
+                      {% for error in form.errors.start_year %}
                         <p>{{ error }}</p>
                       {% endfor %}
                     </div>
@@ -238,9 +239,10 @@
                 <div class="col-md-6 col-12">
                   <fieldset class="form-group">
                     <label for="title-end-year">Title end year</label>
-                    <input type="number" class="form-control  {% if form.errors.name %}is-invalid{% endif %}" id="title-end-year" name="end_year" value="{{ title.end_year }}">
+                    <input type="number" class="form-control  {% if form.errors.end_year %}is-invalid{% endif %}"
+                           id="title-end-year" name="end_year" value="{{ form.end_year.value }}">
                     <div class="invalid-feedback">
-                      {% for error in form.end_year.errors %}
+                      {% for error in form.errors.end_year %}
                         <p>{{ error }}</p>
                       {% endfor %}
                     </div>
@@ -251,12 +253,12 @@
                 <label for="title-description">Title description</label>
                 <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
                           id="title-description"
-                          rows="3">{{ title.desc }}</textarea>
+                          rows="3">{{ form.desc.value }}</textarea>
                 <div class="invalid-feedback">
-                  {% for error in form.desc.errors %}
-                    <p>{{ error }}</p>
-                  {% endfor %}
-                </div>
+                      {% for error in form.errors.desc %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
               </fieldset>
               <div class="form-group">
                 <label for="title-type">Title type</label>
@@ -264,13 +266,13 @@
                         id="title-type">
                   {% for title_type in title_types %}
                     <option value="{{ title_type.id }}"
-                            {% if title_type.id == title.title_type.id %}selected{% endif %}>
+                            {% if title_type.id == form.title_type.value %}selected{% endif %}>
                       {{ title_type.name }}
                     </option>
                   {% endfor %}
                 </select>
                 <div class="invalid-feedback">
-                  {% for error in form.title_type.errors %}
+                  {% for error in form.errors.tytle_type %}
                     <p>{{ error }}</p>
                   {% endfor %}
                 </div>
@@ -282,10 +284,10 @@
                          id="title-poster" name="image">
                   <label class="custom-file-label" for="title-poster">Title image</label>
                   <div class="invalid-feedback">
-                    {% for error in form.image.errors %}
-                      <p>{{ error }}</p>
-                    {% endfor %}
-                  </div>
+                      {% for error in form.errors.image %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
                 </div>
               </fieldset>
               <div class="form-group row">
@@ -296,7 +298,7 @@
                 </div>
                 <div class="col-auto pl-0"><input type="checkbox" class="switch" id="modal-api-image" name="api_image"
                                                   data-reverse
-                                                  {% if title.api_image %}checked{% endif %}></div>
+                                                  {% if form.api_image.value %}checked{% endif %}></div>
               </div>
             </div>
           </div>

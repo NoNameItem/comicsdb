@@ -142,11 +142,11 @@
                 <label for="character-publisher">Character publisher</label>
                 <select class="form-control {% if form.errors.publisher %}is-invalid{% endif %}" name="publisher" id="character-publisher">
                   {% for publisher in publishers %}
-                    <option value="{{ publisher.id }}" {% if character.publisher == publisher %}selected{% endif %}>{{ publisher.name }}</option>
+                    <option value="{{ publisher.id }}" {% if form.data.publisher == publisher.id %}selected{% endif %}>{{ publisher.name }}</option>
                   {% endfor %}
                 </select>
                 <div class="invalid-feedback">
-                  {% for error in form.publisher.errors %}
+                  {% for error in form.errors.publisher %}
                     <p>{{ error }}</p>
                   {% endfor %}
                 </div>
@@ -154,9 +154,9 @@
               <fieldset class="form-group">
                 <label for="character-name">Character name</label>
                 <input type="text" class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name"
-                          id="character-name" value="{{ character.name }}">
+                          id="character-name" value="{{ form.name.value }}">
                 <div class="invalid-feedback">
-                  {% for error in form.name.errors %}
+                  {% for error in form.errors.name %}
                     <p>{{ error }}</p>
                   {% endfor %}
                 </div>
@@ -165,11 +165,11 @@
                 <label for="character-desc">Character description</label>
                 <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
                           id="character-desc"
-                          rows="3">{{ character.desc }}</textarea>
+                          rows="3">{{ form.desc.value }}</textarea>
                 <div class="invalid-feedback">
-                  {% for error in form.desc.errors %}
-                      <p>{{ error }}</p>
-                    {% endfor %}
+                  {% for error in form.errors.desc %}
+                    <p>{{ error }}</p>
+                  {% endfor %}
                 </div>
               </fieldset>
               <fieldset class="form-group">
@@ -179,7 +179,7 @@
                          id="character-image" name="image">
                   <label class="custom-file-label" for="creator-photo">Character image</label>
                   <div class="invalid-feedback">
-                    {% for error in form.image.errors %}
+                    {% for error in form.errors.image %}
                       <p>{{ error }}</p>
                     {% endfor %}
                   </div>
@@ -193,7 +193,7 @@
                 </div>
                 <div class="col-auto pl-0"><input type="checkbox" class="switch" id="modal-api-image" name="api_image"
                                                   data-reverse
-                                                  {% if character.api_image %}checked{% endif %}></div>
+                                                  {% if form.api_image.value %}checked{% endif %}></div>
               </div>
             </div>
             <div class="modal-footer">

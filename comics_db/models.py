@@ -551,8 +551,8 @@ class Title(models.Model):
     slug = models.SlugField(max_length=500, allow_unicode=True, unique=True)
     api_image = models.BooleanField(default=False)
 
-    start_year = models.IntegerField(null=True)
-    end_year = models.IntegerField(null=True)
+    start_year = models.IntegerField(null=True, blank=True)
+    end_year = models.IntegerField(null=True, blank=True)
     rating = models.TextField(blank=True)
 
     publisher = models.ForeignKey(Publisher, on_delete=models.PROTECT, related_name="titles")
@@ -561,7 +561,7 @@ class Title(models.Model):
     creators = models.ManyToManyField(Creator, through=TitleCreator, related_name='titles')
 
     # Marvel-specific fields
-    api_series = models.OneToOneField("MarvelAPISeries", null=True, on_delete=models.SET_NULL, related_name="db_title")
+    api_series = models.ForeignKey("MarvelAPISeries", null=True, on_delete=models.SET_NULL, related_name="db_titles")
     possible_matches = models.ManyToManyField("MarvelAPISeries", related_name="db_possible_matches")
     marvel_url = models.URLField(max_length=500, blank=True)
 
@@ -715,8 +715,8 @@ class Issue(models.Model):
     modified_dt = models.DateTimeField(auto_now=True)
 
     # Marvel-specific fields
-    marvel_api_comic = models.OneToOneField("MarvelAPIComics", null=True, on_delete=models.SET_NULL,
-                                            related_name="db_issue")
+    marvel_api_comic = models.ForeignKey("MarvelAPIComics", null=True, on_delete=models.SET_NULL,
+                                            related_name="db_issues")
     marvel_detail_link = models.URLField(max_length=1000, blank=True)
     marvel_purchase_link = models.URLField(max_length=1000, blank=True)
     possible_matches = models.ManyToManyField("MarvelAPIComics", related_name="db_possible_issues")
@@ -1151,8 +1151,9 @@ class MarvelAPISeries(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         super(MarvelAPISeries, self).save(force_insert, force_update, using, update_fields)
-        if self.db_title:
-            self.db_title.fill_from_marvel_api(self)
+        if self.db_titles:
+            for db_title in self.db_titles.all():
+                db_title.fill_from_marvel_api(self)
 
 
 class MarvelAPIComicsCreator(models.Model):
@@ -1183,8 +1184,9 @@ class MarvelAPIComics(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         super(MarvelAPIComics, self).save(force_insert, force_update, using, update_fields)
-        if self.db_issue:
-            self.db_issue.fill_from_marvel_api(self)
+        if self.db_issues:
+            for db_issue in self.db_issues.all():
+                db_issue.fill_from_marvel_api(self)
 
 
 class MarvelAPIDate(models.Model):

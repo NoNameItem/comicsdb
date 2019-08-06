@@ -20,14 +20,14 @@
       <div class="col-12">
         <div class="card detail-card-with-cover">
           <div class="card-img-top img-fluid bg-cover height-300"
-               {% if event.image %}
+              {% if event.image %}
                data-toggle="modal" data-target="#full-image-modal"
-               {% endif %}
+              {% endif %}
                style="background:
                    url('{% if event.image %}{{ event.image.url }}{% else %}{% static "images/defaults/default_event_image.png" %}{% endif %}') 50%;
-               {% if event.image %}
-               cursor: pointer;
-               {% endif %}
+                   {% if event.image %}
+                     cursor: pointer;
+                   {% endif %}
                    "></div>
           <div class="media detail-card-cover-details w-100">
             <div class="media-left pl-2 pt-2">
@@ -53,9 +53,10 @@
             </div>
           </div>
           <div class="card-desc text-muted">
-            <h3><strong>{{ event.name }}</strong> ({{ event.start|default:"Unknown" }} - {{ event.end|default:"Unknown" }})</h3>
+            <h3><strong>{{ event.name }}</strong> ({{ event.start|default:"Unknown" }}
+              - {{ event.end|default:"Unknown" }})</h3>
             <em>{{ event.desc|default:"No description" }}</em>
-            {% if event.marvel_url%}
+            {% if event.marvel_url %}
               <br><a href="{{ event.marvel_url }}" target="_blank"><em>Marvel URL</em></a>
             {% endif %}
           </div>
@@ -126,13 +127,15 @@
             <div class="modal-body">
               <div class="form-group">
                 <label for="character-publisher">Event publisher</label>
-                <select class="form-control {% if form.errors.publisher %}is-invalid{% endif %}" name="publisher" id="character-publisher">
+                <select class="form-control {% if form.errors.publisher %}is-invalid{% endif %}" name="publisher"
+                        id="character-publisher">
                   {% for publisher in publishers %}
-                    <option value="{{ publisher.id }}" {% if event.publisher == publisher %}selected{% endif %}>{{ publisher.name }}</option>
+                    <option value="{{ publisher.id }}"
+                            {% if form.publisher.value == publisher.id %}selected{% endif %}>{{ publisher.name }}</option>
                   {% endfor %}
                 </select>
                 <div class="invalid-feedback">
-                  {% for error in form.publisher.errors %}
+                  {% for error in form.errors.publisher %}
                     <p>{{ error }}</p>
                   {% endfor %}
                 </div>
@@ -140,9 +143,9 @@
               <fieldset class="form-group">
                 <label for="character-name">Event name</label>
                 <input type="text" class="form-control {% if form.errors.name %}is-invalid{% endif %}" name="name"
-                          id="character-name" value="{{ event.name }}">
+                       id="character-name" value="{{ form.name.value }}">
                 <div class="invalid-feedback">
-                  {% for error in form.name.errors %}
+                  {% for error in form.errors.name %}
                     <p>{{ error }}</p>
                   {% endfor %}
                 </div>
@@ -152,12 +155,17 @@
                   <fieldset class="form-group">
                     <label for="event-start-date">Event start date</label>
                     <div class="input-group date" id="event-start-date-container">
-                      <input type="text" class="form-control" id="event-start-date" name="start">
+                      <input type="text" class="form-control {% if form.errors.start %}is-invalid{% endif %}" id="event-start-date" name="start">
                       <div class="input-group-append">
 										<span class="input-group-text">
 											<i class="fal fa-calendar-alt"></i>
 										</span>
                       </div>
+                    </div>
+                    <div class="invalid-feedback">
+                      {% for error in form.errors.start %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
                     </div>
                   </fieldset>
                 </div>
@@ -165,12 +173,17 @@
                   <fieldset class="form-group">
                     <label for="event-end-date">Event end date</label>
                     <div class="input-group date" id="event-end-date-container">
-                      <input type="text" class="form-control" id="event-end-date" name="end">
+                      <input type="text" class="form-control {% if form.errors.end %}is-invalid{% endif %}" id="event-end-date" name="end">
                       <div class="input-group-append">
 										<span class="input-group-text">
 											<i class="fal fa-calendar-alt"></i>
 										</span>
                       </div>
+                    </div>
+                    <div class="invalid-feedback">
+                      {% for error in form.errors.end %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
                     </div>
                   </fieldset>
                 </div>
@@ -179,12 +192,12 @@
                 <label for="character-desc">Event description</label>
                 <textarea class="form-control {% if form.errors.desc %}is-invalid{% endif %}" name="desc"
                           id="character-desc"
-                          rows="3">{{ event.desc }}</textarea>
+                          rows="3">{{ form.desc.value }}</textarea>
                 <div class="invalid-feedback">
-                  {% for error in form.desc.errors %}
-                      <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
+                      {% for error in form.errors.desc %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
               </fieldset>
               <fieldset class="form-group">
                 <div class="custom-file">
@@ -193,10 +206,10 @@
                          id="character-image" name="image">
                   <label class="custom-file-label" for="creator-photo">Event image</label>
                   <div class="invalid-feedback">
-                    {% for error in form.image.errors %}
-                      <p>{{ error }}</p>
-                    {% endfor %}
-                  </div>
+                      {% for error in form.errors.image %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
                 </div>
               </fieldset>
               <div class="form-group row">
@@ -207,7 +220,7 @@
                 </div>
                 <div class="col-auto pl-0"><input type="checkbox" class="switch" id="modal-api-image" name="api_image"
                                                   data-reverse
-                                                  {% if event.api_image %}checked{% endif %}></div>
+                                                  {% if form.api_image.value %}checked{% endif %}></div>
               </div>
             </div>
             <div class="modal-footer">
@@ -245,19 +258,22 @@
 {% endblock %}
 
 {% block vendor_js %}
-  <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}" type="text/javascript"></script>
-  <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}" type="text/javascript"></script>
-  <script src="{% static "app-assets/vendors/js/forms/toggle/bootstrap-checkbox.min.js" %}" type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/moment-with-locales.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/pickers/dateTime/bootstrap-datetimepicker.min.js" %}"
+          type="text/javascript"></script>
+  <script src="{% static "app-assets/vendors/js/forms/toggle/bootstrap-checkbox.min.js" %}"
+          type="text/javascript"></script>
 {% endblock %}
 
 {% block page_js %}
   <script src="{% static "app-assets/js/scripts/forms/custom-file-input.js" %}"></script>
   <script>
-    $('#event-start-date-container').datetimepicker({format : 'DD.MM.YYYY', date : new Date('{{ event.start }}')});
-    $('#event-end-date-container').datetimepicker({format : 'DD.MM.YYYY', date : new Date('{{ event.end }}')});
+    $('#event-start-date-container').datetimepicker({format : 'DD.MM.YYYY', date : new Date('{{ form.start.value }}')});
+    $('#event-end-date-container').datetimepicker({format : 'DD.MM.YYYY', date : new Date('{{ form.end.value }}')});
     $('#modal-api-image').checkboxpicker();
     {% if form.errors %}
-      $('#creator-modal').modal('show');
+      $('#event-modal').modal('show');
     {% endif %}
   </script>
 {% endblock %}
