@@ -21,8 +21,8 @@
           <h4 class="card-title">{{ event.name }}</h4>
           <p class="card-text">{{ event.start|default:"Unknown" }} - {{ event.end|default:"Unknown" }}</p>
           <ul class="list-inline list-inline-pipe">
-            <li>{{ event.title_count }} title{{ event.title_count|pluralize }}</li>
-            <li>{{ event.issue_count }} issue{{ event.issue_count|pluralize }}</li>
+            <li>{{ event.titles.count }} title{{ event.titles.count|pluralize }}</li>
+            <li>{{ event.issues.count }} issue{{ event.issues.count|pluralize }}</li>
           </ul>
         </div>
       </div>

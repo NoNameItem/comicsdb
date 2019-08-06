@@ -13,7 +13,6 @@ from urllib.parse import urlparse
 import boto3
 import botocore
 import botocore.exceptions
-import requests
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.core.mail import EmailMultiAlternatives
@@ -23,7 +22,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from requests import RequestException
 
-from comics_db import models as comics_models, tasks
+from comics_db import models as comics_models
 from comics_db.reader import ComicsReader
 from comicsdb import settings
 from marvel_api_wrapper import entities
@@ -65,10 +64,10 @@ class BaseParser:
     PARSER_NAME = 'Base parser'
     RUN_DETAIL_MODEL = comics_models.ParserRunDetail  # Model for saving parser detail logs
 
-    def __init__(self, queue=False, parser_run=None):
+    def __init__(self, queue=False, parser_run=None, params={}):
         self._parser_run = parser_run
         self._data = None
-        self._params = {}
+        self._params = params
         if not self._parser_run:
             self.initialize_run(queue)
 
@@ -283,12 +282,11 @@ class CloudFilesParser(BaseParser):
                         re.IGNORECASE)
     _FILE_REGEX = re.compile(r"\.cb(r|z|t)", re.IGNORECASE)
 
-    def __init__(self, path_prefix, queue=False, parser_run=None, full=False, load_covers=False, marvel_api_merge=False):
-        super().__init__(queue=queue, parser_run=parser_run)
-        self._params['path_prefix'] = path_prefix
-        self._params['full'] = full
-        self._params['load_covers'] = load_covers
-        self._params['marvel_api_merge'] = marvel_api_merge
+    def __init__(self, path_prefix, full=False, load_covers=False, marvel_api_merge=False,
+                 queue=False, parser_run=None):
+        params = {'path_prefix': path_prefix, 'full': full, 'load_covers': load_covers,
+                  'marvel_api_merge': marvel_api_merge}
+        super().__init__(queue=queue, parser_run=parser_run, params=params)
         self._publishers = set()
         self._universes = set()
         self._titles = set()
@@ -498,6 +496,7 @@ class CloudFilesParser(BaseParser):
                             except Exception:
                                 pass
             if self._params.get('marvel_api_merge'):
+                from comics_db import tasks
                 tasks.full_marvel_api_merge_task.delay()
         except Error as err:
             raise RuntimeParserError("Error while performing postprocessing", err.args[0])
@@ -516,9 +515,8 @@ class MarvelAPIParser(BaseParser):
         "SERIES": comics_models.MarvelAPISeries
     }
 
-    def __init__(self, queue=False, parser_run=None, incremental=False):
-        super().__init__(queue=queue, parser_run=parser_run)
-        self._params['incremental'] = incremental
+    def __init__(self, incremental=False, queue=False, parser_run=None):
+        super().__init__(queue=queue, parser_run=parser_run, params={'incremental': incremental})
         f = EndpointFabric.get_instance(public_key=settings.MARVEL_PUBLIC_KEY, private_key=settings.MARVEL_PRIVATE_KEY)
         self._creators_endpoint = f.get_endpoint(CreatorsListEndpoint)
         self._comics_endpoint = f.get_endpoint(ComicsListEndpoint)
@@ -541,8 +539,13 @@ class MarvelAPIParser(BaseParser):
 
     def _dump_api(self, entity_type, endpoint, target, **filters):
         if self._params['incremental']:
-            max_modified = ParserRun.objects.filter(parser="MARVEL_API", status="SUCCESS").aggregate(max_modified=Max('start'))['max_modified']
-            filters['modifiedSince'] = max_modified.date().isoformat()
+            max_modified = comics_models.ParserRun.objects.filter(
+                parser="MARVEL_API", status="SUCCESS"
+            ).aggregate(
+                max_modified=Max('start')
+            )['max_modified']
+            if max_modified:
+                filters['modifiedSince'] = max_modified.date().isoformat()
         offset = 0
         # count = 0
         total = None
@@ -901,6 +904,7 @@ class MarvelAPIParser(BaseParser):
     def _postprocessing(self) -> NoReturn:
         self._series_link()
         self._events_link()
+        from comics_db import tasks
         tasks.full_marvel_api_merge_task.delay()
 
 

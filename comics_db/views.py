@@ -207,11 +207,15 @@ class CharacterListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     context_object_name = "characters"
     page_template = "comics_db/character/list_block.html"
     search_fields = ('name__icontains',)
-    queryset = models.Character.objects.filter(slug__isnull=False).exclude(slug=""). \
-        annotate(issue_count=Count('issues', distinct=True),
-                 title_count=Count("titles", distinct=True),
-                 event_count=Count("events", distinct=True)). \
-        select_related("publisher")
+    queryset = models.Character.objects.filter(
+        slug__isnull=False
+    ).exclude(
+        slug=""
+    ).prefetch_related(
+        "events", "titles", "issues"
+    ).select_related(
+        "publisher"
+    )
     breadcrumb = [
         {'url': reverse_lazy("site-character-list"), 'text': 'Characters'}
     ]
@@ -242,10 +246,13 @@ class CreatorListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     context_object_name = "creators"
     page_template = "comics_db/creator/list_block.html"
     search_fields = ('name__icontains',)
-    queryset = models.Creator.objects.filter(slug__isnull=False).exclude(slug=""). \
-        annotate(issue_count=Count('issues', distinct=True),
-                 title_count=Count("titles", distinct=True),
-                 event_count=Count("events", distinct=True))
+    queryset = models.Creator.objects.filter(
+        slug__isnull=False
+    ).exclude(
+        slug=""
+    ).prefetch_related(
+        "issues", "titles", "events"
+    )
     breadcrumb = [
         {'url': reverse_lazy("site-creator-list"), 'text': 'Creators'}
     ]
@@ -275,10 +282,11 @@ class EventListView(BreadcrumbMixin, SearchMixin, AjaxListView):
     context_object_name = "events"
     page_template = "comics_db/event/list_block.html"
     search_fields = ('name__icontains',)
-    queryset = models.Event.objects. \
-        annotate(issue_count=Count('issues', distinct=True),
-                 title_count=Count("titles", distinct=True)). \
-        select_related("publisher")
+    queryset = models.Event.objects.select_related(
+        "publisher"
+    ).prefetch_related(
+        "issues", "titles"
+    )
     breadcrumb = [
         {'url': reverse_lazy("site-event-list"), 'text': 'Events'}
     ]

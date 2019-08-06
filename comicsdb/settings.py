@@ -29,6 +29,7 @@ SECRET_KEY = custom_settings.SECRET_KEY
 DEBUG = custom_settings.DEBUG
 
 ALLOWED_HOSTS = custom_settings.ALLOWED_HOSTS
+ADMINS = custom_settings.ADMINS
 
 # Application definition
 

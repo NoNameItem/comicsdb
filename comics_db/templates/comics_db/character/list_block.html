@@ -20,9 +20,9 @@
         <div class="card-body">
           <h4 class="card-title">{{ character.name }}</h4>
           <ul class="list-inline list-inline-pipe">
-            <li>{{ character.event_count }} event{{ character.event_count|pluralize }}</li>
-            <li>{{ character.title_count }} title{{ character.title_count|pluralize }}</li>
-            <li>{{ character.issue_count }} issue{{ character.issue_count|pluralize }}</li>
+            <li>{{ character.events.count }} event{{ character.events.count|pluralize }}</li>
+            <li>{{ character.titles.count }} title{{ character.titles.count|pluralize }}</li>
+            <li>{{ character.issues.count }} issue{{ character.issues.count|pluralize }}</li>
           </ul>
         </div>
       </div>
