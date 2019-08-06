@@ -831,7 +831,7 @@ class Issue(models.Model):
                     while not image_saved:
                         image_save_try_count += 1
                         try:
-                            self.image.save(link, image)
+                            self.main_cover.save(link, image)
                             self.api_image = True
                             image_saved = True
                         except (botocore.exceptions.ClientError, django_s3_storage.storage.S3Error) as err:
