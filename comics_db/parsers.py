@@ -1199,6 +1199,6 @@ class MarvelAPIIssueMergeParser(BaseParser):
 
             except Exception as err:
                 if run_detail:
-                    run_detail.end_with_error("Error while processing title (id={0})".format(db_issue.id), err)
+                    run_detail.end_with_error("Error while processing issue (id={0})".format(db_issue.id), err)
                 has_errors = True
         return not has_errors

@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django_filters import rest_framework as filters
 from django_filters.widgets import BooleanWidget
 
@@ -450,7 +451,7 @@ class MarvelAPISeriesFilter(filters.FilterSet):
 
     def show_matched_filter(self, queryset, name, value):
         if not value:
-            queryset = queryset.exclude(db_title__isnull=False)
+            queryset = queryset.annotate(db_titles_count=Count("db_titles")).exclude(db_titles_count__gt=0)
         return queryset
 
 
@@ -489,5 +490,5 @@ class MarvelAPIComicsFilter(filters.FilterSet):
 
     def show_matched_filter(self, queryset, name, value):
         if not value:
-            queryset = queryset.exclude(db_issue__isnull=False)
+            queryset = queryset.annotate(db_issues_count=Count("db_issues")).exclude(db_issues_count__gt=0)
         return queryset
