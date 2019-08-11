@@ -37,4 +37,5 @@
 
 #detail-card-head .card-desc {
   padding: 20px 20px 20px 130px;
+  white-space: pre-wrap;
 }
