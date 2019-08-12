@@ -80,7 +80,8 @@ $(document).ready(function () {
     autoload   : true,
 
     rowDoubleClick : function (obj) {
-      window.location.href = "/marvel-api/series/" + obj.item.id;
+      let  url = "/marvel-api/series/" + obj.item.id;
+      window.open(url,'_blank');
     },
 
     fields : [

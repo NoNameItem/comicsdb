@@ -35,6 +35,19 @@ const ORDER_MAP = {
 };
 
 function set_api_series(db_title_id, api_series_id) {
+  $('#run-detail-modal').block({
+          message    : '<div class="ft-refresh-cw icon-spin font-medium-2"></div>',
+          //timeout: 2000, //unblock after 2 seconds
+          overlayCSS : {
+            backgroundColor : '#FFF',
+            cursor          : 'wait',
+          },
+          css        : {
+            border          : 0,
+            padding         : 0,
+            backgroundColor : 'none'
+          }
+        });
   $.ajax({
     url         : '/api/title/'+db_title_id+'/set_api_series',
     type        : 'POST',
@@ -45,8 +58,11 @@ function set_api_series(db_title_id, api_series_id) {
     })
   }).done(function (data, textStatus, jqXHR) {
     successNotify("Success","API series assigned");
+    $('#run-detail-modal').unblock();
+    $('#run-detail-modal').modal('hide');
     $('#grid').jsGrid('loadData');
   }).fail(function (jqXHR, textStatus, errorThrown) {
+    $('#run-detail-modal').unblock();
     if (jqXHR.status === 404) {
       errorNotify("Not found", "Please refresh page");
     } else {
@@ -56,6 +72,19 @@ function set_api_series(db_title_id, api_series_id) {
 }
 
 function set_api_comics(db_issue_id, api_comic_id) {
+  $('#run-detail-modal').block({
+          message    : '<div class="ft-refresh-cw icon-spin font-medium-2"></div>',
+          //timeout: 2000, //unblock after 2 seconds
+          overlayCSS : {
+            backgroundColor : '#FFF',
+            cursor          : 'wait',
+          },
+          css        : {
+            border          : 0,
+            padding         : 0,
+            backgroundColor : 'none'
+          }
+        });
   $.ajax({
     url         : '/api/issue/'+db_issue_id+'/set_api_comic',
     type        : 'POST',
@@ -66,8 +95,11 @@ function set_api_comics(db_issue_id, api_comic_id) {
     })
   }).done(function (data, textStatus, jqXHR) {
     successNotify("Success","API series assigned");
+    $('#run-detail-modal').unblock();
+    $('#run-detail-modal').modal('hide');
     $('#grid').jsGrid('loadData');
   }).fail(function (jqXHR, textStatus, errorThrown) {
+    $('#run-detail-modal').unblock();
     if (jqXHR.status === 404) {
       errorNotify("Not found", "Please refresh page");
     } else {

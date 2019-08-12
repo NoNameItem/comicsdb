@@ -68,7 +68,8 @@ $(document).ready(function () {
     autoload   : true,
 
     rowDoubleClick : function (obj) {
-      window.location.href = "/marvel-api/comics/" + obj.item.id;
+      let url = "/marvel-api/comics/" + obj.item.id;
+      window.open(url,'_blank');
     },
 
     fields : [

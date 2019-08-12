@@ -460,9 +460,12 @@ class MarvelAPIComicsDetail(BreadcrumbMixin, UserPassesTestMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(MarvelAPIComicsDetail, self).get_context_data(**kwargs)
         api_comic = context['api_comic']
-        api_image = api_comic.image
-        link = "{0.path}.{0.extension}".format(api_image)
-        context['image_link'] = link
+        try:
+            api_image = api_comic.image
+            link = "{0.path}.{0.extension}".format(api_image)
+            context['image_link'] = link
+        except models.MarvelAPIImage.DoesNotExist:
+            context['image_link'] = None
         try:
             context['publish_date'] = api_comic.dates.get(type="onsaleDate").date
         except models.MarvelAPISiteUrl.DoesNotExist:
