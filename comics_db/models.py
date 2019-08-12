@@ -679,8 +679,9 @@ class Title(models.Model):
                 pass
 
     class Meta:
-        unique_together = (("name", "publisher", "universe", "title_type"),
-                           ("path_key", "publisher", "universe", "title_type"))
+        unique_together = (
+            ("path_key", "publisher", "universe", "title_type"),
+        )
         ordering = ["publisher", "universe", "name"]
 
 
