@@ -926,7 +926,7 @@ class Character(models.Model):
                             else:
                                 raise RuntimeError("Could not upload image.\n" + err)
             except MarvelAPIImage.DoesNotExist:
-                self.image = None
+                pass
 
     class Meta:
         unique_together = (("publisher", "name"),)
