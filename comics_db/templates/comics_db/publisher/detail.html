@@ -54,7 +54,7 @@
           </div>
           <div class="card-desc text-muted">
             <h3><strong>{{ publisher.name }}</strong></h3>
-            <em>{{ publisher.desc|default:"No description" }}</em>
+            <em>{{ publisher.desc|default:"No description"|safe }}</em>
           </div>
         </div>
       </div>

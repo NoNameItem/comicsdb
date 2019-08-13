@@ -54,7 +54,7 @@
           </div>
           <div class="card-desc text-muted">
             <h3><strong>{{ creator.name }}</strong></h3>
-            <em>{{ creator.bio|default:"No bio" }}</em>
+            <em>{{ creator.bio|default:"No bio"|safe }}</em>
             {% if creator.marvel_url%}
               <br><a href="{{ creator.marvel_url }}" target="_blank"><em>Marvel URL</em></a>
             {% endif %}

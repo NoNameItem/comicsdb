@@ -87,7 +87,7 @@
                 <h3><strong>{{ issue.name }}</strong> <i class="fal fa-check-circle success" id="read-mark"
                                                          {% if not read_date %}style="display: none" {% endif %}></i>
                 </h3>
-                <em>{{ issue.desc|default:"No description" }}</em>
+                <em>{{ issue.desc|default:"No description"|safe }}</em>
                 <ul class="list-inline list-inline-pipe mb-0">
                   {% if issue.marvel_detail_link %}
                     <li><a href="{{ issue.marvel_detail_link }}" target="_blank">Marvel URL</a></li>

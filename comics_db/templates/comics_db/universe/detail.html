@@ -53,7 +53,7 @@
           </div>
           <div class="card-desc text-muted">
             <h3><strong>{{ universe.name }}</strong></h3>
-            <em>{{ universe.desc|default:"No description" }}</em>
+            <em>{{ universe.desc|default:"No description"|safe }}</em>
           </div>
         </div>
       </div>

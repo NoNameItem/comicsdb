@@ -55,7 +55,7 @@
           <div class="card-desc text-muted">
             <h3><strong>{{ event.name }}</strong> ({{ event.start|default:"Unknown" }}
               - {{ event.end|default:"Unknown" }})</h3>
-            <em>{{ event.desc|default:"No description" }}</em>
+            <em>{{ event.desc|default:"No description"|safe }}</em>
             {% if event.marvel_url %}
               <br><a href="{{ event.marvel_url }}" target="_blank"><em>Marvel URL</em></a>
             {% endif %}

@@ -75,7 +75,7 @@
           <div class="card-desc text-muted">
             <h3><strong>{{ title.name }} ({{ title.title_type.name }}) {% if read == total %}
               <i class="fal fa-check-circle success"></i>{% endif %}</strong></h3>
-            <em>{{ title.desc|default:"No description" }}</em>
+            <em>{{ title.desc|default:"No description"|safe }}</em>
             <ul class="list-inline list-inline-pipe mb-0">
               {% if title.marvel_url %}
                 <li><a href="{{ title.marvel_url }}" target="_blank">Marvel URL</a></li>

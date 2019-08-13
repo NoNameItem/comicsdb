@@ -54,7 +54,7 @@
           </div>
           <div class="card-desc text-muted">
             <h3><strong>{{ character.name }}</strong></h3>
-            <em>{{ character.desc|default:"No description" }}</em>
+            <em>{{ character.desc|default:"No description"|safe }}</em>
             {% if character.marvel_url%}
               <br><a href="{{ character.marvel_url }}" target="_blank"><em>Marvel URL</em></a>
             {% endif %}
