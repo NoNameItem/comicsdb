@@ -164,7 +164,7 @@ function getSetPager(pagerContainer, pagerParams) {
 
 
     function initPager(container, p_pageCount, p_currentPage) {
-      console.log("initPager");
+      console.debug("initPager");
       if (p_pageCount !== 0) {
         container.twbsPagination({
           totalPages: p_pageCount,

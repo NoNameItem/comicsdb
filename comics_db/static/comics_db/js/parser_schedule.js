@@ -19,7 +19,7 @@ function addTask() {
       data : d
     }
   ).done(function (response) {
-    console.log(response);
+    console.debug(response);
     if (response.status === 'error') {
       errorNotify("Can't add schedule", response.message);
     } else {
@@ -61,7 +61,7 @@ let controller = {
       data : f,
     })
       .done(function (response) {
-        console.log(response);
+        console.debug(response);
           d.resolve(response);
         }
       );

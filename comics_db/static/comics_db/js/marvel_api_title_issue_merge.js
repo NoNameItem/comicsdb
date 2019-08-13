@@ -25,12 +25,18 @@ const MERGE_RESULT_LOV = [
   {id : 'NOT_FOUND', name : 'Match not found'},
   {id : 'DUPLICATES', name : 'Multiple matches'},
   {id : 'MANUAL', name : 'Manually changed'},
+  {id : 'ALREADY', name : 'Already matched'},
+  {id : 'IGNORE', name : 'Ignored until full API parse'},
 ];
 
 const ORDER_MAP = {
   'MARVEL_API_TITLE_MERGE' : {
     api_name : "api_title__title",
     db_name  : "db_title__name",
+  },
+  'MARVEL_API_ISSUE_MERGE' : {
+    api_name : "api_comic__title",
+    db_name  : "db_issue__name",
   }
 };
 
@@ -184,7 +190,7 @@ function showStep(obj) {
 
 let controller = {
   loadData : function (filter) {
-    console.log(filter);
+    console.debug(filter);
     let d = $.Deferred();
     let f = {};
     if (filter.sortParams) {

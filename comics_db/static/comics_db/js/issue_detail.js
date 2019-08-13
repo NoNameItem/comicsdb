@@ -52,7 +52,7 @@ $(document).ready(function () {
       type : 'POST',
       data : {list_id : $('#target-reading-list').select2('data')[0].id}
     }).done(function (response) {
-      console.log(response);
+      console.debug(response);
       if (response.status === 'success') {
         successNotify("Congratulations!", "You have added " + response.issue_name + " to reading list "
           + response.list_name + ". Don't forget to actually read it)");

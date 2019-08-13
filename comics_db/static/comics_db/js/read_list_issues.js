@@ -40,7 +40,7 @@ function delete_from_list(issue_id) {
     type : 'POST',
     data : {issue_id : issue_id}
   }).done(function (response) {
-    console.log(response);
+    console.debug(response);
     if (response.status === 'success') {
       successNotify("Congratulations!", "You have removed " + response.issue_name + " from reading list "
         + response.list_name + ".");
@@ -107,8 +107,8 @@ $(document).ready(function () {
 
       let newPos = $(el).index(".draggable") + 1;
 
-      console.log(oldPos);
-      console.log(newPos);
+      console.debug(oldPos);
+      console.debug(newPos);
 
       $.ajax({
         url  : 'reorder',

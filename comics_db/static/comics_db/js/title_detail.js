@@ -80,7 +80,7 @@ $(document).ready(function () {
         number_to   : $('#to-number').val()
       }
     }).done(function (response) {
-      console.log(response);
+      console.debug(response);
       if (response.status === 'success') {
         successNotify("Congratulations!", "You have added " + response.issue_count + " issue(s) to reading list "
           + response.list_name + ". Don't forget to actually read it)");

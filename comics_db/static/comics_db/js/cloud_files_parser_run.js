@@ -25,14 +25,14 @@ const ORDER_MAP = {
 };
 
 function showStep(obj) {
-  console.log(obj);
+  console.debug(obj);
   // Get step data
   $.ajax({
     type : "GET",
     url  : obj.item.detail_url,
   })
     .done(function (response) {
-        console.log(response);
+        console.debug(response);
         // Set fields
         $("#modal-file-key").text(response.file_key);
         $("#modal-status").text(response.status_name);
@@ -75,7 +75,7 @@ function showStep(obj) {
 
 let controller = {
   loadData : function (filter) {
-    console.log(filter);
+    console.debug(filter);
     let d = $.Deferred();
     let f = {};
     if (filter.sortParams) {

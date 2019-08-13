@@ -181,14 +181,14 @@ function startParser() {
       d[$(this).attr("name")] = $(this).val();
     }
   });
-  // console.log(d);
+  console.debug(d);
   $.ajax({
       type : "POST",
       url  : "/run_parser",
       data : d
     }
   ).done(function (response) {
-    console.log(response);
+    console.debug(response);
     if (response.status === 'error') {
       errorNotify("Can't start parser", response.message);
     } else {
