@@ -41,7 +41,7 @@ const ORDER_MAP = {
 };
 
 function set_api_series(db_title_id, api_series_id) {
-  $('#run-detail-modal').block({
+  $.blockUI({
           message    : '<div class="ft-refresh-cw icon-spin font-medium-2"></div>',
           //timeout: 2000, //unblock after 2 seconds
           overlayCSS : {
@@ -64,7 +64,7 @@ function set_api_series(db_title_id, api_series_id) {
     })
   }).done(function (data, textStatus, jqXHR) {
     successNotify("Success","API series assigned");
-    $('#run-detail-modal').unblock();
+    $.unblockUI();
     $('#run-detail-modal').modal('hide');
     $('#grid').jsGrid('loadData');
   }).fail(function (jqXHR, textStatus, errorThrown) {
@@ -78,7 +78,7 @@ function set_api_series(db_title_id, api_series_id) {
 }
 
 function set_api_comics(db_issue_id, api_comic_id) {
-  $('#run-detail-modal').block({
+  $.blockUI({
           message    : '<div class="ft-refresh-cw icon-spin font-medium-2"></div>',
           //timeout: 2000, //unblock after 2 seconds
           overlayCSS : {
@@ -101,7 +101,7 @@ function set_api_comics(db_issue_id, api_comic_id) {
     })
   }).done(function (data, textStatus, jqXHR) {
     successNotify("Success","API series assigned");
-    $('#run-detail-modal').unblock();
+    $.unblockUI();
     $('#run-detail-modal').modal('hide');
     $('#grid').jsGrid('loadData');
   }).fail(function (jqXHR, textStatus, errorThrown) {
