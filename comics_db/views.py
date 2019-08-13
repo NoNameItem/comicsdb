@@ -1786,7 +1786,7 @@ class IssueViewSet(ComicsDBBaseViewSet):
     def set_api_comic(self, request, pk):
         db_issue = get_object_or_404(models.Issue, pk=pk)
         api_comic = get_object_or_404(models.MarvelAPIComics, id=request.data['api_comic_id'])
-        db_issue.api_comic = api_comic
+        db_issue.marvel_api_comic = api_comic
         db_issue.fill_from_marvel_api(api_comic)
         db_issue.save()
         try:

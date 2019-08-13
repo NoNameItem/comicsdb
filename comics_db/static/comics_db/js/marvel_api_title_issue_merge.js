@@ -128,11 +128,11 @@ function setManual(){
   }
 }
 
-function showStep(obj) {
+function showStep(url) {
   // Get step data
   $.ajax({
     type : "GET",
-    url  : obj.item.detail_url,
+    url  : url,
   })
     .done(function (response) {
       run_detail_id = response.id;
@@ -184,8 +184,10 @@ function showStep(obj) {
         $('#run-detail-modal').modal()
       }
     );
+}
 
-
+function showStepObj(obj) {
+  showStep(obj.item.detail_url)
 }
 
 let controller = {
@@ -240,14 +242,14 @@ $(document).ready(function () {
     controller : controller,
     autoload   : true,
 
-    rowDoubleClick : showStep,
+    rowDoubleClick : showStepObj,
 
     fields : [
       {
         type         : "control",
         width        : 50,
         itemTemplate : function (value, item) {
-          return '';
+          return '<a href="#" onclick="showStep(\'' + item.detail_url + '\')"><i class="fal fa-list"></i></a>';
         }
       },
       {

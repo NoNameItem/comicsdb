@@ -905,6 +905,17 @@ class MarvelAPIParser(BaseParser):
         self._series_link()
         self._events_link()
         from comics_db import tasks
+        if self._params['incremental']:
+            comics_models.Title.objects.filter(
+                publisher=comics_models.Publisher.objects.get(slug="marvel")
+            ).update(
+                marvel_api_ignore=False
+            )
+            comics_models.Issue.objects.filter(
+                title__publisher=comics_models.Publisher.objects.get(slug="marvel")
+            ).update(
+                marvel_api_ignore=False
+            )
         tasks.full_marvel_api_merge_task.delay()
 
 
@@ -1080,7 +1091,8 @@ class MarvelAPITitleMergeParser(BaseParser):
 
     def _prepare(self) -> NoReturn:
         self._db_titles = comics_models.Title.objects.filter(
-            publisher=comics_models.Publisher.objects.get(slug="marvel"))
+            publisher=comics_models.Publisher.objects.get(slug="marvel")
+        )
 
     @property
     def _items_count(self) -> int:
@@ -1093,6 +1105,11 @@ class MarvelAPITitleMergeParser(BaseParser):
             run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, db_title=db_title)
             run_detail.save()
             api_series = None
+            if db_title.marvel_api_ignore:
+                run_detail.merge_result = "IGNORE"
+                run_detail.api_title = db_title.api_series
+                run_detail.end_with_success()
+                continue
             # Finding db creator
             try:
 
@@ -1124,6 +1141,7 @@ class MarvelAPITitleMergeParser(BaseParser):
                 run_detail.save()
 
                 db_title.fill_from_marvel_api(api_series)
+                db_title.marvel_api_ignore = True
 
                 db_title.save()
                 run_detail.end_with_success()
@@ -1159,6 +1177,11 @@ class MarvelAPIIssueMergeParser(BaseParser):
             run_detail = self.RUN_DETAIL_MODEL(parser_run=self._parser_run, db_issue=db_issue)
             run_detail.save()
             api_series = None
+            if db_issue.marvel_api_ignore:
+                run_detail.merge_result = "IGNORE"
+                run_detail.api_comic = db_issue.marvel_api_comic
+                run_detail.end_with_success()
+                continue
             try:
 
                 if db_issue.marvel_api_comic:
@@ -1193,6 +1216,7 @@ class MarvelAPIIssueMergeParser(BaseParser):
                 run_detail.save()
 
                 db_issue.fill_from_marvel_api(api_series)
+                db_issue.marvel_api_ignore = True
 
                 db_issue.save()
                 run_detail.end_with_success()

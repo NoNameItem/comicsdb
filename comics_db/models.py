@@ -278,6 +278,7 @@ class MarvelAPITitleMergeParserRunDetail(ParserRunDetail):
         ('SUCCESS', 'Success'),
         ('NOT_FOUND', 'Match not found'),
         ('DUPLICATES', 'Multiple matches'),
+        ('IGNORE', 'Ignored until full API parse'),
         ('MANUAL', 'Manually changed')
     )
     api_title = models.ForeignKey('MarvelAPISeries', on_delete=models.CASCADE, null=True)
@@ -304,6 +305,7 @@ class MarvelAPIIssueMergeParserRunDetail(ParserRunDetail):
         ('SUCCESS', 'Success'),
         ('NOT_FOUND', 'Match not found'),
         ('DUPLICATES', 'Multiple matches'),
+        ('IGNORE', 'Ignored until full API parse'),
         ('MANUAL', 'Manually changed')
     )
     api_comic = models.ForeignKey('MarvelAPIComics', on_delete=models.CASCADE, null=True)
@@ -450,7 +452,7 @@ class Creator(models.Model):
                                 sleep(30)
                                 continue
                             else:
-                                raise RuntimeError("Could not upload image.\n" + err)
+                                raise RuntimeError("Could not upload image.\n\n" + err)
             except MarvelAPIImage.DoesNotExist:
                 pass
 
@@ -564,6 +566,7 @@ class Title(models.Model):
     api_series = models.ForeignKey("MarvelAPISeries", null=True, on_delete=models.SET_NULL, related_name="db_titles")
     possible_matches = models.ManyToManyField("MarvelAPISeries", related_name="db_possible_matches")
     marvel_url = models.URLField(max_length=500, blank=True)
+    marvel_api_ignore = models.BooleanField(default=False)
 
     # Dates
     created_dt = models.DateTimeField(auto_now_add=True)
@@ -674,7 +677,7 @@ class Title(models.Model):
                                 sleep(30)
                                 continue
                             else:
-                                raise RuntimeError("Could not upload image.\n" + err)
+                                raise RuntimeError("Could not upload image.\n\n" + err)
             except MarvelAPIImage.DoesNotExist:
                 pass
 
@@ -721,6 +724,7 @@ class Issue(models.Model):
     marvel_detail_link = models.URLField(max_length=1000, blank=True)
     marvel_purchase_link = models.URLField(max_length=1000, blank=True)
     possible_matches = models.ManyToManyField("MarvelAPIComics", related_name="db_possible_issues")
+    marvel_api_ignore = models.BooleanField(default=False)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -840,7 +844,7 @@ class Issue(models.Model):
                                 sleep(30)
                                 continue
                             else:
-                                raise RuntimeError("Could not upload image.\n" + err)
+                                raise RuntimeError("Could not upload image.\n\n" + err)
             except MarvelAPIImage.DoesNotExist:
                 pass
 
@@ -925,7 +929,7 @@ class Character(models.Model):
                                 sleep(30)
                                 continue
                             else:
-                                raise RuntimeError("Could not upload image.\n" + err)
+                                raise RuntimeError("Could not upload image.\n\n" + err)
             except MarvelAPIImage.DoesNotExist:
                 pass
 
@@ -1045,7 +1049,7 @@ class Event(models.Model):
                                 sleep(30)
                                 continue
                             else:
-                                raise RuntimeError("Could not upload image.\n" + err)
+                                raise RuntimeError("Could not upload image.\n\n" + err)
             except MarvelAPIImage.DoesNotExist:
                 pass
 
