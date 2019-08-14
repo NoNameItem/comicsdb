@@ -473,6 +473,9 @@ class CloudFilesParser(BaseParser):
         :return:
         """
         try:
+            if self._params['full']:
+                comics_models.Issue.objects.exclude(id__in=self._issues).delete()
+
             comics_models.Title.objects.annotate(issue_count=Count('issues', distinct=True)) \
                 .filter(issue_count=0).delete()
             comics_models.Universe.objects.annotate(title_count=Count('titles', distinct=True)) \
@@ -480,11 +483,6 @@ class CloudFilesParser(BaseParser):
             comics_models.Publisher.objects.annotate(title_count=Count('titles', distinct=True)) \
                 .annotate(universe_count=Count('universes', distinct=True)).filter(title_count=0, universe_count=0) \
                 .delete()
-            if self._params['full']:
-                comics_models.Issue.objects.exclude(id__in=self._issues).delete()
-                comics_models.Title.objects.exclude(id__in=self._titles).delete()
-                comics_models.Universe.objects.exclude(id__in=self._universes).delete()
-                comics_models.Publisher.objects.exclude(id__in=self._publishers).delete()
             if self._params['load_covers']:
                 for t in comics_models.Title.objects.all():
                     if t.image == '' or t.image is None:
