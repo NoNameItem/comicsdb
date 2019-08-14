@@ -148,8 +148,9 @@
                 <label for="title-type">Universe</label>
                 <select class="form-control {% if form.errors.universe %}is-invalid{% endif %}" name="universe"
                         id="title-universe">
+                  <option value=""></option>
                   {% for universe in universes %}
-                    <option value=""></option>
+
                     <option value="{{ universe.id }}"
                             {% if universe.id == form.data.universe %}selected{% endif %}>
                       {{ universe.name }}
