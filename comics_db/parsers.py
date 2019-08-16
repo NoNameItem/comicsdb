@@ -1120,12 +1120,16 @@ class MarvelAPITitleMergeParser(BaseParser):
                     if len(possible_api_series) == 0:
                         run_detail.merge_result = 'NOT_FOUND'
                         db_title.possible_matches.clear()
+                        db_title.marvel_api_ignore = True
+                        db_title.save()
                         run_detail.end_with_error(run_detail.get_merge_result_display())
                         has_errors = True
                         continue
                     if len(possible_api_series) > 1:
                         run_detail.merge_result = 'DUPLICATES'
                         db_title.possible_matches.set(possible_api_series)
+                        db_title.marvel_api_ignore = True
+                        db_title.save()
                         run_detail.end_with_error(run_detail.get_merge_result_display())
                         has_errors = True
                         continue
@@ -1139,7 +1143,6 @@ class MarvelAPITitleMergeParser(BaseParser):
                 run_detail.save()
 
                 db_title.fill_from_marvel_api(api_series)
-                db_title.marvel_api_ignore = True
 
                 db_title.save()
                 run_detail.end_with_success()
@@ -1195,12 +1198,16 @@ class MarvelAPIIssueMergeParser(BaseParser):
                     if len(possible_api_comics) == 0:
                         run_detail.merge_result = 'NOT_FOUND'
                         db_issue.possible_matches.clear()
+                        db_issue.marvel_api_ignore = True
+                        db_issue.save()
                         run_detail.end_with_error(run_detail.get_merge_result_display())
                         has_errors = True
                         continue
                     if len(possible_api_comics) > 1:
                         run_detail.merge_result = 'DUPLICATES'
                         db_issue.possible_matches.set(possible_api_comics)
+                        db_issue.marvel_api_ignore = True
+                        db_issue.save()
                         run_detail.end_with_error(run_detail.get_merge_result_display())
                         has_errors = True
                         continue
@@ -1214,7 +1221,6 @@ class MarvelAPIIssueMergeParser(BaseParser):
                 run_detail.save()
 
                 db_issue.fill_from_marvel_api(api_series)
-                db_issue.marvel_api_ignore = True
 
                 db_issue.save()
                 run_detail.end_with_success()

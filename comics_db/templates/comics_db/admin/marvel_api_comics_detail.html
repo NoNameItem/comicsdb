@@ -73,6 +73,26 @@
                 </div>
               </div>
             </div>
+            {% if api_comic.series %}
+              <div class="row">
+                <div class="col-3">
+                  <div class="form-group">
+                    <label for="template_id">Series</label>
+                    <p class="form-control-plaintext">
+                      <a href="{% url "site-marvel-api-series-detail" api_comic.series_id %}">{{ api_comic.series.title }}</a>
+                    </p>
+                  </div>
+                </div>
+                <div class="col-3">
+                  <div class="form-group">
+                    <label for="template_id">Series ID</label>
+                    <p class="form-control-plaintext">
+                      {{ api_comic.series_id }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
             <div class="row">
               <div class="col-12">
                 <div class="form-group">
