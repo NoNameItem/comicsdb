@@ -4,6 +4,10 @@ let pagerParams = {
   totalPages       : 0
 };
 
+const ORDER_MAP = {
+
+};
+
 let showIgnored = false;
 let showMatched = false;
 
@@ -14,7 +18,7 @@ let controller = {
     if (filter.sortParams) {
 
       f.ordering = filter.sortParams.map(function (filter) {
-        return filter.o === "asc" ? ORDER_MAP[filter.f] : "-" + ORDER_MAP[filter.f];
+        return filter.o === "asc" ? filter.f : "-" + filter.f;
       }).join(",");
     }
     if (filter.pageIndex) {

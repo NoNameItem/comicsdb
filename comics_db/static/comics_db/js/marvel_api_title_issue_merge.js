@@ -67,6 +67,7 @@ function set_api_series(db_title_id, api_series_id) {
     $.unblockUI();
     $('#run-detail-modal').modal('hide');
     $('#grid').jsGrid('loadData');
+    $('#modal-set-manual').val("");
   }).fail(function (jqXHR, textStatus, errorThrown) {
     $('#run-detail-modal').unblock();
     if (jqXHR.status === 404) {
@@ -104,6 +105,7 @@ function set_api_comics(db_issue_id, api_comic_id) {
     $.unblockUI();
     $('#run-detail-modal').modal('hide');
     $('#grid').jsGrid('loadData');
+    $('#modal-set-manual').val("");
   }).fail(function (jqXHR, textStatus, errorThrown) {
     $('#run-detail-modal').unblock();
     if (jqXHR.status === 404) {
